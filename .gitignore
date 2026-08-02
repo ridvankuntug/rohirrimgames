@@ -3,7 +3,6 @@ node_modules/
 .env
 .DS_Store
 *.log
-list.txt
 deploy.tar.gz
 deploy.zip
 *.tar.gz

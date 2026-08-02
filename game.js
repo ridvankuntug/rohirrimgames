@@ -2,18 +2,48 @@
    WHO AM I? – Game Logic
    ============================================ */
 
-// ---- Characters (loaded dynamically from list.txt) ----
-let CHARACTERS = [];
+// ---- Characters (loaded dynamically from list.txt with robust fallback) ----
+const DEFAULT_CHARACTERS = [
+  'Frodo Baggins', 'Samwise Gamgee', 'Gandalf', 'Aragorn', 'Legolas', 'Gimli',
+  'Peregrin "Pippin" Took', 'Meriadoc "Merry" Brandybuck', 'Boromir', 'Gollum',
+  'Faramir', 'Denethor', 'Théoden', 'Éowyn', 'Éomer', 'Isildur', 'Elendil',
+  'Gríma Wormtongue', 'Bard the Bowman', 'Túrin Turambar', 'Beren', 'Aldarion',
+  'Ar-Pharazôn', 'Tar-Míriel', 'Galadriel', 'Elrond', 'Arwen', 'Thranduil',
+  'Celeborn', 'Glorfindel', 'Fëanor', 'Fingolfin', 'Finrod Felagund', 'Thingol',
+  'Lúthien', 'Maedhros', 'Gil-galad', 'Círdan', 'Celebrimbor', 'Haldir', 'Eöl',
+  'Turgon', 'Idril', 'Eärendil', 'Thorin Oakenshield', 'Balin', 'Dwalin', 'Fíli',
+  'Kíli', 'Glóin', 'Óin', 'Bofur', 'Bombur', 'Bifur', 'Dori', 'Nori', 'Ori',
+  'Dáin II Ironfoot', 'Durin I', 'Saruman', 'Radagast', 'Alatar', 'Pallando',
+  'Manwë', 'Varda', 'Ulmo', 'Aulë', 'Yavanna', 'Mandos', 'Nienna', 'Tulkas',
+  'Oromë', 'Melian', 'Eönwë', 'Sauron', 'Morgoth', 'Witch-king of Angmar',
+  'Khamûl', "Saruman'ın Ağzı", 'Smaug', 'Glaurung', 'Ancalagon the Black',
+  'Ungoliant', 'Shelob', "Durin'in Felaketi", 'Gothmog', 'Azog the Defiler',
+  'Bolg', 'Lurtz', 'Bilbo Baggins', 'Treebeard', 'Quickbeam', 'Tom Bombadil',
+  'Goldberry', 'Gwaihir', 'Shadowfax', 'Rosie Cotton', 'Old Man Willow',
+  'Barliman Butterbur', 'Beorn'
+];
+
+let CHARACTERS = [...DEFAULT_CHARACTERS];
 let deckLibrary = null;
 let playSessionId = null;
 
 async function loadCharacters() {
-  const res = await fetch('list.txt');
-  const text = await res.text();
-  CHARACTERS = text
-    .split('\n')
-    .map(line => line.replace(/\r/, '').trim())
-    .filter(line => line && !line.startsWith('---') && !line.startsWith('**'));
+  try {
+    const res = await fetch('list.txt');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const loaded = text
+      .split('\n')
+      .map(line => line.replace(/\r/, '').trim())
+      .filter(line => line && !line.startsWith('---') && !line.startsWith('**'));
+    if (loaded.length > 0) {
+      CHARACTERS = loaded;
+      return;
+    }
+  } catch (err) {
+    console.warn('Could not load list.txt, fallback character deck used:', err);
+  }
+  CHARACTERS = [...DEFAULT_CHARACTERS];
 }
 
 // Load on startup

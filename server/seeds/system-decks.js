@@ -29,6 +29,29 @@ export const SYSTEM_DECKS = Object.freeze([
         ]
     },
     {
+        gameType: 'who',
+        name: 'Yüzüklerin Efendisi (Lord of the Rings)',
+        content: [
+            'Frodo Baggins', 'Samwise Gamgee', 'Gandalf', 'Aragorn', 'Legolas', 'Gimli',
+            'Peregrin "Pippin" Took', 'Meriadoc "Merry" Brandybuck', 'Boromir', 'Gollum',
+            'Faramir', 'Denethor', 'Théoden', 'Éowyn', 'Éomer', 'Isildur', 'Elendil',
+            'Gríma Wormtongue', 'Bard the Bowman', 'Túrin Turambar', 'Beren', 'Aldarion',
+            'Ar-Pharazôn', 'Tar-Míriel', 'Galadriel', 'Elrond', 'Arwen', 'Thranduil',
+            'Celeborn', 'Glorfindel', 'Fëanor', 'Fingolfin', 'Finrod Felagund', 'Thingol',
+            'Lúthien', 'Maedhros', 'Gil-galad', 'Círdan', 'Celebrimbor', 'Haldir', 'Eöl',
+            'Turgon', 'Idril', 'Eärendil', 'Thorin Oakenshield', 'Balin', 'Dwalin', 'Fíli',
+            'Kíli', 'Glóin', 'Óin', 'Bofur', 'Bombur', 'Bifur', 'Dori', 'Nori', 'Ori',
+            'Dáin II Ironfoot', 'Durin I', 'Saruman', 'Radagast', 'Alatar', 'Pallando',
+            'Manwë', 'Varda', 'Ulmo', 'Aulë', 'Yavanna', 'Mandos', 'Nienna', 'Tulkas',
+            'Oromë', 'Melian', 'Eönwë', 'Sauron', 'Morgoth', 'Witch-king of Angmar',
+            'Khamûl', "Saruman'ın Ağzı", 'Smaug', 'Glaurung', 'Ancalagon the Black',
+            'Ungoliant', 'Shelob', "Durin'in Felaketi", 'Gothmog', 'Azog the Defiler',
+            'Bolg', 'Lurtz', 'Bilbo Baggins', 'Treebeard', 'Quickbeam', 'Tom Bombadil',
+            'Goldberry', 'Gwaihir', 'Shadowfax', 'Rosie Cotton', 'Old Man Willow',
+            'Barliman Butterbur', 'Beorn'
+        ]
+    },
+    {
         gameType: 'taboo',
         name: STARTER_NAME,
         content: [

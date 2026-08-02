@@ -16,6 +16,7 @@ import { createGenerationService } from './server/services/generation-service.js
 import { createGenerationHandler } from './server/routes/generation-handler.js';
 import { createSessionRepository } from './server/repositories/session-repository.js';
 import { createSessionRouter } from './server/routes/sessions.js';
+import { SYSTEM_DECKS } from './server/seeds/system-decks.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,28 +33,87 @@ const platformDatabase = platformConfig.supabaseUrl && platformConfig.supabaseSe
     })
     : null;
 
-const deckRepository = platformDatabase
+function formatSystemDeck(sysDeck) {
+    const id = `sys-${sysDeck.gameType}-${sysDeck.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    const versionId = `${id}-v1`;
+    return {
+        id,
+        gameType: sysDeck.gameType,
+        name: sysDeck.name,
+        currentVersionId: versionId,
+        isSystem: true,
+        archivedAt: null,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+        currentVersion: {
+            id: versionId,
+            deckId: id,
+            versionNumber: 1,
+            content: sysDeck.content,
+            source: 'system',
+            theme: sysDeck.name,
+            cefrLevel: null,
+            generationParameters: {},
+            teacherDisplayName: 'System',
+            aiProvider: null,
+            aiModel: null,
+            teacherKeyUsed: false,
+            createdAt: '2026-01-01T00:00:00.000Z'
+        }
+    };
+}
+
+function getSystemDecks(gameType) {
+    return SYSTEM_DECKS
+        .filter(d => !gameType || d.gameType === gameType)
+        .map(formatSystemDeck);
+}
+
+const baseDeckRepository = platformDatabase
     ? createDeckRepository(platformDatabase)
-    : {
-        async listCurrent() {
-            const error = new Error('Deck persistence is not configured');
-            error.status = 503;
-            error.code = 'DECK_SERVICE_UNAVAILABLE';
-            throw error;
-        },
-        async getCurrent() {
-            const error = new Error('Deck persistence is not configured');
-            error.status = 503;
-            error.code = 'DECK_SERVICE_UNAVAILABLE';
-            throw error;
-        },
-        async createGenerated() {
+    : null;
+
+const deckRepository = {
+    async listCurrent(gameType) {
+        let dbDecks = [];
+        if (baseDeckRepository) {
+            try {
+                dbDecks = await baseDeckRepository.listCurrent(gameType);
+            } catch (err) {
+                console.warn('[DeckRepo] DB listCurrent failed, falling back to system decks:', err.message);
+            }
+        }
+        const sysDecks = getSystemDecks(gameType);
+        const seenNames = new Set(dbDecks.map(d => d.name.toLowerCase()));
+        const missingSysDecks = sysDecks.filter(s => !seenNames.has(s.name.toLowerCase()));
+        return [...dbDecks, ...missingSysDecks];
+    },
+    async getCurrent(deckId) {
+        if (baseDeckRepository) {
+            try {
+                const deck = await baseDeckRepository.getCurrent(deckId);
+                if (deck) return deck;
+            } catch (err) {
+                // Proceed to check system decks fallback
+            }
+        }
+        const sysDeck = getSystemDecks().find(d => d.id === deckId);
+        if (sysDeck) return sysDeck;
+        const error = new Error('Deck not found');
+        error.status = 404;
+        error.code = 'DECK_NOT_FOUND';
+        throw error;
+    },
+    async createGenerated(input) {
+        if (!baseDeckRepository) {
             const error = new Error('Deck persistence is not configured');
             error.status = 503;
             error.code = 'DECK_SERVICE_UNAVAILABLE';
             throw error;
         }
-    };
+        return baseDeckRepository.createGenerated(input);
+    }
+};
 const generationService = createGenerationService({ deckRepository });
 const sessionRepository = platformDatabase
     ? createSessionRepository(platformDatabase)
@@ -1305,9 +1365,24 @@ function createFallbackQuestions(gameType, theme = 'General Knowledge', count = 
 
     if (gameType === 'who') {
         const characters = [
-            'Albert Einstein', 'Cleopatra', 'Sherlock Holmes', 'Marie Curie', 'Leonardo da Vinci',
-            'Harry Potter', 'Spider-Man', 'William Shakespeare', 'Taylor Swift', 'Elon Musk',
-            'Isaac Newton', 'Amelia Earhart', 'Batman', 'Mozart', 'Galileo Galilei'
+            'Frodo Baggins', 'Samwise Gamgee', 'Gandalf', 'Aragorn', 'Legolas', 'Gimli',
+            'Peregrin "Pippin" Took', 'Meriadoc "Merry" Brandybuck', 'Boromir', 'Gollum',
+            'Faramir', 'Denethor', 'Théoden', 'Éowyn', 'Éomer', 'Isildur', 'Elendil',
+            'Gríma Wormtongue', 'Bard the Bowman', 'Túrin Turambar', 'Beren', 'Aldarion',
+            'Ar-Pharazôn', 'Tar-Míriel', 'Galadriel', 'Elrond', 'Arwen', 'Thranduil',
+            'Celeborn', 'Glorfindel', 'Fëanor', 'Fingolfin', 'Finrod Felagund', 'Thingol',
+            'Lúthien', 'Maedhros', 'Gil-galad', 'Círdan', 'Celebrimbor', 'Haldir', 'Eöl',
+            'Turgon', 'Idril', 'Eärendil', 'Thorin Oakenshield', 'Balin', 'Dwalin', 'Fíli',
+            'Kíli', 'Glóin', 'Óin', 'Bofur', 'Bombur', 'Bifur', 'Dori', 'Nori', 'Ori',
+            'Dáin II Ironfoot', 'Durin I', 'Saruman', 'Radagast', 'Alatar', 'Pallando',
+            'Manwë', 'Varda', 'Ulmo', 'Aulë', 'Yavanna', 'Mandos', 'Nienna', 'Tulkas',
+            'Oromë', 'Melian', 'Eönwë', 'Sauron', 'Morgoth', 'Witch-king of Angmar',
+            'Khamûl', "Saruman'ın Ağzı", 'Smaug', 'Glaurung', 'Ancalagon the Black',
+            'Ungoliant', 'Shelob', "Durin'in Felaketi", 'Gothmog', 'Azog the Defiler',
+            'Bolg', 'Lurtz', 'Bilbo Baggins', 'Treebeard', 'Quickbeam', 'Tom Bombadil',
+            'Goldberry', 'Gwaihir', 'Shadowfax', 'Rosie Cotton', 'Old Man Willow',
+            'Barliman Butterbur', 'Beorn', 'Albert Einstein', 'Marie Curie', 'Sherlock Holmes',
+            'Leonardo da Vinci', 'William Shakespeare'
         ];
         return characters.slice(0, count);
     }
