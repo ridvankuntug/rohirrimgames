@@ -570,14 +570,17 @@ function populateStaticDeckSelect() {
     });
     select.value = String(STATIC_DECKS.length - 1);
 
-    select.addEventListener('change', () => {
+    function applySelectedDeck() {
         const deck = STATIC_DECKS[Number(select.value)];
         if (!deck) return;
         cards = [...deck.content];
         shuffleDeck();
         els.generateStatus.textContent = `Using deck “${deck.name}”.`;
         els.generateStatus.className = 'generate-status success';
-    });
+    }
+
+    select.addEventListener('change', applySelectedDeck);
+    applySelectedDeck();
 
     wrap.hidden = false;
 }

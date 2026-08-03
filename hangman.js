@@ -98,7 +98,112 @@ const STATIC_DECKS = [
             { word: "ALGORITHM", cat: "Technology" }
         ]
     },
-    { name: 'Classic Mix', content: DEFAULT_WORDS }
+    { name: 'Classic Mix', content: DEFAULT_WORDS },
+    {
+        name: 'Yüzüklerin Efendisi (Lord of the Rings)',
+        content: [
+            { word: "FRODO BAGGINS", cat: "Middle-earth" },
+            { word: "SAMWISE GAMGEE", cat: "Middle-earth" },
+            { word: "GANDALF", cat: "Middle-earth" },
+            { word: "ARAGORN", cat: "Middle-earth" },
+            { word: "LEGOLAS", cat: "Middle-earth" },
+            { word: "GIMLI", cat: "Middle-earth" },
+            { word: "PEREGRIN \"PIPPIN\" TOOK", cat: "Middle-earth" },
+            { word: "MERIADOC \"MERRY\" BRANDYBUCK", cat: "Middle-earth" },
+            { word: "BOROMIR", cat: "Middle-earth" },
+            { word: "GOLLUM", cat: "Middle-earth" },
+            { word: "FARAMIR", cat: "Middle-earth" },
+            { word: "DENETHOR", cat: "Middle-earth" },
+            { word: "THÉODEN", cat: "Middle-earth" },
+            { word: "ÉOWYN", cat: "Middle-earth" },
+            { word: "ÉOMER", cat: "Middle-earth" },
+            { word: "ISILDUR", cat: "Middle-earth" },
+            { word: "ELENDIL", cat: "Middle-earth" },
+            { word: "GRÍMA WORMTONGUE", cat: "Middle-earth" },
+            { word: "BARD THE BOWMAN", cat: "Middle-earth" },
+            { word: "TÚRIN TURAMBAR", cat: "Middle-earth" },
+            { word: "BEREN", cat: "Middle-earth" },
+            { word: "ALDARION", cat: "Middle-earth" },
+            { word: "AR-PHARAZÔN", cat: "Middle-earth" },
+            { word: "TAR-MÍRIEL", cat: "Middle-earth" },
+            { word: "GALADRIEL", cat: "Middle-earth" },
+            { word: "ELROND", cat: "Middle-earth" },
+            { word: "ARWEN", cat: "Middle-earth" },
+            { word: "THRANDUIL", cat: "Middle-earth" },
+            { word: "CELEBORN", cat: "Middle-earth" },
+            { word: "GLORFINDEL", cat: "Middle-earth" },
+            { word: "FËANOR", cat: "Middle-earth" },
+            { word: "FINGOLFIN", cat: "Middle-earth" },
+            { word: "FINROD FELAGUND", cat: "Middle-earth" },
+            { word: "THINGOL", cat: "Middle-earth" },
+            { word: "LÚTHIEN", cat: "Middle-earth" },
+            { word: "MAEDHROS", cat: "Middle-earth" },
+            { word: "GIL-GALAD", cat: "Middle-earth" },
+            { word: "CÍRDAN", cat: "Middle-earth" },
+            { word: "CELEBRIMBOR", cat: "Middle-earth" },
+            { word: "HALDIR", cat: "Middle-earth" },
+            { word: "EÖL", cat: "Middle-earth" },
+            { word: "TURGON", cat: "Middle-earth" },
+            { word: "IDRIL", cat: "Middle-earth" },
+            { word: "EÄRENDIL", cat: "Middle-earth" },
+            { word: "THORIN OAKENSHIELD", cat: "Middle-earth" },
+            { word: "BALIN", cat: "Middle-earth" },
+            { word: "DWALIN", cat: "Middle-earth" },
+            { word: "FÍLI", cat: "Middle-earth" },
+            { word: "KÍLI", cat: "Middle-earth" },
+            { word: "GLÓIN", cat: "Middle-earth" },
+            { word: "ÓIN", cat: "Middle-earth" },
+            { word: "BOFUR", cat: "Middle-earth" },
+            { word: "BOMBUR", cat: "Middle-earth" },
+            { word: "BIFUR", cat: "Middle-earth" },
+            { word: "DORI", cat: "Middle-earth" },
+            { word: "NORI", cat: "Middle-earth" },
+            { word: "ORI", cat: "Middle-earth" },
+            { word: "DÁIN II IRONFOOT", cat: "Middle-earth" },
+            { word: "DURIN I", cat: "Middle-earth" },
+            { word: "SARUMAN", cat: "Middle-earth" },
+            { word: "RADAGAST", cat: "Middle-earth" },
+            { word: "ALATAR", cat: "Middle-earth" },
+            { word: "PALLANDO", cat: "Middle-earth" },
+            { word: "MANWË", cat: "Middle-earth" },
+            { word: "VARDA", cat: "Middle-earth" },
+            { word: "ULMO", cat: "Middle-earth" },
+            { word: "AULË", cat: "Middle-earth" },
+            { word: "YAVANNA", cat: "Middle-earth" },
+            { word: "MANDOS", cat: "Middle-earth" },
+            { word: "NIENNA", cat: "Middle-earth" },
+            { word: "TULKAS", cat: "Middle-earth" },
+            { word: "OROMË", cat: "Middle-earth" },
+            { word: "MELIAN", cat: "Middle-earth" },
+            { word: "EÖNWË", cat: "Middle-earth" },
+            { word: "SAURON", cat: "Middle-earth" },
+            { word: "MORGOTH", cat: "Middle-earth" },
+            { word: "WITCH-KING OF ANGMAR", cat: "Middle-earth" },
+            { word: "KHAMÛL", cat: "Middle-earth" },
+            { word: "SAURON'UN AĞZI", cat: "Middle-earth" },
+            { word: "SMAUG", cat: "Middle-earth" },
+            { word: "GLAURUNG", cat: "Middle-earth" },
+            { word: "ANCALAGON THE BLACK", cat: "Middle-earth" },
+            { word: "UNGOLIANT", cat: "Middle-earth" },
+            { word: "SHELOB", cat: "Middle-earth" },
+            { word: "DURIN'IN FELAKETI", cat: "Middle-earth" },
+            { word: "GOTHMOG", cat: "Middle-earth" },
+            { word: "AZOG THE DEFILER", cat: "Middle-earth" },
+            { word: "BOLG", cat: "Middle-earth" },
+            { word: "LURTZ", cat: "Middle-earth" },
+            { word: "BILBO BAGGINS", cat: "Middle-earth" },
+            { word: "TREEBEARD", cat: "Middle-earth" },
+            { word: "QUICKBEAM", cat: "Middle-earth" },
+            { word: "TOM BOMBADIL", cat: "Middle-earth" },
+            { word: "GOLDBERRY", cat: "Middle-earth" },
+            { word: "GWAIHIR", cat: "Middle-earth" },
+            { word: "SHADOWFAX", cat: "Middle-earth" },
+            { word: "ROSIE COTTON", cat: "Middle-earth" },
+            { word: "OLD MAN WILLOW", cat: "Middle-earth" },
+            { word: "BARLIMAN BUTTERBUR", cat: "Middle-earth" },
+            { word: "BEORN", cat: "Middle-earth" }
+        ]
+    }
 ];
 
 let wordList = [...DEFAULT_WORDS];
@@ -420,14 +525,17 @@ function populateStaticDeckSelect() {
     });
     select.value = String(STATIC_DECKS.length - 1);
 
-    select.addEventListener('change', () => {
+    function applySelectedDeck() {
         const deck = STATIC_DECKS[Number(select.value)];
         if (!deck) return;
         wordList = [...deck.content];
         usedWords = [];
         generateStatus.textContent = `Using deck “${deck.name}”.`;
         generateStatus.className = 'generate-status success';
-    });
+    }
+
+    select.addEventListener('change', applySelectedDeck);
+    applySelectedDeck();
 
     wrap.hidden = false;
 }

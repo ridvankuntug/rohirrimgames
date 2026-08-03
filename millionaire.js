@@ -1091,12 +1091,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 select.appendChild(option);
             });
             select.value = String(STATIC_DECKS.length - 1);
-            select.addEventListener('change', () => {
+            const applySelectedDeck = () => {
                 const deck = STATIC_DECKS[Number(select.value)];
                 if (!deck) return;
                 staticSelectedQuestions = deck.content;
                 showNotification(`Using deck “${deck.name}”.`, 'success');
-            });
+            };
+            select.addEventListener('change', applySelectedDeck);
+            applySelectedDeck();
             wrap.hidden = false;
         }
     }
