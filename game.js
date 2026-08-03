@@ -23,6 +23,21 @@ const DEFAULT_CHARACTERS = [
   'Barliman Butterbur', 'Beorn'
 ];
 
+const STATIC_DECKS = [
+  {
+    name: 'Starter — General',
+    content: [
+      'Albert Einstein', 'Marie Curie', 'Frida Kahlo', 'Nelson Mandela',
+      'Amelia Earhart', 'Leonardo da Vinci', 'Malala Yousafzai', 'William Shakespeare',
+      'Ada Lovelace', 'Usain Bolt', 'Taylor Swift', 'Sherlock Holmes'
+    ]
+  },
+  {
+    name: 'Yüzüklerin Efendisi (Lord of the Rings)',
+    content: DEFAULT_CHARACTERS
+  }
+];
+
 let CHARACTERS = [...DEFAULT_CHARACTERS];
 let deckLibrary = null;
 let playSessionId = null;
@@ -236,30 +251,66 @@ btnGenerate.addEventListener('click', async () => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+function populateStaticDeckSelect() {
+  const wrap = document.getElementById('static-deck-wrap');
+  const select = document.getElementById('static-deck-select');
+  if (!wrap || !select) return;
+
+  select.replaceChildren();
+  STATIC_DECKS.forEach((deck, index) => {
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.textContent = deck.name;
+    select.appendChild(option);
+  });
+
+  const activeIndex = STATIC_DECKS.findIndex(deck => deck.content === DEFAULT_CHARACTERS);
+  select.value = String(activeIndex >= 0 ? activeIndex : 0);
+
+  select.addEventListener('change', () => {
+    const deck = STATIC_DECKS[Number(select.value)];
+    if (!deck) return;
+    CHARACTERS = [...deck.content];
+    bag = [];
+    generateStatus.textContent = `Using deck “${deck.name}”.`;
+    generateStatus.className = 'generate-status success';
+  });
+
+  wrap.hidden = false;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
   btnReuseGenerated?.addEventListener('click', restoreGeneratedCharacters);
   updateReuseButton();
 
   btnGenerate.hidden = true;
   if (btnReuseGenerated) btnReuseGenerated.hidden = true;
-  deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
-    container: '#deck-library-mount',
-    gameType: 'who',
-    endpoint: '/api/generate',
-    collectGenerationInput: () => ({
-      theme: themeInput.value.trim(),
-      count: parseInt(countInput.value, 10) || 50
-    }),
-    onDeckSelected: (deck) => {
-      if (!deck?.currentVersion?.content) return;
-      CHARACTERS = deck.currentVersion.content
-        .map(character => String(character).trim())
-        .filter(Boolean);
-      bag = [];
-      generateStatus.textContent = `Using registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`;
-      generateStatus.className = 'generate-status success';
-    }
-  });
+
+  try {
+    await window.OpenClassPlatform.listDecks('who');
+    deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
+      container: '#deck-library-mount',
+      gameType: 'who',
+      endpoint: '/api/generate',
+      collectGenerationInput: () => ({
+        theme: themeInput.value.trim(),
+        count: parseInt(countInput.value, 10) || 50
+      }),
+      onDeckSelected: (deck) => {
+        if (!deck?.currentVersion?.content) return;
+        CHARACTERS = deck.currentVersion.content
+          .map(character => String(character).trim())
+          .filter(Boolean);
+        bag = [];
+        generateStatus.textContent = `Using registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`;
+        generateStatus.className = 'generate-status success';
+      }
+    });
+  } catch {
+    document.getElementById('deck-library-mount')?.setAttribute('hidden', '');
+    await loadCharacters();
+    populateStaticDeckSelect();
+  }
 });
 
 // ============================================
