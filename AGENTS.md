@@ -35,6 +35,28 @@ ssh -i "/home/berkay/Desktop/who/ssh keys/.ssh/id_ed25519" ubuntu@89.168.76.182 
     "cd /var/www/play.metrix.dpdns.org && npm --prefix frontend run build && pm2 restart openclasstools --update-env"
 ```
 
+## Static Deployment (Cloudflare Pages)
+
+This repo also ships as a **fully static** build with no Express/Supabase backend at all — no AI generation, no registered-deck API, no session recording. Live at `https://rohirrimgames.ridvankuntug.org`, deployed via `.github/workflows/deploy-cloudflare-pages.yml` on every push to `main`.
+
+- **Build script**: `scripts/build-pages-site.mjs` copies only static-safe files into `dist-static/` (`node scripts/build-pages-site.mjs`). It hardcodes a file whitelist (`rootFiles`, `rootDirs`, `iconFiles`) — **when you add a new game or shared asset, add it to this whitelist too**, or it silently won't ship to the static build. `server.js`, `server/`, `supabase/`, `tests/`, `frontend/` are intentionally excluded.
+- **404.html is load-bearing.** Cloudflare Pages serves `index.html` with `200 OK` for any unmatched path (including `/api/*`) unless a `404.html` exists. The build script copies `index.html` to `dist-static/404.html` for exactly this reason — every "is the backend reachable" probe in the game clients depends on `/api/...` returning a real non-2xx status. Do not remove this without replacing the detection mechanism.
+- **Deploy secrets**: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, set as repo-scoped GitHub Actions secrets (Settings → Secrets and variables → Actions on `ridvankuntug/rohirrimgames`). Never print or commit these.
+- **Backend-detection + static-deck-fallback pattern** — every deck-backed game client (`game.js`, `taboo.js`, `hangman.js`, `millionaire.js`, `kelime.js`, `flashcards.js`, `hats.js`) follows this shape on init:
+  ```js
+  try {
+      await window.OpenClassPlatform.listDecks('<gameType>');
+      deckLibrary = window.OpenClassPlatform.mountDeckLibrary({ /* normal registered-deck UI */ });
+  } catch {
+      document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
+      // populate #static-deck-wrap / #static-deck-select from a local STATIC_DECKS array instead
+  }
+  ```
+  `STATIC_DECKS` is a plain array of `{ name, content }` defined at the top of each game's `.js` file (content shape matches whatever that game already expects — cards, words, questions, etc.). The `<select>` population helper MUST call its own "apply this deck" function both on `change` **and immediately after populating** — setting `select.value` alone does not update the game's active content, only the visible dropdown state (this was a real bug; don't reintroduce it).
+  - When adding a new deck-backed game, or a new game entirely, wire it into this exact pattern from the start rather than only supporting the registered-deck path — standalone/offline play with a visible deck picker is a hard requirement, not an edge case.
+- **Theme**: static-site visuals use the Rohirrim (Rohan) palette — forest green / gold / parchment / rust — defined as CSS custom properties (`--bg-dark`, `--accent-1/2/3`, `--glass-bg`, `--glass-border`, `--text-primary/secondary`) repeated in `theme.css`, `hub.css`, `style.css`, and every game's own `.css`. Keep changes to these variables consistent across all of them, including their raw `rgba()`/hex duplicates outside `:root` blocks. Do NOT touch functional/semantic colors (correct/wrong feedback, Six Thinking Hats hat colors, LingoParty per-category badge colors) when reskinning.
+- Full walkthrough (manual deploy commands, custom domain setup): see [PROJE_REHBERI_TR.md](PROJE_REHBERI_TR.md#statik-site-olarak-yayınlama-cloudflare-pages) (Turkish).
+
 ## Configuration
 
 ```env
@@ -66,7 +88,7 @@ Teacher-provided Gemini keys are temporary browser-tab values and optional. Neve
 
 - **Game Launch Resilience**:
   - Launch handlers (React & legacy HTML/JS) MUST transition to active gameplay instantly (0ms delay). Session recording (`startSessionSafely`) runs asynchronously in the background.
-  - Standalone play MUST ALWAYS work cleanly with default starter/system decks even when database or telemetry services are offline or slow.
+  - Standalone play MUST ALWAYS work cleanly with default starter/system decks even when database or telemetry services are offline or slow. See "Static Deployment" below for the concrete backend-detection + `STATIC_DECKS` fallback pattern this requires.
 
 - **Code Quality**:
   - Use ES modules, `const`/`let`, arrow callbacks, and async/await.

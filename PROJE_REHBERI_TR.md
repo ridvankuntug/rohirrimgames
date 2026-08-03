@@ -141,6 +141,51 @@ npm run seed:decks
 
 Bu tohumlama işlemi tekrar çalıştırılabilir; mevcut adlandırılmış desteleri ve sürümlerini ezmez.
 
+## Statik site olarak yayınlama (Cloudflare Pages)
+
+Proje, Express/Supabase backend'i olmadan da **tamamen statik** bir site olarak yayınlanabilir. Bu modda yapay zekâ ile deste üretimi ve oturum kaydı çalışmaz; her deste tabanlı oyun bunun yerine kendi gömülü **statik desteleri** arasından seçim yapılan bir "Deck" açılır menüsü gösterir. Canlı örnek: [rohirrimgames.ridvankuntug.org](https://rohirrimgames.ridvankuntug.org).
+
+### Nasıl çalışır?
+
+- Her oyun sayfası açılışta `/api/health` (ya da ilgili `/api/decks` ucu) ile backend'e ulaşmaya çalışır. Ulaşamazsa (statik barındırmada normal olan durum budur) yapay zekâ girdi alanlarını ve kayıtlı-deste seçiciyi gizler, yerine `#static-deck-wrap` içindeki basit bir `<select>` menüsünü gösterir.
+- Bu menüdeki seçenekler, ilgili oyunun `.js` dosyasında tanımlı `STATIC_DECKS` dizisinden gelir (örn. `who` için `game.js`, `hangman` için `hangman.js`). Her oyunda en az bir "Starter — General" destesi ve genelde oyunun kendi gömülü varsayılan içeriği (`DEFAULT_*`) bulunur.
+- `scripts/build-pages-site.mjs`, yalnızca statik barındırma için gereken dosyaları (`index.html`, oyun `.html/.css/.js` dosyaları, `shared/`, ikonlar vb.) `dist-static/` klasörüne toplar; `server.js`, `server/`, `supabase/`, `tests/`, `frontend/` gibi backend'e özgü klasörler dahil edilmez.
+- **Önemli:** `build-pages-site.mjs`, `index.html`'i ayrıca `dist-static/404.html` olarak da kopyalar. Cloudflare Pages, özel bir `404.html` yoksa eşleşmeyen her yolu (`/api/*` dahil) `200 OK` ile `index.html` döndürerek yanıtlar; bu da yukarıdaki "backend var mı?" kontrolünü hep yanıltıp gerçek (boş) kayıtlı-deste arayüzünü göstermesine yol açar. `404.html` dosyası olmadan statik moddaki desteler asla devreye girmez.
+
+### Statik build'i üretme
+
+```bash
+node scripts/build-pages-site.mjs
+```
+
+Çıktı `dist-static/` klasöründe oluşur; `npx serve dist-static` gibi herhangi bir statik dosya sunucusuyla yerelde önizlenebilir.
+
+### Cloudflare Pages'e manuel deploy
+
+```bash
+npx wrangler login
+npx wrangler pages project create <proje-adi> --production-branch main
+node scripts/build-pages-site.mjs
+npx wrangler pages deploy dist-static --project-name=<proje-adi>
+```
+
+Özel alan adı bağlamak için Cloudflare dashboard → Workers & Pages → projeniz → **Custom domains**'ten domain ekleyin; alan adının zone'u aynı Cloudflare hesabında değilse önce gerekli CNAME kaydını (`<altalan> → <proje-adi>.pages.dev`) DNS'e kendiniz eklemeniz gerekebilir.
+
+### GitHub Actions ile otomatik deploy
+
+`.github/workflows/deploy-cloudflare-pages.yml`, her `main` push'unda statik build'i üretip Cloudflare Pages'e deploy eder. Çalışması için repo ayarlarında (Settings → Secrets and variables → Actions) şu iki secret gerekir:
+
+| Secret | Açıklama |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens'tan oluşturulan, `Account:Cloudflare Pages:Edit` ve `Zone:DNS:Edit` izinli özel bir token. |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard sağ alt köşede görünen hesap kimliği. |
+
+Bu secret'lar yalnızca ilgili GitHub reposuna özeldir; başka bir repoyu veya projeyi etkilemez, git geçmişine de yazılmaz.
+
+### Tema ve renk şeması
+
+Görsel kimlik `theme.css`, `hub.css`, `style.css` ve her oyunun kendi `.css` dosyasındaki `:root` değişkenleriyle (`--bg-dark`, `--accent-1/2/3`, `--glass-bg`, `--glass-border`, `--text-primary/secondary`) belirlenir. Farklı bir renk şemasına geçmek için bu değişkenleri (ve varsa aynı tonların ham `rgba()`/hex hâllerini) tüm dosyalarda tutarlı şekilde güncellemek yeterlidir. Fonksiyonel/anlamsal renkler (doğru/yanlış geri bildirimi, Six Thinking Hats şapka renkleri, LingoParty kategori rozetleri) kasıtlı olarak değiştirilmeden bırakılmalıdır.
+
 ## Kontrol ve test
 
 ```bash
