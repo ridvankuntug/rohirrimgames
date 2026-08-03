@@ -9,7 +9,7 @@
     padding: 1rem;
     border: 1px solid rgba(200, 162, 74, 0.3);
     border-radius: 16px;
-    background: rgba(15, 10, 36, 0.62);
+    background: rgba(18, 25, 15, 0.62);
     backdrop-filter: blur(14px);
 }
 
@@ -23,7 +23,7 @@
 .deck-library label {
     display: grid;
     gap: 0.35rem;
-    color: #d8b4fe;
+    color: #e6c877;
     font-size: 0.82rem;
     font-weight: 700;
 }
@@ -34,8 +34,8 @@
     border: 1px solid rgba(200, 162, 74, 0.38);
     border-radius: 10px;
     padding: 0.7rem 0.8rem;
-    background: rgba(2, 6, 23, 0.8);
-    color: #f8fafc;
+    background: rgba(10, 13, 8, 0.8);
+    color: #e9dfc4;
     font: inherit;
 }
 
@@ -43,8 +43,8 @@
     border: 0;
     border-radius: 10px;
     padding: 0.72rem 1rem;
-    color: #fff;
-    background: linear-gradient(135deg, #7c3aed, #db2777);
+    color: #1c2a1c;
+    background: linear-gradient(135deg, #c8a24a, #e6c877);
     font-weight: 800;
     cursor: pointer;
 }
@@ -57,7 +57,7 @@
 .deck-library__status {
     min-height: 1.25rem;
     margin: 0;
-    color: #94a3b8;
+    color: #a89a7d;
     font-size: 0.82rem;
 }
 

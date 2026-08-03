@@ -10,25 +10,25 @@
 }
 
 .generation-console {
-    background: rgba(4, 2, 16, 0.85);
-    border: 1px solid rgba(168, 85, 247, 0.35);
+    background: rgba(10, 13, 8, 0.85);
+    border: 1px solid rgba(200, 162, 74, 0.35);
     border-radius: 16px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     width: 380px;
     max-width: calc(100vw - 2rem);
     overflow: hidden;
-    box-shadow: 0 0 24px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 0 24px rgba(200, 162, 74, 0.2);
     pointer-events: auto;
 }
 
 .generation-console__header {
-    background: rgba(168, 85, 247, 0.15);
+    background: rgba(200, 162, 74, 0.15);
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
     font-weight: 800;
-    color: #c4b5fd;
-    border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+    color: #e6c877;
+    border-bottom: 1px solid rgba(200, 162, 74, 0.25);
 }
 
 .generation-console__list {
@@ -45,7 +45,7 @@
 .generation-console__item {
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 0.82rem;
-    color: #e2e8f0;
+    color: #d8caa2;
     display: flex;
     gap: 0.6rem;
 }
@@ -55,7 +55,7 @@
 }
 
 .generation-console__time {
-    color: #94a3b8;
+    color: #a89a7d;
     flex-shrink: 0;
 }
 

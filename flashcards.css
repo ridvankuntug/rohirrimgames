@@ -88,9 +88,9 @@
 }
 
 .theme-input:focus {
-    border-color: #38bdf8;
+    border-color: #e6c877;
     background: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    box-shadow: 0 0 0 3px rgba(230, 200, 119, 0.2);
 }
 
 .btn-primary, .btn-secondary {
@@ -108,14 +108,14 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #e6c877);
+    background: linear-gradient(135deg, #c8a24a, #e6c877);
     color: #fff;
-    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+    box-shadow: 0 4px 14px rgba(200, 162, 74, 0.35);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+    box-shadow: 0 6px 20px rgba(200, 162, 74, 0.45);
 }
 
 .btn-secondary {
@@ -181,7 +181,7 @@
 .progress-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+    background: linear-gradient(90deg, #e6c877, #e6c877, #7a4324);
     border-radius: 4px;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -260,8 +260,8 @@
 }
 
 .btn-pronounce:hover {
-    background: rgba(56, 189, 248, 0.25);
-    border-color: #38bdf8;
+    background: rgba(230, 200, 119, 0.25);
+    border-color: #e6c877;
     transform: scale(1.1);
 }
 
@@ -341,13 +341,13 @@
 .btn-flip-card:hover {
     border-color: #c8a24a;
     background: rgba(200, 162, 74, 0.18);
-    color: #d8b4fe;
+    color: #e6c877;
 }
 
 .btn-nav:hover {
-    border-color: #38bdf8;
-    background: rgba(56, 189, 248, 0.18);
-    color: #7dd3fc;
+    border-color: #e6c877;
+    background: rgba(230, 200, 119, 0.18);
+    color: #e6c877;
 }
 
 .status-banner {

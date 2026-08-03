@@ -1,8 +1,8 @@
 /* WHEEL OF NAMES – Redesigned Game Logic */
 const COLORS = [
     '#c8a24a', '#e6c877', '#7a4324', '#22c55e', '#f59e0b', '#ef4444',
-    '#06b6d4', '#f97316', '#8b5cf6', '#14b8a6', '#e879f9', '#fb923c',
-    '#4ade80', '#f472b6', '#38bdf8', '#facc15', '#c084fc', '#34d399'
+    '#06b6d4', '#f97316', '#92400e', '#14b8a6', '#e879f9', '#fb923c',
+    '#4ade80', '#f472b6', '#38bdf8', '#facc15', '#eab308', '#34d399'
 ];
 
 let names = [];
