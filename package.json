@@ -8,7 +8,8 @@
     "test": "node --test",
     "seed:decks": "node server/scripts/seed-system-decks.js",
     "build": "npm --prefix frontend install && npm --prefix frontend run build",
-    "postinstall": "npm --prefix frontend install && npm --prefix frontend run build"
+    "postinstall": "npm --prefix frontend install && npm --prefix frontend run build",
+    "pages:build": "node scripts/build-pages-site.mjs"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

@@ -1,5 +1,7 @@
 node_modules/
 .worktrees/
+dist-static/
+.wrangler/
 .env
 .DS_Store
 *.log
