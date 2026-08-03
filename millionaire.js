@@ -355,6 +355,10 @@ function restoreGeneratedQuestions() {
 elements.btnReuseGenerated?.addEventListener('click', restoreGeneratedQuestions);
 
 async function startSelectedDeck() {
+    if (!deckLibrary) {
+        startGame(DEFAULT_QUESTIONS);
+        return;
+    }
     const selectedDeck = deckLibrary?.getSelectedDeck();
     const selectedDeckRef = deckLibrary?.getSelectedDeckRef();
     if (!selectedDeck || !selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId) {
@@ -1018,29 +1022,36 @@ function resetGame() {
     if (window.OptimizedParticles) { window.OptimizedParticles.init('particles'); return; }
 })();
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initSoundControls();
     updateReuseButton();
 
     const aiButton = document.getElementById('btn-start-ai');
     const defaultButton = document.getElementById('btn-start-default');
-    aiButton.textContent = 'Start selected deck';
-    defaultButton.hidden = true;
-    if (elements.btnReuseGenerated) elements.btnReuseGenerated.hidden = true;
-    deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
-        container: '#deck-library-mount',
-        gameType: 'millionaire',
-        endpoint: '/api/generate-millionaire',
-        collectGenerationInput: () => ({
-            theme: elements.themeInput.value.trim()
-        }),
-        onDeckSelected: (deck) => {
-            if (deck) {
-                showNotification(
-                    `Selected “${deck.name}” (v${deck.currentVersion.versionNumber}).`,
-                    'success'
-                );
+
+    try {
+        await window.OpenClassPlatform.listDecks('millionaire');
+        aiButton.textContent = 'Start selected deck';
+        defaultButton.hidden = true;
+        if (elements.btnReuseGenerated) elements.btnReuseGenerated.hidden = true;
+        deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
+            container: '#deck-library-mount',
+            gameType: 'millionaire',
+            endpoint: '/api/generate-millionaire',
+            collectGenerationInput: () => ({
+                theme: elements.themeInput.value.trim()
+            }),
+            onDeckSelected: (deck) => {
+                if (deck) {
+                    showNotification(
+                        `Selected “${deck.name}” (v${deck.currentVersion.versionNumber}).`,
+                        'success'
+                    );
+                }
             }
-        }
-    });
+        });
+    } catch {
+        document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
+        aiButton.hidden = true;
+    }
 });

@@ -73,22 +73,24 @@
                 <span class="btn-arrow">→</span>
             </button>
 
-            <div class="divider"><span>or</span></div>
+            <div id="ai-generate-wrap">
+                <div class="divider"><span>or</span></div>
 
-            <div class="generate-section">
-                <div style="display: flex; gap: .5rem; margin-bottom: .8rem;">
-                    <input id="card-theme" class="theme-input" type="text"
-                        placeholder="e.g. science, movies, Turkish culture…" value="general knowledge and pop culture"
-                        style="flex: 1;" />
-                    <input id="card-count" class="theme-input" type="number" min="5" max="100" value="30"
-                        style="width: 65px; padding: .6rem .4rem; text-align: center;" title="Number of cards" />
+                <div class="generate-section">
+                    <div style="display: flex; gap: .5rem; margin-bottom: .8rem;">
+                        <input id="card-theme" class="theme-input" type="text"
+                            placeholder="e.g. science, movies, Turkish culture…" value="general knowledge and pop culture"
+                            style="flex: 1;" />
+                        <input id="card-count" class="theme-input" type="number" min="5" max="100" value="30"
+                            style="width: 65px; padding: .6rem .4rem; text-align: center;" title="Number of cards" />
+                    </div>
+                    <button id="btn-generate" class="btn-accent">
+                        <span class="btn-icon">✨</span>
+                        <span class="btn-text">Generate Cards with AI</span>
+                    </button>
+                    <p id="generate-status" class="generate-status"></p>
+                    <div id="deck-library-mount"></div>
                 </div>
-                <button id="btn-generate" class="btn-accent">
-                    <span class="btn-icon">✨</span>
-                    <span class="btn-text">Generate Cards with AI</span>
-                </button>
-                <p id="generate-status" class="generate-status"></p>
-                <div id="deck-library-mount"></div>
             </div>
             <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden>Reuse Last Generated</button>
 

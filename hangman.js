@@ -231,21 +231,23 @@ async function startGame() {
         return;
     }
     const selectedDeckRef = (await deckLibrary?.ensureSelectedDeckRef?.()) || deckLibrary?.getSelectedDeckRef();
-    if (!selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId) {
+    if (deckLibrary && (!selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId)) {
         generateStatus.textContent = 'Choose or generate a registered deck first.';
         generateStatus.className = 'generate-status error';
         return;
     }
-    const session = await window.OpenClassPlatform.startSessionSafely({
-        gameType: 'hangman',
-        participantNames: [],
-        ...selectedDeckRef
-    }, error => {
-        generateStatus.textContent = error.message;
-        generateStatus.className = 'generate-status error';
-        alert(`The game will still start, but it could not be recorded: ${error.message}`);
-    });
-    playSessionId = session?.id || null;
+    if (deckLibrary) {
+        const session = await window.OpenClassPlatform.startSessionSafely({
+            gameType: 'hangman',
+            participantNames: [],
+            ...selectedDeckRef
+        }, error => {
+            generateStatus.textContent = error.message;
+            generateStatus.className = 'generate-status error';
+            alert(`The game will still start, but it could not be recorded: ${error.message}`);
+        });
+        playSessionId = session?.id || null;
+    }
 
     const pick = pickWord();
     currentWord = pick.word;
@@ -389,31 +391,37 @@ btnGenerate.addEventListener('click', async () => {
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     btnReuseGenerated?.addEventListener('click', restoreGeneratedWords);
     updateReuseButton();
 
     btnGenerate.hidden = true;
     if (btnReuseGenerated) btnReuseGenerated.hidden = true;
-    deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
-        container: '#deck-library-mount',
-        gameType: 'hangman',
-        endpoint: '/api/generate-hangman',
-        collectGenerationInput: () => ({
-            theme: wordTheme.value.trim(),
-            count: parseInt(wordCount.value, 10) || 20
-        }),
-        onDeckSelected: (deck) => {
-            if (!deck?.currentVersion?.content) return;
-            wordList = normalizeWordList(
-                deck.currentVersion.content,
-                deck.currentVersion.theme || 'Registered'
-            );
-            usedWords = [];
-            generateStatus.textContent = `Using registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`;
-            generateStatus.className = 'generate-status success';
-        }
-    });
+
+    try {
+        await window.OpenClassPlatform.listDecks('hangman');
+        deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
+            container: '#deck-library-mount',
+            gameType: 'hangman',
+            endpoint: '/api/generate-hangman',
+            collectGenerationInput: () => ({
+                theme: wordTheme.value.trim(),
+                count: parseInt(wordCount.value, 10) || 20
+            }),
+            onDeckSelected: (deck) => {
+                if (!deck?.currentVersion?.content) return;
+                wordList = normalizeWordList(
+                    deck.currentVersion.content,
+                    deck.currentVersion.theme || 'Registered'
+                );
+                usedWords = [];
+                generateStatus.textContent = `Using registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`;
+                generateStatus.className = 'generate-status success';
+            }
+        });
+    } catch {
+        document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
+    }
 });
 
 (function () {

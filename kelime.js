@@ -494,7 +494,7 @@ async function generateWithAI(theme, count = 20) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initParticles();
     initSoundControls();
 
@@ -520,23 +520,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const generateButton = document.getElementById('btn-generate-ai');
     if (generateButton) generateButton.hidden = true;
-    deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
-        container: '#deck-library-mount',
-        gameType: 'kelime',
-        endpoint: '/api/generate-kelime',
-        collectGenerationInput: () => ({
-            theme: themeInput ? themeInput.value.trim() : '',
-            count: 20
-        }),
-        onDeckSelected: (deck) => {
-            if (!deck?.currentVersion?.content) return;
-            gameState.questions = normalizeQuestions(deck.currentVersion.content);
-            setStatusMessage(
-                `Selected registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`,
-                '#22c55e'
-            );
-        }
-    });
+    try {
+        await window.OpenClassPlatform.listDecks('kelime');
+        deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
+            container: '#deck-library-mount',
+            gameType: 'kelime',
+            endpoint: '/api/generate-kelime',
+            collectGenerationInput: () => ({
+                theme: themeInput ? themeInput.value.trim() : '',
+                count: 20
+            }),
+            onDeckSelected: (deck) => {
+                if (!deck?.currentVersion?.content) return;
+                gameState.questions = normalizeQuestions(deck.currentVersion.content);
+                setStatusMessage(
+                    `Selected registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`,
+                    '#22c55e'
+                );
+            }
+        });
+    } catch {
+        document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
+        deckLibraryMount?.setAttribute('hidden', '');
+    }
 
     document.getElementById('btn-generate-ai')?.addEventListener('click', async () => {
         const button = document.getElementById('btn-generate-ai');
@@ -555,19 +561,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-use-default')?.addEventListener('click', async () => {
         const selectedDeckRef = deckLibrary?.getSelectedDeckRef();
-        if (!selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId) {
+        if (deckLibrary && (!selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId)) {
             setStatusMessage('Choose or generate a registered deck first.', '#ef4444');
             return;
         }
-        const session = await window.OpenClassPlatform.startSessionSafely({
-            gameType: 'kelime',
-            participantNames: [],
-            ...selectedDeckRef
-        }, error => {
-            setStatusMessage(error.message, '#ef4444');
-            alert(`The game will still start, but it could not be recorded: ${error.message}`);
-        });
-        playSessionId = session?.id || null;
+        if (deckLibrary) {
+            const session = await window.OpenClassPlatform.startSessionSafely({
+                gameType: 'kelime',
+                participantNames: [],
+                ...selectedDeckRef
+            }, error => {
+                setStatusMessage(error.message, '#ef4444');
+                alert(`The game will still start, but it could not be recorded: ${error.message}`);
+            });
+            playSessionId = session?.id || null;
+        }
         gameState.currentScore = 0;
         if (scoreDisplay) scoreDisplay.textContent = '0';
         playSound('start');

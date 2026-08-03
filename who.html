@@ -59,21 +59,23 @@
                 <span class="btn-arrow">→</span>
             </button>
 
-            <div class="divider"><span>or</span></div>
+            <div id="ai-generate-wrap">
+                <div class="divider"><span>or</span></div>
 
-            <div class="generate-section">
-                <div style="display: flex; gap: .5rem; margin-bottom: .8rem;">
-                    <input id="theme-input" class="theme-input" type="text" placeholder="e.g. Marvel superheroes…"
-                        value="iconic Turkish TV series characters" style="flex: 1;" />
-                    <input id="count-input" class="theme-input" type="number" min="5" max="100" value="50"
-                        style="width: 65px; padding: .6rem .4rem; text-align: center;" title="Number of characters" />
+                <div class="generate-section">
+                    <div style="display: flex; gap: .5rem; margin-bottom: .8rem;">
+                        <input id="theme-input" class="theme-input" type="text" placeholder="e.g. Marvel superheroes…"
+                            value="iconic Turkish TV series characters" style="flex: 1;" />
+                        <input id="count-input" class="theme-input" type="number" min="5" max="100" value="50"
+                            style="width: 65px; padding: .6rem .4rem; text-align: center;" title="Number of characters" />
+                    </div>
+                    <button id="btn-generate" class="btn-accent" aria-label="Generate characters with AI">
+                        <span class="btn-icon">✨</span>
+                        <span class="btn-text">Generate with AI</span>
+                    </button>
+                    <p id="generate-status" class="generate-status"></p>
+                    <div id="deck-library-mount"></div>
                 </div>
-                <button id="btn-generate" class="btn-accent" aria-label="Generate characters with AI">
-                    <span class="btn-icon">✨</span>
-                    <span class="btn-text">Generate with AI</span>
-                </button>
-                <p id="generate-status" class="generate-status"></p>
-                <div id="deck-library-mount"></div>
             </div>
             <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden>Reuse Last Generated</button>
 

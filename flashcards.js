@@ -151,7 +151,6 @@ function loadDeck(cards, preserveProgress = false) {
     gameState.currentIndex = 0;
     showCard(0);
     updateStats();
-    emitGameState();
 }
 
 function showCard(index) {
@@ -190,7 +189,6 @@ function toggleFlip() {
         flashcard.classList.remove('flipped');
     }
     playSound('flip');
-    emitGameState();
 }
 
 function pronounceWord(e) {
@@ -221,7 +219,6 @@ function nextCard() {
         showCard(0);
         setStatusMessage('Looping back to first card.', '#38bdf8');
     }
-    emitGameState();
 }
 
 function prevCard() {
@@ -232,7 +229,6 @@ function prevCard() {
     } else {
         showCard(gameState.activeCards.length - 1);
     }
-    emitGameState();
 }
 
 function markMastered() {
@@ -280,7 +276,6 @@ function toggleReviewMode() {
 
     gameState.currentIndex = 0;
     showCard(0);
-    emitGameState();
 }
 
 function updateStats() {
@@ -359,7 +354,7 @@ async function generateWithAI(theme, count = 20) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // particles.js auto-initializes via OptimizedParticles; no manual call needed
 
     // Cache elements
@@ -389,40 +384,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const generateButton = document.getElementById('btn-generate-ai');
     if (generateButton) generateButton.hidden = true;
-    deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
-        container: '#deck-library-mount',
-        gameType: 'flashcards',
-        endpoint: '/api/generate-flashcards',
-        collectGenerationInput: () => ({
-            theme: themeInput ? themeInput.value.trim() : '',
-            count: 20
-        }),
-        onDeckSelected: (deck) => {
-            if (!deck?.currentVersion?.content) return;
-            loadDeck(deck.currentVersion.content, false);
-            setStatusMessage(
-                `Selected registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`,
-                '#22c55e'
-            );
-        }
-    });
+    try {
+        await window.OpenClassPlatform.listDecks('flashcards');
+        deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
+            container: '#deck-library-mount',
+            gameType: 'flashcards',
+            endpoint: '/api/generate-flashcards',
+            collectGenerationInput: () => ({
+                theme: themeInput ? themeInput.value.trim() : '',
+                count: 20
+            }),
+            onDeckSelected: (deck) => {
+                if (!deck?.currentVersion?.content) return;
+                loadDeck(deck.currentVersion.content, false);
+                setStatusMessage(
+                    `Selected registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`,
+                    '#22c55e'
+                );
+            }
+        });
+    } catch {
+        document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
+        document.getElementById('deck-library-mount')?.setAttribute('hidden', '');
+    }
 
     document.getElementById('btn-use-default')?.addEventListener('click', async () => {
-        const selectedDeck = deckLibrary?.getSelectedDeck();
+        const selectedDeck = deckLibrary?.getSelectedDeck() || (!deckLibrary ? { currentVersion: { content: DEFAULT_DECK } } : null);
         const selectedDeckRef = deckLibrary?.getSelectedDeckRef();
-        if (!selectedDeck || !selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId) {
+        if (deckLibrary && (!selectedDeck || !selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId)) {
             setStatusMessage('Choose or generate a registered deck first.', '#ef4444');
             return;
         }
-        const session = await window.OpenClassPlatform.startSessionSafely({
-            gameType: 'flashcards',
-            participantNames: [],
-            ...selectedDeckRef
-        }, error => {
-            setStatusMessage(error.message, '#ef4444');
-            alert(`Study will still start, but this session could not be recorded: ${error.message}`);
-        });
-        playSessionId = session?.id || null;
+        if (deckLibrary) {
+            const session = await window.OpenClassPlatform.startSessionSafely({
+                gameType: 'flashcards',
+                participantNames: [],
+                ...selectedDeckRef
+            }, error => {
+                setStatusMessage(error.message, '#ef4444');
+                alert(`Study will still start, but this session could not be recorded: ${error.message}`);
+            });
+            playSessionId = session?.id || null;
+        }
         loadDeck(selectedDeck.currentVersion.content, false);
         playSound('sync');
         setStatusMessage('Registered vocabulary deck started.', '#22c55e');

@@ -48,12 +48,14 @@
             <h1>Who Wants to Be a Millionaire?</h1>
             <p class="subtitle">Build a 15-question ladder, play it live, and control it from the admin panel.</p>
 
-            <div class="theme-section">
-                <label for="theme-input">Question Theme</label>
-                <input type="text" id="theme-input" class="theme-input" placeholder="Science, history, films..."
-                    maxlength="50" />
+            <div id="ai-generate-wrap">
+                <div class="theme-section">
+                    <label for="theme-input">Question Theme</label>
+                    <input type="text" id="theme-input" class="theme-input" placeholder="Science, history, films..."
+                        maxlength="50" />
+                </div>
+                <div id="deck-library-mount"></div>
             </div>
-            <div id="deck-library-mount"></div>
             <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden>Reuse Last Generated</button>
 
             <div class="mode-buttons">

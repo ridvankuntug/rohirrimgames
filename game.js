@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   } catch {
-    document.getElementById('deck-library-mount')?.setAttribute('hidden', '');
+    document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
     await loadCharacters();
     populateStaticDeckSelect();
   }

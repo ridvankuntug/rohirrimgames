@@ -202,8 +202,19 @@
         });
     }
 
-    function autoInit() {
+    async function isBackendAvailable() {
+        try {
+            const res = await root.fetch('/api/health');
+            return !!(res && res.ok);
+        } catch {
+            return false;
+        }
+    }
+
+    async function autoInit() {
         if (!root.document) return;
+        if (!(await isBackendAvailable())) return;
+
         renderAllBadges();
         if (!root.document.querySelector('[data-ai-key-status]')) {
             const badge = root.document.createElement('div');

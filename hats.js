@@ -46,6 +46,22 @@ const HATS = [
     }
 ];
 
+// ---- Static fallback deck (used when no backend is available) ----
+const STATIC_FALLBACK_DECK = {
+    name: 'Starter — General',
+    currentVersion: {
+        versionNumber: 1,
+        content: [
+            { color: 'white', questions: ['What facts do we know?'], starters: ['The evidence shows…'] },
+            { color: 'red', questions: ['How does this make you feel?'], starters: ['My first reaction is…'] },
+            { color: 'black', questions: ['What could go wrong?'], starters: ['A possible risk is…'] },
+            { color: 'yellow', questions: ['What are the benefits?'], starters: ['One advantage is…'] },
+            { color: 'green', questions: ['What new idea could we try?'], starters: ['What if we…'] },
+            { color: 'blue', questions: ['What should happen next?'], starters: ['To summarize…'] }
+        ]
+    }
+};
+
 // ---- State ----
 let hatData = []; // AI-generated content for each hat
 let hatOrder = [0, 1, 2, 3, 4, 5]; // display order (shuffleable)
@@ -93,9 +109,13 @@ function shuffle(arr) {
 
 // ---- Launch a registered hat deck ----
 btnGenerate.addEventListener('click', async () => {
-    const selectedDeck = deckLibrary?.getSelectedDeck();
+    const selectedDeck = deckLibrary?.getSelectedDeck() || (!deckLibrary ? STATIC_FALLBACK_DECK : null);
     const selectedDeckRef = deckLibrary?.getSelectedDeckRef();
-    if (!selectedDeck || !selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId) {
+    if (deckLibrary && (!selectedDeck || !selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId)) {
+        alert('Choose or generate a registered deck first.');
+        return;
+    }
+    if (!selectedDeck) {
         alert('Choose or generate a registered deck first.');
         return;
     }
@@ -106,14 +126,16 @@ btnGenerate.addEventListener('click', async () => {
     btnGenerate.style.display = 'none';
     loadingArea.style.display = 'flex';
 
-    const session = await window.OpenClassPlatform.startSessionSafely({
-        gameType: 'hats',
-        participantNames: [],
-        ...selectedDeckRef
-    }, error => {
-        alert(`The activity will still start, but it could not be recorded: ${error.message}`);
-    });
-    playSessionId = session?.id || null;
+    if (deckLibrary) {
+        const session = await window.OpenClassPlatform.startSessionSafely({
+            gameType: 'hats',
+            participantNames: [],
+            ...selectedDeckRef
+        }, error => {
+            alert(`The activity will still start, but it could not be recorded: ${error.message}`);
+        });
+        playSessionId = session?.id || null;
+    }
 
     try {
         hatData = HATS.map(hat => (
@@ -319,21 +341,28 @@ btnTimerToggle.addEventListener('click', () => {
 
 btnTimerReset.addEventListener('click', resetTimer);
 
-btnGenerate.querySelector('.btn-text').textContent = 'Start selected hats deck';
-deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
-    container: '#deck-library-mount',
-    gameType: 'hats',
-    endpoint: '/api/generate-hats',
-    collectGenerationInput: () => ({
-        topic: topicInput.value.trim(),
-        cefrLevel: cefrSelect.value
-    }),
-    onDeckSelected: (deck) => {
-        if (deck?.currentVersion?.theme && !topicInput.value.trim()) {
-            topicInput.value = deck.currentVersion.theme;
-        }
+(async () => {
+    try {
+        await window.OpenClassPlatform.listDecks('hats');
+        btnGenerate.querySelector('.btn-text').textContent = 'Start selected hats deck';
+        deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
+            container: '#deck-library-mount',
+            gameType: 'hats',
+            endpoint: '/api/generate-hats',
+            collectGenerationInput: () => ({
+                topic: topicInput.value.trim(),
+                cefrLevel: cefrSelect.value
+            }),
+            onDeckSelected: (deck) => {
+                if (deck?.currentVersion?.theme && !topicInput.value.trim()) {
+                    topicInput.value = deck.currentVersion.theme;
+                }
+            }
+        });
+    } catch {
+        document.getElementById('deck-library-mount')?.setAttribute('hidden', '');
     }
-});
+})();
 
 // ---- Keyboard shortcuts ----
 document.addEventListener('keydown', (e) => {

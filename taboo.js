@@ -341,7 +341,7 @@ function updatePassCounter() {
 // ---- Start game ----
 els.btnStart.addEventListener('click', async () => {
     const selectedDeckRef = (await deckLibrary?.ensureSelectedDeckRef?.()) || deckLibrary?.getSelectedDeckRef();
-    if (!selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId) {
+    if (deckLibrary && (!selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId)) {
         els.generateStatus.textContent = 'Choose or generate a registered deck first.';
         els.generateStatus.className = 'generate-status error';
         return;
@@ -356,16 +356,18 @@ els.btnStart.addEventListener('click', async () => {
     setGenerationContext({
         theme: els.cardTheme.value.trim() || generationContext.theme,
     });
-    const session = await window.OpenClassPlatform.startSessionSafely({
-        gameType: 'taboo',
-        participantNames: [...state.teams],
-        ...selectedDeckRef
-    }, error => {
-        els.generateStatus.textContent = error.message;
-        els.generateStatus.className = 'generate-status error';
-        alert(`The game will still start, but it could not be recorded: ${error.message}`);
-    });
-    playSessionId = session?.id || null;
+    if (deckLibrary) {
+        const session = await window.OpenClassPlatform.startSessionSafely({
+            gameType: 'taboo',
+            participantNames: [...state.teams],
+            ...selectedDeckRef
+        }, error => {
+            els.generateStatus.textContent = error.message;
+            els.generateStatus.className = 'generate-status error';
+            alert(`The game will still start, but it could not be recorded: ${error.message}`);
+        });
+        playSessionId = session?.id || null;
+    }
     shuffleDeck();
     startTurnIntro();
 });
@@ -539,30 +541,36 @@ els.btnGenerate.addEventListener('click', async () => {
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     els.btnReuseGenerated?.addEventListener('click', restoreGeneratedCards);
     updateReuseButton();
 
     els.btnGenerate.hidden = true;
     if (els.btnReuseGenerated) els.btnReuseGenerated.hidden = true;
-    deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
-        container: '#deck-library-mount',
-        gameType: 'taboo',
-        endpoint: '/api/generate-taboo',
-        collectGenerationInput: () => ({
-            theme: els.cardTheme.value.trim(),
-            count: parseInt(els.cardCount.value, 10) || 30
-        }),
-        onDeckSelected: (deck) => {
-            if (!deck?.currentVersion?.content) return;
-            cards = deck.currentVersion.content
-                .map(normalizeCard)
-                .filter(card => card.word && card.forbidden.length >= 3);
-            shuffleDeck();
-            els.generateStatus.textContent = `Using registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`;
-            els.generateStatus.className = 'generate-status success';
-        }
-    });
+
+    try {
+        await window.OpenClassPlatform.listDecks('taboo');
+        deckLibrary = window.OpenClassPlatform.mountDeckLibrary({
+            container: '#deck-library-mount',
+            gameType: 'taboo',
+            endpoint: '/api/generate-taboo',
+            collectGenerationInput: () => ({
+                theme: els.cardTheme.value.trim(),
+                count: parseInt(els.cardCount.value, 10) || 30
+            }),
+            onDeckSelected: (deck) => {
+                if (!deck?.currentVersion?.content) return;
+                cards = deck.currentVersion.content
+                    .map(normalizeCard)
+                    .filter(card => card.word && card.forbidden.length >= 3);
+                shuffleDeck();
+                els.generateStatus.textContent = `Using registered deck “${deck.name}” (v${deck.currentVersion.versionNumber}).`;
+                els.generateStatus.className = 'generate-status success';
+            }
+        });
+    } catch {
+        document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
+    }
 });
 
 // ============================================

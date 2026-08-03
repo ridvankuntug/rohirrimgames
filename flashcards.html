@@ -48,8 +48,10 @@
         <section class="board-surface glass-panel">
             <div class="solo-controls glass-panel">
                 <div class="solo-top-row">
-                    <input type="text" id="theme-input" class="theme-input" placeholder="AI Topic (e.g. Kitchen Items, B1 Idioms, Travel)..." />
-                    <button id="btn-generate-ai" class="btn-primary"><span class="btn-icon">✨</span> AI Generate</button>
+                    <div id="ai-generate-wrap" style="display:contents">
+                        <input type="text" id="theme-input" class="theme-input" placeholder="AI Topic (e.g. Kitchen Items, B1 Idioms, Travel)..." />
+                        <button id="btn-generate-ai" class="btn-primary"><span class="btn-icon">✨</span> AI Generate</button>
+                    </div>
                     <button id="btn-use-default" class="btn-secondary"><span class="btn-icon">▶️</span> Default Deck</button>
                     <button id="btn-review-mode" class="btn-secondary btn-review-mode" title="Study only cards marked for review" hidden>🔁 Review Mode (0)</button>
                 </div>
