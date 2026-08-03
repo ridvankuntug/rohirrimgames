@@ -3,24 +3,24 @@
    ========================================================================== */
 
 :root[data-theme="light"] {
-    --bg-dark: #f0f4f8;
-    --bg-base: #e6effa;
-    --bg-deep: #d9e2ec;
-    --glass-bg: rgba(255, 255, 255, 0.72);
-    --glass-border: rgba(203, 213, 225, 0.65);
-    --glass-highlight: rgba(255, 255, 255, 0.95);
-    --text-primary: #0f172a;
-    --text-secondary: rgba(15, 23, 42, 0.75);
-    --text-muted: rgba(15, 23, 42, 0.55);
-    --shadow-card: 0 20px 50px rgba(148, 163, 184, 0.3);
+    --bg-dark: #f4ecd8;
+    --bg-base: #ecdfc0;
+    --bg-deep: #e3d3a4;
+    --glass-bg: rgba(233, 223, 196, 0.75);
+    --glass-border: rgba(122, 67, 36, 0.35);
+    --glass-highlight: rgba(255, 250, 240, 0.9);
+    --text-primary: #2b2416;
+    --text-secondary: rgba(43, 36, 22, 0.75);
+    --text-muted: rgba(43, 36, 22, 0.55);
+    --shadow-card: 0 20px 50px rgba(43, 36, 22, 0.22);
 }
 
 :root[data-theme="light"] body {
     background:
-        radial-gradient(circle at 15% 20%, rgba(168, 85, 247, 0.15), transparent 40%),
-        radial-gradient(circle at 85% 15%, rgba(99, 102, 241, 0.18), transparent 35%),
-        radial-gradient(circle at 50% 85%, rgba(236, 72, 153, 0.14), transparent 30%),
-        linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%) !important;
+        radial-gradient(circle at 15% 20%, rgba(200, 162, 74, 0.15), transparent 40%),
+        radial-gradient(circle at 85% 15%, rgba(230, 200, 119, 0.18), transparent 35%),
+        radial-gradient(circle at 50% 85%, rgba(122, 67, 36, 0.14), transparent 30%),
+        linear-gradient(135deg, #f4ecd8 0%, #ecdfc0 100%) !important;
     color: var(--text-primary) !important;
 }
 
@@ -44,22 +44,22 @@
 :root[data-theme="light"] select,
 :root[data-theme="light"] textarea,
 :root[data-theme="light"] .theme-input {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border-color: rgba(203, 213, 225, 0.8) !important;
+    background: rgba(255, 250, 240, 0.85) !important;
+    border-color: rgba(122, 67, 36, 0.8) !important;
     color: var(--text-primary) !important;
 }
 
 :root[data-theme="light"] .btn-secondary,
 :root[data-theme="light"] .btn-glass {
-    background: rgba(255, 255, 255, 0.8) !important;
-    border-color: rgba(203, 213, 225, 0.8) !important;
+    background: rgba(255, 250, 240, 0.8) !important;
+    border-color: rgba(122, 67, 36, 0.8) !important;
     color: var(--text-primary) !important;
 }
 
 :root[data-theme="light"] .btn-secondary:hover,
 :root[data-theme="light"] .btn-glass:hover {
-    background: rgba(255, 255, 255, 0.95) !important;
-    box-shadow: 0 8px 20px rgba(148, 163, 184, 0.25);
+    background: rgba(255, 250, 240, 0.95) !important;
+    box-shadow: 0 8px 20px rgba(43, 36, 22, 0.25);
 }
 
 /* Theme Toggle Button */
@@ -88,7 +88,7 @@
 
 .theme-toggle-btn:hover {
     transform: scale(1.1) rotate(15deg);
-    box-shadow: 0 12px 28px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 12px 28px rgba(200, 162, 74, 0.3);
 }
 
 .theme-toggle-btn:active {
@@ -107,23 +107,23 @@
 
 /* Category tabs in light theme */
 :root[data-theme="light"] .cat-tab {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border-color: rgba(203, 213, 225, 0.9) !important;
-    color: #1e293b !important;
-    box-shadow: 0 2px 8px rgba(148, 163, 184, 0.2);
+    background: rgba(255, 250, 240, 0.85) !important;
+    border-color: rgba(122, 67, 36, 0.9) !important;
+    color: #2b2416 !important;
+    box-shadow: 0 2px 8px rgba(43, 36, 22, 0.2);
 }
 
 :root[data-theme="light"] .cat-tab:hover {
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 250, 240, 0.95) !important;
     border-color: var(--accent-1) !important;
-    box-shadow: 0 6px 16px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 6px 16px rgba(200, 162, 74, 0.2);
 }
 
 :root[data-theme="light"] .cat-tab.active {
     background: linear-gradient(135deg, var(--accent-1), var(--accent-2)) !important;
     border-color: transparent !important;
     color: #fff !important;
-    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
+    box-shadow: 0 6px 20px rgba(200, 162, 74, 0.35);
 }
 
 /* Glass panel in light mode */
@@ -136,35 +136,35 @@
 
 /* Card faces in light mode */
 :root[data-theme="light"] .card-front {
-    background: linear-gradient(135deg, rgba(241, 245, 249, 0.95), rgba(226, 232, 240, 0.98)) !important;
-    border-color: rgba(203, 213, 225, 0.8) !important;
+    background: linear-gradient(135deg, rgba(233, 223, 196, 0.95), rgba(216, 202, 162, 0.98)) !important;
+    border-color: rgba(122, 67, 36, 0.8) !important;
 }
 
 :root[data-theme="light"] .card-back {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.85), rgba(99, 102, 241, 0.9)) !important;
-    border-color: rgba(168, 85, 247, 0.5) !important;
+    background: linear-gradient(135deg, rgba(200, 162, 74, 0.85), rgba(230, 200, 119, 0.9)) !important;
+    border-color: rgba(200, 162, 74, 0.5) !important;
 }
 
 :root[data-theme="light"] .card-front .card-text {
-    color: #0f172a !important;
+    color: #2b2416 !important;
 }
 
 /* Status banner in light mode */
 :root[data-theme="light"] .status-banner {
-    background: rgba(255, 255, 255, 0.8) !important;
+    background: rgba(255, 250, 240, 0.8) !important;
     color: var(--text-secondary) !important;
 }
 
 /* Solo controls in light mode */
 :root[data-theme="light"] .solo-controls {
-    background: rgba(255, 255, 255, 0.65) !important;
+    background: rgba(255, 250, 240, 0.65) !important;
     border-color: var(--glass-border) !important;
 }
 
 /* Stat badges in light mode */
 :root[data-theme="light"] .stat-badge {
-    background: rgba(255, 255, 255, 0.8) !important;
-    border-color: rgba(203, 213, 225, 0.8) !important;
+    background: rgba(255, 250, 240, 0.8) !important;
+    border-color: rgba(122, 67, 36, 0.8) !important;
     color: var(--text-primary) !important;
 }
 
@@ -180,11 +180,11 @@
 
 /* Action buttons in light mode */
 :root[data-theme="light"] .action-btn {
-    background: rgba(255, 255, 255, 0.8) !important;
-    border-color: rgba(203, 213, 225, 0.8) !important;
+    background: rgba(255, 250, 240, 0.8) !important;
+    border-color: rgba(122, 67, 36, 0.8) !important;
     color: var(--text-primary) !important;
 }
 
 :root[data-theme="light"] .action-btn:hover {
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 250, 240, 0.95) !important;
 }

@@ -40,6 +40,32 @@ const DEFAULT_QUESTIONS = [
     { question: 'In what year was the first iPhone released?', options: ['2005', '2006', '2007', '2008'], correct: 2 }
 ];
 
+const STATIC_DECKS = [
+    {
+        name: 'Starter — General',
+        content: [
+            { question: 'What is the capital of France?', options: ['Madrid', 'Paris', 'Rome', 'Berlin'], correct: 1 },
+            { question: 'Which planet is known as the Red Planet?', options: ['Venus', 'Mars', 'Jupiter', 'Mercury'], correct: 1 },
+            { question: 'How many sides does a hexagon have?', options: ['Five', 'Six', 'Seven', 'Eight'], correct: 1 },
+            { question: 'Which ocean is the largest?', options: ['Atlantic', 'Indian', 'Pacific', 'Arctic'], correct: 2 },
+            { question: 'Who wrote Romeo and Juliet?', options: ['Shakespeare', 'Dickens', 'Austen', 'Orwell'], correct: 0 },
+            { question: 'What is H2O commonly called?', options: ['Salt', 'Water', 'Oxygen', 'Hydrogen'], correct: 1 },
+            { question: 'Which animal is the largest mammal?', options: ['Elephant', 'Blue whale', 'Giraffe', 'Hippo'], correct: 1 },
+            { question: 'What is the square root of 81?', options: ['7', '8', '9', '10'], correct: 2 },
+            { question: 'Which language has the most native speakers?', options: ['English', 'Spanish', 'Mandarin Chinese', 'Arabic'], correct: 2 },
+            { question: 'Which continent contains Egypt?', options: ['Asia', 'Africa', 'Europe', 'South America'], correct: 1 },
+            { question: 'What does CPU stand for?', options: ['Central Processing Unit', 'Computer Personal Unit', 'Core Power Utility', 'Central Program User'], correct: 0 },
+            { question: 'Which element has the symbol Au?', options: ['Silver', 'Gold', 'Argon', 'Aluminium'], correct: 1 },
+            { question: 'Who painted the Mona Lisa?', options: ['Van Gogh', 'Picasso', 'Leonardo da Vinci', 'Monet'], correct: 2 },
+            { question: 'What is the fastest land animal?', options: ['Lion', 'Cheetah', 'Horse', 'Gazelle'], correct: 1 },
+            { question: 'How many degrees are in a full circle?', options: ['180', '270', '360', '540'], correct: 2 }
+        ]
+    },
+    { name: 'Classic 15', content: DEFAULT_QUESTIONS }
+];
+
+let staticSelectedQuestions = DEFAULT_QUESTIONS;
+
 function cloneQuestion(question) {
     return {
         question: question.question,
@@ -356,7 +382,7 @@ elements.btnReuseGenerated?.addEventListener('click', restoreGeneratedQuestions)
 
 async function startSelectedDeck() {
     if (!deckLibrary) {
-        startGame(DEFAULT_QUESTIONS);
+        startGame(staticSelectedQuestions);
         return;
     }
     const selectedDeck = deckLibrary?.getSelectedDeck();
@@ -1053,5 +1079,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch {
         document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
         aiButton.hidden = true;
+
+        const wrap = document.getElementById('static-deck-wrap');
+        const select = document.getElementById('static-deck-select');
+        if (wrap && select) {
+            select.replaceChildren();
+            STATIC_DECKS.forEach((deck, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = deck.name;
+                select.appendChild(option);
+            });
+            select.value = String(STATIC_DECKS.length - 1);
+            select.addEventListener('change', () => {
+                const deck = STATIC_DECKS[Number(select.value)];
+                if (!deck) return;
+                staticSelectedQuestions = deck.content;
+                showNotification(`Using deck “${deck.name}”.`, 'success');
+            });
+            wrap.hidden = false;
+        }
     }
 });

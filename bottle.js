@@ -1,6 +1,6 @@
 /* SPIN THE BOTTLE – Game Logic with Shuffle & Zebra Mode */
 const COLORS = [
-    '#a855f7', '#6366f1', '#ec4899', '#22c55e', '#f59e0b', '#ef4444',
+    '#c8a24a', '#e6c877', '#7a4324', '#22c55e', '#f59e0b', '#ef4444',
     '#06b6d4', '#f97316', '#8b5cf6', '#14b8a6', '#e879f9', '#fb923c'
 ];
 
@@ -204,7 +204,7 @@ function drawCircle() {
     // Center circle
     ctx.beginPath();
     ctx.arc(cx, cy, Math.max(20, r * 0.12), 0, Math.PI * 2);
-    ctx.fillStyle = '#0a0a1a';
+    ctx.fillStyle = '#1c2a1c';
     ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.15)';
     ctx.lineWidth = 2;

@@ -73,4 +73,10 @@ for (const file of iconFiles) {
     cpSync(src, join(outDir, file));
 }
 
+// Cloudflare Pages serves index.html with a 200 status for any unmatched path
+// (including /api/*) unless a 404.html exists. Without a real 404, every
+// backend-availability probe in the games (fetch('/api/...').ok) thinks the
+// backend is reachable and never falls back to static content.
+cpSync(join(outDir, 'index.html'), join(outDir, '404.html'));
+
 console.log(`Static site assembled in ${outDir}`);

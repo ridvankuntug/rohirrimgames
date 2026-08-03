@@ -40,7 +40,7 @@
         window.addEventListener('resize', resizeHandler);
 
         const count = options.count || 60;
-        const colors = options.colors || ['rgba(168,85,247,0.35)', 'rgba(99,102,241,0.3)', 'rgba(236,72,153,0.25)'];
+        const colors = options.colors || ['rgba(200, 162, 74,0.35)', 'rgba(230, 200, 119,0.3)', 'rgba(122, 67, 36,0.25)'];
         const particles = Array.from({ length: count }, () => ({
             x: Math.random() * width,
             y: Math.random() * height,
@@ -100,7 +100,7 @@
                     if (distSq < 14400) {
                         const dist = Math.sqrt(distSq);
                         const alpha = theme === 'light' ? 0.18 : 0.12;
-                        const rgb = theme === 'light' ? '124,58,237' : '168,85,247';
+                        const rgb = theme === 'light' ? '124,58,237' : '200, 162, 74';
                         ctx.beginPath();
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
@@ -128,7 +128,7 @@
         theme = newTheme;
         const newColors = theme === 'light'
             ? ['rgba(124,58,237,0.45)', 'rgba(79,70,229,0.4)', 'rgba(219,39,119,0.35)']
-            : ['rgba(168,85,247,0.35)', 'rgba(99,102,241,0.3)', 'rgba(236,72,153,0.25)'];
+            : ['rgba(200, 162, 74,0.35)', 'rgba(230, 200, 119,0.3)', 'rgba(122, 67, 36,0.25)'];
         activeLoops.forEach(loop => {
             loop.particles.forEach(p => {
                 p.c = newColors[Math.floor(Math.random() * newColors.length)];

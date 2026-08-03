@@ -15,6 +15,23 @@ const DEFAULT_QUESTIONS = [
     { question: 'What is two plus two?', answer: 'FOUR' }
 ];
 
+const STATIC_DECKS = [
+    {
+        name: 'Starter — General',
+        content: [
+            { question: 'A place where books can be borrowed', answer: 'LIBRARY' },
+            { question: 'A scientist who studies stars and planets', answer: 'ASTRONOMER' },
+            { question: 'The opposite of ancient', answer: 'MODERN' },
+            { question: 'A journey made by air', answer: 'FLIGHT' },
+            { question: 'A person who writes computer programs', answer: 'DEVELOPER' },
+            { question: 'A large natural stream of water', answer: 'RIVER' },
+            { question: 'The season after summer', answer: 'AUTUMN' },
+            { question: 'A tool used to find direction', answer: 'COMPASS' }
+        ]
+    },
+    { name: 'Classic Mix', content: DEFAULT_QUESTIONS }
+];
+
 let gameState = {
     questions: [],
     currentIndex: -1,
@@ -542,6 +559,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch {
         document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
         deckLibraryMount?.setAttribute('hidden', '');
+
+        const wrap = document.getElementById('static-deck-wrap');
+        const select = document.getElementById('static-deck-select');
+        if (wrap && select) {
+            select.replaceChildren();
+            STATIC_DECKS.forEach((deck, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = deck.name;
+                select.appendChild(option);
+            });
+            select.value = String(STATIC_DECKS.length - 1);
+            select.addEventListener('change', () => {
+                const deck = STATIC_DECKS[Number(select.value)];
+                if (!deck) return;
+                gameState.questions = normalizeQuestions(deck.content);
+                setStatusMessage(`Using deck “${deck.name}”.`, '#22c55e');
+            });
+            wrap.hidden = false;
+        }
     }
 
     document.getElementById('btn-generate-ai')?.addEventListener('click', async () => {

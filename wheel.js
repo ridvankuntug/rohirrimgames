@@ -1,6 +1,6 @@
 /* WHEEL OF NAMES – Redesigned Game Logic */
 const COLORS = [
-    '#a855f7', '#6366f1', '#ec4899', '#22c55e', '#f59e0b', '#ef4444',
+    '#c8a24a', '#e6c877', '#7a4324', '#22c55e', '#f59e0b', '#ef4444',
     '#06b6d4', '#f97316', '#8b5cf6', '#14b8a6', '#e879f9', '#fb923c',
     '#4ade80', '#f472b6', '#38bdf8', '#facc15', '#c084fc', '#34d399'
 ];
@@ -141,7 +141,7 @@ function drawWheel() {
     // Center circle
     ctx.beginPath();
     ctx.arc(0, 0, Math.max(16, r * 0.08), 0, Math.PI * 2);
-    ctx.fillStyle = '#0a0a1a';
+    ctx.fillStyle = '#1c2a1c';
     ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.15)';
     ctx.lineWidth = 2;

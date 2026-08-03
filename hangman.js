@@ -86,6 +86,21 @@ const DEFAULT_WORDS = [
     { word: "PACIFIC", cat: "Geography" },
 ];
 
+const STATIC_DECKS = [
+    {
+        name: 'Starter — General',
+        content: [
+            { word: "CROCODILE", cat: "Animals" },
+            { word: "TELESCOPE", cat: "Science" },
+            { word: "ORCHESTRA", cat: "Music" },
+            { word: "WATERFALL", cat: "Nature" },
+            { word: "ISTANBUL", cat: "Cities" },
+            { word: "ALGORITHM", cat: "Technology" }
+        ]
+    },
+    { name: 'Classic Mix', content: DEFAULT_WORDS }
+];
+
 let wordList = [...DEFAULT_WORDS];
 const MAX_WRONG = 6;
 const BODY_PARTS = ['hm-head', 'hm-body', 'hm-larm', 'hm-rarm', 'hm-lleg', 'hm-rleg'];
@@ -391,6 +406,32 @@ btnGenerate.addEventListener('click', async () => {
     }
 });
 
+function populateStaticDeckSelect() {
+    const wrap = document.getElementById('static-deck-wrap');
+    const select = document.getElementById('static-deck-select');
+    if (!wrap || !select) return;
+
+    select.replaceChildren();
+    STATIC_DECKS.forEach((deck, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = deck.name;
+        select.appendChild(option);
+    });
+    select.value = String(STATIC_DECKS.length - 1);
+
+    select.addEventListener('change', () => {
+        const deck = STATIC_DECKS[Number(select.value)];
+        if (!deck) return;
+        wordList = [...deck.content];
+        usedWords = [];
+        generateStatus.textContent = `Using deck “${deck.name}”.`;
+        generateStatus.className = 'generate-status success';
+    });
+
+    wrap.hidden = false;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     btnReuseGenerated?.addEventListener('click', restoreGeneratedWords);
     updateReuseButton();
@@ -421,6 +462,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     } catch {
         document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
+        populateStaticDeckSelect();
     }
 });
 

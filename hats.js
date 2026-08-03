@@ -46,7 +46,7 @@ const HATS = [
     }
 ];
 
-// ---- Static fallback deck (used when no backend is available) ----
+// ---- Static fallback decks (used when no backend is available) ----
 const STATIC_FALLBACK_DECK = {
     name: 'Starter — General',
     currentVersion: {
@@ -61,6 +61,8 @@ const STATIC_FALLBACK_DECK = {
         ]
     }
 };
+const STATIC_DECKS = [STATIC_FALLBACK_DECK];
+let staticSelectedHatDeck = STATIC_FALLBACK_DECK;
 
 // ---- State ----
 let hatData = []; // AI-generated content for each hat
@@ -109,7 +111,7 @@ function shuffle(arr) {
 
 // ---- Launch a registered hat deck ----
 btnGenerate.addEventListener('click', async () => {
-    const selectedDeck = deckLibrary?.getSelectedDeck() || (!deckLibrary ? STATIC_FALLBACK_DECK : null);
+    const selectedDeck = deckLibrary?.getSelectedDeck() || (!deckLibrary ? staticSelectedHatDeck : null);
     const selectedDeckRef = deckLibrary?.getSelectedDeckRef();
     if (deckLibrary && (!selectedDeck || !selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId)) {
         alert('Choose or generate a registered deck first.');
@@ -260,7 +262,7 @@ btnShuffle.addEventListener('click', () => {
     renderBoard();
 
     // Visual feedback
-    btnShuffle.style.boxShadow = '0 0 20px rgba(168, 85, 247, .5)';
+    btnShuffle.style.boxShadow = '0 0 20px rgba(200, 162, 74, .5)';
     setTimeout(() => btnShuffle.style.boxShadow = '', 400);
 });
 
@@ -361,6 +363,23 @@ btnTimerReset.addEventListener('click', resetTimer);
         });
     } catch {
         document.getElementById('deck-library-mount')?.setAttribute('hidden', '');
+
+        const wrap = document.getElementById('static-deck-wrap');
+        const select = document.getElementById('static-deck-select');
+        if (wrap && select) {
+            select.replaceChildren();
+            STATIC_DECKS.forEach((deck, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = deck.name;
+                select.appendChild(option);
+            });
+            select.value = '0';
+            select.addEventListener('change', () => {
+                staticSelectedHatDeck = STATIC_DECKS[Number(select.value)] || STATIC_FALLBACK_DECK;
+            });
+            wrap.hidden = false;
+        }
     }
 })();
 
@@ -384,7 +403,7 @@ document.addEventListener('keydown', (e) => {
     let w, h, pts;
     function resize() { w = c.width = innerWidth; h = c.height = innerHeight; }
     addEventListener('resize', resize); resize();
-    const C = ['rgba(168,85,247,.35)', 'rgba(99,102,241,.3)', 'rgba(236,72,153,.25)'];
+    const C = ['rgba(200, 162, 74,.35)', 'rgba(230, 200, 119,.3)', 'rgba(122, 67, 36,.25)'];
     pts = Array.from({ length: 50 }, () => ({
         x: Math.random() * w, y: Math.random() * h,
         r: Math.random() * 2.5 + 1,
@@ -406,7 +425,7 @@ document.addEventListener('keydown', (e) => {
                 const d = Math.sqrt(dx * dx + dy * dy);
                 if (d < 120) {
                     ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
-                    ctx.strokeStyle = `rgba(168,85,247,${.12 * (1 - d / 120)})`;
+                    ctx.strokeStyle = `rgba(200, 162, 74,${.12 * (1 - d / 120)})`;
                     ctx.lineWidth = .6; ctx.stroke();
                 }
             }

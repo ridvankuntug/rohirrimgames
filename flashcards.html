@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
     <script src="theme.js"></script>
-    <meta name="theme-color" content="#0a0a1a" />
+    <meta name="theme-color" content="#1c2a1c" />
     <meta name="description" content="Flip through AI-generated vocabulary flashcards with your class." />
     <link rel="canonical" href="https://play.metrix.dpdns.org/flashcards.html" />
     <meta property="og:type" content="website" />
@@ -46,6 +46,12 @@
         </header>
 
         <section class="board-surface glass-panel">
+            <section id="static-deck-wrap" class="deck-library" hidden>
+                <div class="deck-library__row">
+                    <label>Deck<select id="static-deck-select"></select></label>
+                </div>
+            </section>
+
             <div class="solo-controls glass-panel">
                 <div class="solo-top-row">
                     <div id="ai-generate-wrap" style="display:contents">

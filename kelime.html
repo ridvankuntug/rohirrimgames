@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
     <script src="theme.js"></script>
-    <meta name="theme-color" content="#0a0a1a" />
+    <meta name="theme-color" content="#1c2a1c" />
     <meta name="description" content="An English word game with AI-generated vocabulary decks." />
     <link rel="canonical" href="https://play.metrix.dpdns.org/kelime.html" />
     <meta property="og:type" content="website" />
@@ -61,6 +61,12 @@
             </div>
 
             <p id="waiting-msg" class="status-banner glass-panel">Ready for Solo Play! Enter a topic and generate with AI, or click Play Default to start.</p>
+
+            <section id="static-deck-wrap" class="deck-library" hidden>
+                <div class="deck-library__row">
+                    <label>Deck<select id="static-deck-select"></select></label>
+                </div>
+            </section>
 
             <div class="solo-controls glass-panel">
                 <div id="setup-controls" class="solo-top-row">

@@ -20,6 +20,25 @@ const DEFAULT_DECK = [
     { word: 'freedom', meaning: 'özgürlük' }
 ];
 
+const STATIC_DECKS = [
+    {
+        name: 'Starter — General',
+        content: [
+            { word: 'curious', meaning: 'wanting to know or learn something' },
+            { word: 'journey', meaning: 'an act of travelling from one place to another' },
+            { word: 'improve', meaning: 'to make or become better' },
+            { word: 'reliable', meaning: 'consistently good and trustworthy' },
+            { word: 'challenge', meaning: 'a difficult task that tests ability' },
+            { word: 'evidence', meaning: 'facts that support a conclusion' },
+            { word: 'compare', meaning: 'to examine similarities and differences' },
+            { word: 'achieve', meaning: 'to succeed in reaching a goal' }
+        ]
+    },
+    { name: 'Classic Mix', content: DEFAULT_DECK }
+];
+
+let staticSelectedContent = DEFAULT_DECK;
+
 const gameState = {
     allCards: [],
     activeCards: [],
@@ -406,10 +425,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch {
         document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
         document.getElementById('deck-library-mount')?.setAttribute('hidden', '');
+
+        const wrap = document.getElementById('static-deck-wrap');
+        const select = document.getElementById('static-deck-select');
+        if (wrap && select) {
+            select.replaceChildren();
+            STATIC_DECKS.forEach((deck, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = deck.name;
+                select.appendChild(option);
+            });
+            select.value = String(STATIC_DECKS.length - 1);
+            select.addEventListener('change', () => {
+                const deck = STATIC_DECKS[Number(select.value)];
+                if (!deck) return;
+                staticSelectedContent = deck.content;
+                setStatusMessage(`Using deck “${deck.name}”.`, '#22c55e');
+            });
+            wrap.hidden = false;
+        }
     }
 
     document.getElementById('btn-use-default')?.addEventListener('click', async () => {
-        const selectedDeck = deckLibrary?.getSelectedDeck() || (!deckLibrary ? { currentVersion: { content: DEFAULT_DECK } } : null);
+        const selectedDeck = deckLibrary?.getSelectedDeck() || (!deckLibrary ? { currentVersion: { content: staticSelectedContent } } : null);
         const selectedDeckRef = deckLibrary?.getSelectedDeckRef();
         if (deckLibrary && (!selectedDeck || !selectedDeckRef?.deckId || !selectedDeckRef?.deckVersionId)) {
             setStatusMessage('Choose or generate a registered deck first.', '#ef4444');

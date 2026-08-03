@@ -16,14 +16,14 @@ body {
 }
 
 :root {
-    --bg-dark: #0a0a1a;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.12);
-    --accent-1: #a855f7;
-    --accent-2: #6366f1;
-    --accent-3: #ec4899;
-    --text-primary: #f1f5f9;
-    --text-secondary: rgba(241, 245, 249, 0.65);
+    --bg-dark: #1c2a1c;
+    --glass-bg: rgba(200, 162, 74, 0.05);
+    --glass-border: rgba(200, 162, 74, 0.12);
+    --accent-1: #c8a24a;
+    --accent-2: #e6c877;
+    --accent-3: #7a4324;
+    --text-primary: #e9dfc4;
+    --text-secondary: rgba(233, 223, 196, 0.65);
     --font: 'Outfit', system-ui, sans-serif;
 }
 
@@ -77,7 +77,7 @@ body {
     font-size: 3.6rem;
     display: block;
     margin-bottom: .3rem;
-    filter: drop-shadow(0 0 20px rgba(168, 85, 247, .5));
+    filter: drop-shadow(0 0 20px rgba(200, 162, 74, .5));
     animation: float 3s ease-in-out infinite;
 }
 
@@ -133,14 +133,14 @@ h1 {
 .cat-tab:hover {
     transform: translateY(-2px);
     border-color: var(--accent-1);
-    box-shadow: 0 8px 20px rgba(168, 85, 247, 0.25);
+    box-shadow: 0 8px 20px rgba(200, 162, 74, 0.25);
 }
 
 .cat-tab.active {
     background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
     border-color: transparent;
     color: #fff;
-    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+    box-shadow: 0 8px 24px rgba(200, 162, 74, 0.4);
 }
 
 /* Game Grid Redesign (4 columns on desktop) */
@@ -184,7 +184,7 @@ h1 {
     left: -30%;
     width: 160%;
     height: 160%;
-    background: radial-gradient(circle, rgba(168, 85, 247, .12) 0%, transparent 60%);
+    background: radial-gradient(circle, rgba(200, 162, 74, .12) 0%, transparent 60%);
     pointer-events: none;
     opacity: 0;
     transition: opacity .3s ease;
@@ -196,8 +196,8 @@ h1 {
 
 .game-card:hover {
     transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, .45), 0 0 20px rgba(168, 85, 247, 0.2);
-    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .45), 0 0 20px rgba(200, 162, 74, 0.2);
+    border-color: rgba(200, 162, 74, 0.5);
     background: rgba(255, 255, 255, 0.07);
 }
 
@@ -217,8 +217,8 @@ h1 {
 
 .game-card:hover .emoji-wrapper {
     transform: scale(1.12);
-    background: rgba(168, 85, 247, 0.15);
-    border-color: rgba(168, 85, 247, 0.3);
+    background: rgba(200, 162, 74, 0.15);
+    border-color: rgba(200, 162, 74, 0.3);
 }
 
 .game-emoji {
@@ -249,13 +249,13 @@ h1 {
     color: #fff;
     background: linear-gradient(135deg, var(--accent-2), var(--accent-1));
     border-radius: 100px;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(230, 200, 119, 0.3);
     transition: transform .2s, box-shadow .2s;
 }
 
 .game-card:hover .play-badge {
     transform: translateX(3px);
-    box-shadow: 0 6px 18px rgba(168, 85, 247, 0.5);
+    box-shadow: 0 6px 18px rgba(200, 162, 74, 0.5);
 }
 
 /* Card Badge (e.g. NEW ✨) */
@@ -263,7 +263,7 @@ h1 {
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
-    background: linear-gradient(135deg, #a855f7, #ec4899);
+    background: linear-gradient(135deg, #c8a24a, #7a4324);
     color: #fff;
     font-size: 0.62rem;
     font-weight: 900;
@@ -271,7 +271,7 @@ h1 {
     border-radius: 99px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+    box-shadow: 0 4px 12px rgba(200, 162, 74, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 

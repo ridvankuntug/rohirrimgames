@@ -106,6 +106,21 @@ const DEFAULT_CARDS = [
     { word: "Gondolier", forbidden: ["Venice", "Boat", "Sing", "Pole", "Canal"] },
 ];
 
+const STATIC_DECKS = [
+    {
+        name: 'Starter — General',
+        content: [
+            { word: 'Library', forbidden: ['book', 'read', 'quiet', 'shelf'] },
+            { word: 'Volcano', forbidden: ['lava', 'mountain', 'eruption', 'hot'] },
+            { word: 'Passport', forbidden: ['travel', 'country', 'document', 'airport'] },
+            { word: 'Telescope', forbidden: ['space', 'stars', 'look', 'planet'] },
+            { word: 'Chocolate', forbidden: ['sweet', 'cocoa', 'brown', 'candy'] },
+            { word: 'Bicycle', forbidden: ['ride', 'wheel', 'pedal', 'helmet'] }
+        ]
+    },
+    { name: 'Classic Mix', content: DEFAULT_CARDS }
+];
+
 let cards = [...DEFAULT_CARDS];
 const AUTO_CARD_REFILL_THRESHOLD = 8;
 const AUTO_CARD_REFILL_COUNT = 20;
@@ -541,6 +556,32 @@ els.btnGenerate.addEventListener('click', async () => {
     }
 });
 
+function populateStaticDeckSelect() {
+    const wrap = document.getElementById('static-deck-wrap');
+    const select = document.getElementById('static-deck-select');
+    if (!wrap || !select) return;
+
+    select.replaceChildren();
+    STATIC_DECKS.forEach((deck, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = deck.name;
+        select.appendChild(option);
+    });
+    select.value = String(STATIC_DECKS.length - 1);
+
+    select.addEventListener('change', () => {
+        const deck = STATIC_DECKS[Number(select.value)];
+        if (!deck) return;
+        cards = [...deck.content];
+        shuffleDeck();
+        els.generateStatus.textContent = `Using deck “${deck.name}”.`;
+        els.generateStatus.className = 'generate-status success';
+    });
+
+    wrap.hidden = false;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     els.btnReuseGenerated?.addEventListener('click', restoreGeneratedCards);
     updateReuseButton();
@@ -570,6 +611,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     } catch {
         document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
+        populateStaticDeckSelect();
     }
 });
 

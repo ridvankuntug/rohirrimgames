@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
     <script src="theme.js"></script>
-    <meta name="theme-color" content="#0a0a1a" />
+    <meta name="theme-color" content="#1c2a1c" />
     <link rel="canonical" href="https://play.metrix.dpdns.org/hangman.html" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="OpenClassTools" />
@@ -47,6 +47,12 @@
                 <h1>Hangman</h1>
                 <p class="tagline">Guess the word before it's too late!</p>
             </div>
+
+            <section id="static-deck-wrap" class="deck-library" hidden>
+                <div class="deck-library__row">
+                    <label>Deck<select id="static-deck-select"></select></label>
+                </div>
+            </section>
 
             <button id="btn-play" class="btn-primary pulse">
                 <span class="btn-text">Play</span>

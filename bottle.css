@@ -14,14 +14,14 @@ body {
 }
 
 :root {
-    --bg-dark: #0a0a1a;
-    --glass-bg: rgba(255, 255, 255, .06);
-    --glass-border: rgba(255, 255, 255, .12);
-    --accent-1: #a855f7;
-    --accent-2: #6366f1;
-    --accent-3: #ec4899;
-    --text-primary: #f1f5f9;
-    --text-secondary: rgba(241, 245, 249, .6);
+    --bg-dark: #1c2a1c;
+    --glass-bg: rgba(200, 162, 74, .06);
+    --glass-border: rgba(200, 162, 74, .12);
+    --accent-1: #c8a24a;
+    --accent-2: #e6c877;
+    --accent-3: #7a4324;
+    --text-primary: #e9dfc4;
+    --text-secondary: rgba(233, 223, 196, .6);
     --font: 'Outfit', system-ui, sans-serif
 }
 
@@ -84,7 +84,7 @@ body {
     left: -30%;
     width: 160%;
     height: 160%;
-    background: radial-gradient(circle, rgba(168, 85, 247, .12) 0%, transparent 60%);
+    background: radial-gradient(circle, rgba(200, 162, 74, .12) 0%, transparent 60%);
     pointer-events: none
 }
 
@@ -96,7 +96,7 @@ body {
     font-size: 3rem;
     display: block;
     margin-bottom: .3rem;
-    filter: drop-shadow(0 0 18px rgba(168, 85, 247, .5));
+    filter: drop-shadow(0 0 18px rgba(200, 162, 74, .5));
     animation: float 3s ease-in-out infinite
 }
 
@@ -140,8 +140,8 @@ h1 {
     font-size: .8rem;
     font-weight: 600;
     color: var(--text-primary);
-    background: rgba(168, 85, 247, .15);
-    border: 1px solid rgba(168, 85, 247, .3);
+    background: rgba(200, 162, 74, .15);
+    border: 1px solid rgba(200, 162, 74, .3);
     border-radius: 100px;
     cursor: pointer;
     transition: opacity .2s
@@ -176,7 +176,7 @@ h1 {
 
 .theme-input:focus {
     border-color: var(--accent-1);
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, .15)
+    box-shadow: 0 0 0 3px rgba(200, 162, 74, .15)
 }
 
 .btn-add-player {
@@ -203,7 +203,7 @@ h1 {
     border-radius: 100px;
     cursor: pointer;
     background: linear-gradient(135deg, var(--accent-2), var(--accent-1));
-    box-shadow: 0 4px 20px rgba(99, 102, 241, .35);
+    box-shadow: 0 4px 20px rgba(230, 200, 119, .35);
     transition: transform .2s, box-shadow .2s;
     position: relative;
     overflow: hidden
@@ -266,7 +266,7 @@ h1 {
     border-radius: 100px;
     cursor: pointer;
     background: linear-gradient(135deg, var(--accent-3), var(--accent-1));
-    box-shadow: 0 4px 12px rgba(236, 72, 153, .3);
+    box-shadow: 0 4px 12px rgba(122, 67, 36, .3);
     transition: transform .2s
 }
 
@@ -336,7 +336,7 @@ h1 {
     width: 380px;
     height: 380px;
     border-radius: 50%;
-    box-shadow: 0 0 30px rgba(168, 85, 247, .15), 0 0 0 4px var(--glass-border)
+    box-shadow: 0 0 30px rgba(200, 162, 74, .15), 0 0 0 4px var(--glass-border)
 }
 
 /* Bottle overlay */
@@ -352,7 +352,7 @@ h1 {
 .bottle-svg {
     width: 54px;
     height: 190px;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, .7)) drop-shadow(0 0 40px rgba(168, 85, 247, .4));
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, .7)) drop-shadow(0 0 40px rgba(200, 162, 74, .4));
     transition: transform 3.5s cubic-bezier(.15, .85, .25, 1);
     transform-origin: center center;
 }
@@ -408,8 +408,8 @@ h1 {
 }
 
 .shuffle-flash {
-    box-shadow: 0 0 20px rgba(168, 85, 247, .5) !important;
-    background: rgba(168, 85, 247, .2) !important;
+    box-shadow: 0 0 20px rgba(200, 162, 74, .5) !important;
+    background: rgba(200, 162, 74, .2) !important;
 }
 
 /* ---- Zebra Toggle ---- */
@@ -510,7 +510,7 @@ h1 {
 }
 
 .toggle-switch input:checked + .toggle-slider {
-    background: rgba(168, 85, 247, .3);
+    background: rgba(200, 162, 74, .3);
     border-color: var(--accent-1);
 }
 
