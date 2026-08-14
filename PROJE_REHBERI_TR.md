@@ -141,18 +141,20 @@ npm run seed:decks
 
 Bu tohumlama işlemi tekrar çalıştırılabilir; mevcut adlandırılmış desteleri ve sürümlerini ezmez.
 
-## Statik site olarak yayınlama (Cloudflare Pages)
+## Statik site olarak yayınlama (Cloudflare Workers Static Assets)
 
-Proje, Express/Supabase backend'i olmadan da **tamamen statik** bir site olarak yayınlanabilir. Bu modda yapay zekâ ile deste üretimi ve oturum kaydı çalışmaz; her deste tabanlı oyun bunun yerine kendi gömülü **statik desteleri** arasından seçim yapılan bir "Deck" açılır menüsü gösterir. Canlı örnek: [rohirrimgames.ridvankuntug.org](https://rohirrimgames.ridvankuntug.org).
+Proje, Express/Supabase backend'i olmadan da **tamamen statik** bir site olarak yayınlanabilir. Bu modda yapay zekâ ile deste üretimi ve oturum kaydı çalışmaz; her deste tabanlı oyun bunun yerine kendi gömülü **statik desteleri** arasından seçim yapılan bir "Deck" açılır menüsü gösterir. Canlı örnek: [games.ortadunyaankara.org](https://games.ortadunyaankara.org).
+
+Barındırma **Cloudflare Workers Static Assets** üzerinden yapılır (eskiden Cloudflare Pages kullanılıyordu; proje `rohirrim-ankara-smiali` kardeş projesiyle aynı yapıya taşındı). Deploy, Cloudflare'in kendi Git entegrasyonu (Workers Builds) ile yönetilir: repo Cloudflare hesabına bağlıdır, `main`'e her push otomatik olarak yeni bir build+deploy tetikler. Ayrı bir GitHub Actions workflow'u **yoktur**.
 
 ### Nasıl çalışır?
 
-- Her oyun sayfası açılışta `/api/health` (ya da ilgili `/api/decks` ucu) ile backend'e ulaşmaya çalışır. Ulaşamazsa (statik barındırmada normal olan durum budur) yapay zekâ girdi alanlarını ve kayıtlı-deste seçiciyi gizler, yerine `#static-deck-wrap` içindeki basit bir `<select>` menüsünü gösterir.
+- `wrangler.jsonc`, `assets.directory`'yi `./dist-static`'e, `assets.not_found_handling`'i `"404-page"`e ayarlar. Bu, eşleşmeyen her yolu (`/api/*` dahil) gerçek bir `404` durum koduyla (ama `dist-static/404.html` içeriğiyle) yanıtlamayı Workers'a native olarak yaptırır — Pages döneminde elle yapılan "index.html'i 404.html'e kopyala" hilesiyle aynı sonucu, platform desteğiyle sağlar.
+- Her oyun sayfası açılışta `/api/health` (ya da ilgili `/api/decks` ucu) ile backend'e ulaşmaya çalışır. Ulaşamazsa (statik barındırmada normal olan durum budur, çünkü `/api/*` gerçek 404 döner) yapay zekâ girdi alanlarını ve kayıtlı-deste seçiciyi gizler, yerine `#static-deck-wrap` içindeki basit bir `<select>` menüsünü gösterir.
 - Bu menüdeki seçenekler, ilgili oyunun `.js` dosyasında tanımlı `STATIC_DECKS` dizisinden gelir (örn. `who` için `game.js`, `hangman` için `hangman.js`). Her oyunda en az bir "Starter — General" destesi ve genelde oyunun kendi gömülü varsayılan içeriği (`DEFAULT_*`) bulunur.
-- `scripts/build-pages-site.mjs`, yalnızca statik barındırma için gereken dosyaları (`index.html`, oyun `.html/.css/.js` dosyaları, `shared/`, ikonlar vb.) `dist-static/` klasörüne toplar; `server.js`, `server/`, `supabase/`, `tests/`, `frontend/` gibi backend'e özgü klasörler dahil edilmez.
-- **Önemli:** `build-pages-site.mjs`, `index.html`'i ayrıca `dist-static/404.html` olarak da kopyalar. Cloudflare Pages, özel bir `404.html` yoksa eşleşmeyen her yolu (`/api/*` dahil) `200 OK` ile `index.html` döndürerek yanıtlar; bu da yukarıdaki "backend var mı?" kontrolünü hep yanıltıp gerçek (boş) kayıtlı-deste arayüzünü göstermesine yol açar. `404.html` dosyası olmadan statik moddaki desteler asla devreye girmez.
+- `scripts/build-pages-site.mjs` (isim tarihsel, hâlâ kullanılıyor), yalnızca statik barındırma için gereken dosyaları (`index.html`, oyun `.html/.css/.js` dosyaları, `shared/`, ikonlar vb.) `dist-static/` klasörüne toplar ve `index.html`'i `dist-static/404.html` olarak da kopyalar; `server.js`, `server/`, `supabase/`, `tests/`, `frontend/` gibi backend'e özgü klasörler dahil edilmez. `wrangler.jsonc`'daki `build.command` bu script'i her deploy'da otomatik çalıştırır.
 
-### Statik build'i üretme
+### Statik build'i üretme (yerel önizleme)
 
 ```bash
 node scripts/build-pages-site.mjs
@@ -160,27 +162,26 @@ node scripts/build-pages-site.mjs
 
 Çıktı `dist-static/` klasöründe oluşur; `npx serve dist-static` gibi herhangi bir statik dosya sunucusuyla yerelde önizlenebilir.
 
-### Cloudflare Pages'e manuel deploy
+### Manuel deploy (tek seferlik veya acil durum)
 
 ```bash
 npx wrangler login
-npx wrangler pages project create <proje-adi> --production-branch main
-node scripts/build-pages-site.mjs
-npx wrangler pages deploy dist-static --project-name=<proje-adi>
+npx wrangler deploy
 ```
 
-Özel alan adı bağlamak için Cloudflare dashboard → Workers & Pages → projeniz → **Custom domains**'ten domain ekleyin; alan adının zone'u aynı Cloudflare hesabında değilse önce gerekli CNAME kaydını (`<altalan> → <proje-adi>.pages.dev`) DNS'e kendiniz eklemeniz gerekebilir.
+`wrangler.jsonc`'daki `build.command` ve `assets.directory` ayarları sayesinde build otomatik yapılır. Normal akışta buna gerek yoktur — `main`'e push yeterlidir.
 
-### GitHub Actions ile otomatik deploy
+### Cloudflare Git entegrasyonu ve custom domain
 
-`.github/workflows/deploy-cloudflare-pages.yml`, her `main` push'unda statik build'i üretip Cloudflare Pages'e deploy eder. Çalışması için repo ayarlarında (Settings → Secrets and variables → Actions) şu iki secret gerekir:
+Repo, Cloudflare dashboard → Workers & Pages → Create → **Connect to Git** akışıyla `ridvankuntug/rohirrimgames`'e bağlanmıştır (GitHub App yetkilendirmesi tek seferlik). Özel alan adı, Workers projesinin **Domains** sekmesinden ya da doğrudan API ile eklenir:
 
-| Secret | Açıklama |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens'tan oluşturulan, `Account:Cloudflare Pages:Edit` ve `Zone:DNS:Edit` izinli özel bir token. |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard sağ alt köşede görünen hesap kimliği. |
+```bash
+curl -X PUT -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+  -d '{"environment":"production","hostname":"<altalan>","service":"rohirrimgames","zone_id":"<zone-id>"}' \
+  "https://api.cloudflare.com/client/v4/accounts/<account-id>/workers/domains"
+```
 
-Bu secret'lar yalnızca ilgili GitHub reposuna özeldir; başka bir repoyu veya projeyi etkilemez, git geçmişine de yazılmaz.
+Zone aynı Cloudflare hesabındaysa gerekli DNS kaydı (AAAA, proxied) otomatik oluşturulur — elle CNAME eklemeye gerek yoktur (bu, eski Pages custom-domain akışından farkıdır).
 
 ### Tema ve renk şeması
 

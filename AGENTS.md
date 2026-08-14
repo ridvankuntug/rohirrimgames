@@ -35,13 +35,17 @@ ssh -i "/home/berkay/Desktop/who/ssh keys/.ssh/id_ed25519" ubuntu@89.168.76.182 
     "cd /var/www/play.metrix.dpdns.org && npm --prefix frontend run build && pm2 restart openclasstools --update-env"
 ```
 
-## Static Deployment (Cloudflare Pages)
+## Static Deployment (Cloudflare Workers Static Assets)
 
-This repo also ships as a **fully static** build with no Express/Supabase backend at all — no AI generation, no registered-deck API, no session recording. Live at `https://rohirrimgames.ridvankuntug.org`, deployed via `.github/workflows/deploy-cloudflare-pages.yml` on every push to `main`.
+This repo also ships as a **fully static** build with no Express/Supabase backend at all — no AI generation, no registered-deck API, no session recording. Live at `https://games.ortadunyaankara.org`.
 
+Hosting is **Cloudflare Workers Static Assets** (migrated from Cloudflare Pages, to match the sibling `rohirrim-ankara-smiali` project's setup). Deploy runs through Cloudflare's own Git integration ("Workers Builds") connected to `ridvankuntug/rohirrimgames` — every push to `main` triggers an automatic build+deploy on Cloudflare's infrastructure. There is **no GitHub Actions workflow** for this anymore (the old `.github/workflows/deploy-cloudflare-pages.yml` was removed).
+
+- **`wrangler.jsonc`** declares `name: "rohirrimgames"`, `build.command: "node scripts/build-pages-site.mjs"`, and `assets: { directory: "./dist-static", not_found_handling: "404-page" }`. `wrangler deploy` (used both by Cloudflare's Git integration and for manual deploys) runs the build command itself — don't add a separate CI build step that also runs it.
 - **Build script**: `scripts/build-pages-site.mjs` copies only static-safe files into `dist-static/` (`node scripts/build-pages-site.mjs`). It hardcodes a file whitelist (`rootFiles`, `rootDirs`, `iconFiles`) — **when you add a new game or shared asset, add it to this whitelist too**, or it silently won't ship to the static build. `server.js`, `server/`, `supabase/`, `tests/`, `frontend/` are intentionally excluded.
-- **404.html is load-bearing.** Cloudflare Pages serves `index.html` with `200 OK` for any unmatched path (including `/api/*`) unless a `404.html` exists. The build script copies `index.html` to `dist-static/404.html` for exactly this reason — every "is the backend reachable" probe in the game clients depends on `/api/...` returning a real non-2xx status. Do not remove this without replacing the detection mechanism.
-- **Deploy secrets**: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, set as repo-scoped GitHub Actions secrets (Settings → Secrets and variables → Actions on `ridvankuntug/rohirrimgames`). Never print or commit these.
+- **404.html is load-bearing.** `assets.not_found_handling: "404-page"` in `wrangler.jsonc` makes Workers return a real `404` status (serving `dist-static/404.html`'s content) for any unmatched path, including `/api/*`. The build script copies `index.html` to `dist-static/404.html` to populate that file — every "is the backend reachable" probe in the game clients depends on `/api/...` returning a real non-2xx status. Do not remove this without replacing the detection mechanism.
+- **Manual/emergency deploy**: `npx wrangler login` then `npx wrangler deploy` from the repo root. Not needed in the normal flow — pushing to `main` is enough.
+- **Custom domain**: attached via the Workers Custom Domains API (`PUT /accounts/{account}/workers/domains`) or the project's Domains tab in the dashboard, not declared in `wrangler.jsonc`. When the target zone is on the same Cloudflare account, Cloudflare auto-creates the required DNS record — no manual CNAME needed (unlike the old Pages flow).
 - **Backend-detection + static-deck-fallback pattern** — every deck-backed game client (`game.js`, `taboo.js`, `hangman.js`, `millionaire.js`, `kelime.js`, `flashcards.js`, `hats.js`) follows this shape on init:
   ```js
   try {
@@ -55,7 +59,7 @@ This repo also ships as a **fully static** build with no Express/Supabase backen
   `STATIC_DECKS` is a plain array of `{ name, content }` defined at the top of each game's `.js` file (content shape matches whatever that game already expects — cards, words, questions, etc.). The `<select>` population helper MUST call its own "apply this deck" function both on `change` **and immediately after populating** — setting `select.value` alone does not update the game's active content, only the visible dropdown state (this was a real bug; don't reintroduce it).
   - When adding a new deck-backed game, or a new game entirely, wire it into this exact pattern from the start rather than only supporting the registered-deck path — standalone/offline play with a visible deck picker is a hard requirement, not an edge case.
 - **Theme**: static-site visuals use the Rohirrim (Rohan) palette — forest green / gold / parchment / rust — defined as CSS custom properties (`--bg-dark`, `--accent-1/2/3`, `--glass-bg`, `--glass-border`, `--text-primary/secondary`) repeated in `theme.css`, `hub.css`, `style.css`, and every game's own `.css`. Keep changes to these variables consistent across all of them, including their raw `rgba()`/hex duplicates outside `:root` blocks. Do NOT touch functional/semantic colors (correct/wrong feedback, Six Thinking Hats hat colors, LingoParty per-category badge colors) when reskinning.
-- Full walkthrough (manual deploy commands, custom domain setup): see [PROJE_REHBERI_TR.md](PROJE_REHBERI_TR.md#statik-site-olarak-yayınlama-cloudflare-pages) (Turkish).
+- Full walkthrough (manual deploy commands, custom domain setup): see [PROJE_REHBERI_TR.md](PROJE_REHBERI_TR.md#statik-site-olarak-yayınlama-cloudflare-workers-static-assets) (Turkish).
 
 ## Configuration
 
