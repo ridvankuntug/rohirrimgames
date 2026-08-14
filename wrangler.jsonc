@@ -1,0 +1,11 @@
+{
+  "name": "rohirrimgames",
+  "compatibility_date": "2026-08-14",
+  "build": {
+    "command": "node scripts/build-pages-site.mjs"
+  },
+  "assets": {
+    "directory": "./dist-static",
+    "not_found_handling": "404-page"
+  }
+}
