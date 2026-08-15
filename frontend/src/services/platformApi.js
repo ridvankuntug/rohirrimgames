@@ -1,3 +1,5 @@
+import { isAiGenerationEnabled, isRegisteredDecksEnabled } from '../config/featureFlags';
+
 const STORAGE_KEYS = {
   teacherName: 'oct_teacher_name',
   keySource: 'oct_ai_key_source',
@@ -55,7 +57,7 @@ export function saveTeacherSettings({
 }
 
 export function hasTeacherKey() {
-  return backendAvailable === true;
+  return isAiGenerationEnabled() && backendAvailable === true;
 }
 
 export function declineAiFeatures() {
@@ -63,7 +65,9 @@ export function declineAiFeatures() {
 }
 
 export function wantsAiFeatures() {
-  return backendAvailable === true && window.sessionStorage.getItem('oct_ai_declined') !== 'true';
+  return isAiGenerationEnabled()
+    && backendAvailable === true
+    && window.sessionStorage.getItem('oct_ai_declined') !== 'true';
 }
 
 export function isBackendAvailable() {
@@ -110,6 +114,9 @@ function requiredTeacherContext() {
 }
 
 export async function verifyTeacherKey({ teacherDisplayName, geminiApiKey }) {
+  if (!isAiGenerationEnabled()) {
+    throw new PlatformApiError('AI generation is disabled by configuration', { status: 403 });
+  }
   const name = String(teacherDisplayName || 'Teacher').trim();
   const key = String(geminiApiKey || '').trim();
 
@@ -130,11 +137,17 @@ export async function verifyTeacherKey({ teacherDisplayName, geminiApiKey }) {
 }
 
 export async function listDecks(gameType) {
+  if (!isRegisteredDecksEnabled()) {
+    throw new PlatformApiError('Registered decks are disabled by configuration', { status: 403 });
+  }
   const query = new URLSearchParams({ gameType });
   return (await request(`/api/decks?${query}`)).decks || [];
 }
 
 export async function generateDeck(gameType, endpoint, input, onLog = () => {}) {
+  if (!isAiGenerationEnabled() || !isRegisteredDecksEnabled()) {
+    throw new PlatformApiError('AI deck generation is disabled by configuration', { status: 403 });
+  }
   const context = requiredTeacherContext();
   if (!input?.deckName?.trim()) {
     throw new PlatformApiError('Deck name is required', { status: 400 });

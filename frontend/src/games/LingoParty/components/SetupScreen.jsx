@@ -8,6 +8,7 @@ import {
   probeBackend,
   saveTeacherSettings,
 } from '../../../services/platformApi';
+import { isAiGenerationEnabled, isRegisteredDecksEnabled } from '../../../config/featureFlags';
 import styles from './SetupScreen.module.css';
 import { useTranslation } from '../../../i18n';
 
@@ -132,7 +133,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
     probeBackend()
       .then((online) => {
         if (!isMounted) return;
-        setBackendOnline(online);
+        setBackendOnline(online && isAiGenerationEnabled() && isRegisteredDecksEnabled());
         setKeyActive(online && hasTeacherKey());
       })
       .catch(() => {

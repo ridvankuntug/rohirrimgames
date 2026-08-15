@@ -6,6 +6,13 @@
         keySource: 'oct_ai_key_source',
         geminiKey: 'oct_gemini_key'
     });
+    // Browser pages load shared/feature-flags.js before this client. Keep the
+    // factory reusable for tests and server-backed integrations when no page
+    // configuration has been supplied.
+    const FEATURE_FLAGS = root.OpenClassFeatureFlags || Object.freeze({
+        enableAiGeneration: true,
+        enableRegisteredDecks: true
+    });
 
     class PlatformApiError extends Error {
         constructor(message, { status = 0, code = 'PLATFORM_REQUEST_FAILED' } = {}) {
@@ -91,6 +98,12 @@
         }
 
         async function verifyTeacherKey(settings) {
+            if (!FEATURE_FLAGS.enableAiGeneration) {
+                throw new PlatformApiError('AI generation is disabled by configuration', {
+                    status: 403,
+                    code: 'AI_GENERATION_DISABLED'
+                });
+            }
             const teacherDisplayName = cleanText(settings?.teacherDisplayName || 'Teacher', 'Teacher name', 120);
             const geminiApiKey = typeof settings?.geminiApiKey === 'string' ? settings.geminiApiKey.trim() : '';
             return request('/api/ai/verify', {
@@ -125,12 +138,24 @@
         }
 
         async function listDecks(gameType) {
+            if (!FEATURE_FLAGS.enableRegisteredDecks) {
+                throw new PlatformApiError('Registered decks are disabled by configuration', {
+                    status: 403,
+                    code: 'REGISTERED_DECKS_DISABLED'
+                });
+            }
             const query = new URLSearchParams({ gameType });
             const body = await request(`/api/decks?${query.toString()}`);
             return body.decks || [];
         }
 
         async function generateDeck(gameType, endpoint, input, onLog) {
+            if (!FEATURE_FLAGS.enableAiGeneration || !FEATURE_FLAGS.enableRegisteredDecks) {
+                throw new PlatformApiError('AI deck generation is disabled by configuration', {
+                    status: 403,
+                    code: 'AI_DECK_GENERATION_DISABLED'
+                });
+            }
             if (!gameType || !endpoint) {
                 throw new PlatformApiError('Game generation configuration is missing', {
                     status: 400
@@ -365,8 +390,9 @@
                 session.setItem('oct_ai_declined', 'true');
             },
             wantsAiFeatures: function wantsAiFeatures() {
-                return session.getItem('oct_ai_declined') !== 'true';
+                return FEATURE_FLAGS.enableAiGeneration && session.getItem('oct_ai_declined') !== 'true';
             },
+            featureFlags: FEATURE_FLAGS,
             verifyTeacherKey,
             listDecks,
             generateDeck,

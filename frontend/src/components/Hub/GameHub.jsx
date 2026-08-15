@@ -8,6 +8,7 @@ import {
   probeBackend,
   wantsAiFeatures,
 } from '../../services/platformApi';
+import { isAiGenerationEnabled } from '../../config/featureFlags';
 import { LanguageSelector, registerTranslations, useTranslation } from '../../i18n';
 
 registerTranslations('hub', {
@@ -159,7 +160,7 @@ export default function GameHub() {
         </div>
 
         <div className={styles.headerActions}>
-          {serverHealth.status === 'online' && <>
+          {serverHealth.status === 'online' && isAiGenerationEnabled() && <>
           <details className={styles.teacherGuide}>
             <summary>
               <span aria-hidden="true">🎓</span>
@@ -247,7 +248,7 @@ export default function GameHub() {
         })}
       </section>
 
-      {serverHealth.status === 'online' && <>
+      {serverHealth.status === 'online' && isAiGenerationEnabled() && <>
         <ApiKeyModal
           isOpen={isApiKeyModalOpen}
           onClose={handleApiModalClose}

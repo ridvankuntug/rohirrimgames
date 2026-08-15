@@ -363,6 +363,7 @@ btnTimerReset.addEventListener('click', resetTimer);
         });
     } catch {
         document.getElementById('deck-library-mount')?.setAttribute('hidden', '');
+        btnGenerate.querySelector('.btn-text').textContent = 'Start selected hats deck';
 
         const wrap = document.getElementById('static-deck-wrap');
         const select = document.getElementById('static-deck-select');
