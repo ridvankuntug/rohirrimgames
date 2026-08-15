@@ -6,7 +6,7 @@
   position: fixed;
   inset: 0;
   z-index: 1200;
-  background: rgba(5, 3, 17, 0.92);
+  background: rgba(17, 28, 18, 0.92);
   backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
@@ -22,7 +22,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.6rem;
-  background: rgba(12, 10, 28, 0.95) !important;
+  background: rgba(27, 42, 24, 0.95) !important;
   border: 2px solid rgba(56, 189, 248, 0.45) !important;
   box-shadow:
     0 0 80px rgba(56, 189, 248, 0.2),
@@ -52,7 +52,7 @@
 }
 
 .orbitBadge {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(139, 92, 246, 0.25));
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(200, 162, 74, 0.25));
   border: 1.5px solid rgba(56, 189, 248, 0.5);
   padding: 0.5rem 1.6rem;
   border-radius: 50px;
@@ -66,7 +66,7 @@
 .title {
   font-size: 2rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #38bdf8, #a855f7, #ec4899);
+  background: linear-gradient(135deg, #38bdf8, #c8a24a, #b66d3d);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -97,7 +97,7 @@
 .cubeText {
   font-size: 1.15rem;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #f2e7ca;
   text-align: left;
 }
 
@@ -118,7 +118,7 @@
 
 .standingsTitle {
   font-size: 1.05rem;
-  color: #c4b5fd;
+  color: #e6c877;
   font-weight: 800;
   text-align: left;
   margin-bottom: 0.3rem;
@@ -149,7 +149,7 @@
 .rank {
   font-weight: 800;
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: #b8ac88;
   min-width: 30px;
 }
 
@@ -159,7 +159,7 @@
 
 .name {
   font-weight: 700;
-  color: #e2e8f0;
+  color: #f2e7ca;
   font-size: 1rem;
 }
 
@@ -187,7 +187,7 @@
   font-weight: 900;
   font-size: 1.15rem;
   color: #ffffff;
-  background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+  background: linear-gradient(135deg, #06b6d4, #c8a24a);
   box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
   cursor: pointer;
   transition: all 0.25s ease;

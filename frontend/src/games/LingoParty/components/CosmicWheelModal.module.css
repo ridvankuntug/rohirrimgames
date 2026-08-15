@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 1200;
-  background: rgba(10, 8, 25, 0.85);
+  background: rgba(22, 36, 23, 0.85);
   backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
@@ -14,9 +14,9 @@
 .wheelCard {
   width: 100%;
   max-width: 620px;
-  background: rgba(22, 18, 48, 0.94);
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  box-shadow: 0 0 50px rgba(168, 85, 247, 0.3);
+  background: rgba(31, 49, 29, 0.94);
+  border: 1px solid rgba(200, 162, 74, 0.35);
+  box-shadow: 0 0 50px rgba(200, 162, 74, 0.3);
   border-radius: 28px;
   padding: 2rem;
   text-align: center;
@@ -28,14 +28,14 @@
 .wheelHeader h2 {
   font-size: 1.8rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #a855f7, #ec4899, #38bdf8);
+  background: linear-gradient(135deg, #c8a24a, #b66d3d, #38bdf8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.3rem;
 }
 
 .turnSubtext {
-  color: #94a3b8;
+  color: #b8ac88;
   font-size: 1rem;
   margin-bottom: 1rem;
 }
@@ -71,15 +71,15 @@
   width: 520px;
   height: 520px;
   border-radius: 50%;
-  filter: drop-shadow(0 0 24px rgba(168, 85, 247, 0.35));
+  filter: drop-shadow(0 0 24px rgba(200, 162, 74, 0.35));
 }
 
 .resultBanner {
   position: absolute;
   inset: 0;
-  background: rgba(15, 12, 35, 0.92);
+  background: rgba(31, 49, 29, 0.92);
   border-radius: 20px;
-  border: 2px solid var(--res-color, #a855f7);
+  border: 2px solid var(--res-color, #c8a24a);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,7 +88,7 @@
   font-size: 1.4rem;
   font-weight: 900;
   color: #ffffff;
-  box-shadow: 0 0 30px var(--res-color, rgba(168, 85, 247, 0.5));
+  box-shadow: 0 0 30px var(--res-color, rgba(200, 162, 74, 0.5));
   animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -105,15 +105,15 @@
   font-weight: 900;
   font-size: 1.1rem;
   color: #ffffff;
-  background: linear-gradient(135deg, #a855f7, #ec4899);
-  box-shadow: 0 0 24px rgba(168, 85, 247, 0.5);
+  background: linear-gradient(135deg, #c8a24a, #b66d3d);
+  box-shadow: 0 0 24px rgba(200, 162, 74, 0.5);
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
 .spinBtn:hover:not(:disabled) {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 0 36px rgba(236, 72, 153, 0.7);
+  box-shadow: 0 0 36px rgba(182, 109, 61, 0.7);
 }
 
 .spinBtn:disabled {

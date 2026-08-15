@@ -11,6 +11,7 @@ import CosmicWheelModal from './CosmicWheelModal';
 import OrbitResultModal from './OrbitResultModal';
 import QuestionTesterModal from './QuestionTesterModal';
 import confetti from 'canvas-confetti';
+import { useTranslation } from '../../../i18n';
 
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 const ITEM_ICONS = { shield: '🛡️' };
@@ -21,6 +22,7 @@ export default function BoardStage({
   playSound,
   onGameComplete
 }) {
+  const { t } = useTranslation();
   const [diceValue, setDiceValue] = useState(1);
   const [isRolling, setIsRolling] = useState(false);
   const [activeModal, setActiveModal] = useState(null); // 'challenge', 'shop', 'mystery', 'guide', 'victory', 'wheel', 'orbit'
@@ -52,7 +54,7 @@ export default function BoardStage({
       particleCount: 150,
       spread: 90,
       origin: { y: 0.5 },
-      colors: ['#a855f7', '#6366f1', '#ec4899', '#f59e0b', '#10b981']
+      colors: ['#6f8d52', '#c8a24a', '#b66d3d', '#f59e0b', '#10b981']
     });
   };
 
@@ -251,23 +253,23 @@ export default function BoardStage({
     const landedTile = gameState.tiles[curTeam.position];
     if (landedTile) {
       const tileLabels = {
-        riddle: { text: '🎯 CHALLENGE TILE LANDED!', color: '#a855f7' },
-        scramble: { text: '🎯 CHALLENGE TILE LANDED!', color: '#a855f7' },
+        riddle: { text: '🎯 CHALLENGE TILE LANDED!', color: '#c8a24a' },
+        scramble: { text: '🎯 CHALLENGE TILE LANDED!', color: '#c8a24a' },
         pronunciation: { text: '👅 TONGUE-TWISTER LANDED!', color: '#14b8a6' },
         speech: { text: '👅 TONGUE-TWISTER LANDED!', color: '#14b8a6' },
-        association: { text: '🎯 CHALLENGE TILE LANDED!', color: '#a855f7' },
-        grammar: { text: '🎯 CHALLENGE TILE LANDED!', color: '#a855f7' },
-        speed: { text: '🎯 CHALLENGE TILE LANDED!', color: '#a855f7' },
-        roleplay: { text: '🎯 CHALLENGE TILE LANDED!', color: '#a855f7' },
+        association: { text: '🎯 CHALLENGE TILE LANDED!', color: '#c8a24a' },
+        grammar: { text: '🎯 CHALLENGE TILE LANDED!', color: '#c8a24a' },
+        speed: { text: '🎯 CHALLENGE TILE LANDED!', color: '#c8a24a' },
+        roleplay: { text: '🎯 CHALLENGE TILE LANDED!', color: '#c8a24a' },
         ordering: { text: '🔢 CONVERSATION ORDER TILE LANDED!', color: '#f97316' },
         shop: { text: '🛒 TROPHY STATION LANDED!', color: '#eab308' },
-        chance: { text: '🎁 MYSTERY BOX LANDED!', color: '#ec4899' },
+        chance: { text: '🎁 MYSTERY BOX LANDED!', color: '#b66d3d' },
         start: { text: '🌍 LAUNCHPAD STATION LANDED!', color: '#10b981' },
         trophy: { text: '⭐ GOAL SANCTUARY REACHED!', color: '#f59e0b' },
-        challenge: { text: '🎯 CHALLENGE TILE LANDED!', color: '#a855f7' }
+        challenge: { text: '🎯 CHALLENGE TILE LANDED!', color: '#c8a24a' }
       };
 
-      const info = tileLabels[landedTile.type] || { text: `🎯 ${(landedTile.label || landedTile.type).toUpperCase()} TILE LANDED!`, color: '#a855f7' };
+      const info = tileLabels[landedTile.type] || { text: `🎯 ${(landedTile.label || landedTile.type).toUpperCase()} TILE LANDED!`, color: '#c8a24a' };
 
       setCategoryAnnouncement(info);
       if (playSound) playSound('correct');
@@ -473,7 +475,7 @@ export default function BoardStage({
     <div className={styles.stageContainer}>
       {/* Left Panel: Leaderboard */}
       <aside className={`glass-card ${styles.leftPanel}`}>
-        <div className={styles.panelTitle}>🏆 Crew Leaderboard</div>
+        <div className={styles.panelTitle}>{t('lingoparty.leaderboard')}</div>
         <div className={styles.teamList}>
           {gameState.teams.map((team, idx) => (
             <div
@@ -485,7 +487,7 @@ export default function BoardStage({
                 <div>
                   <div className={styles.teamName}>{team.name}</div>
                   <div className={styles.teamPosition}>
-                    📍 Tile {team.position}/{gameState.tiles.length - 1}
+                    📍 {t('lingoparty.position', { position: team.position, last: gameState.tiles.length - 1 })}
                     {team.items && team.items.length > 0 && (
                       <span className={styles.itemBadges}>
                         {team.items.map((it, i) => (
@@ -522,7 +524,7 @@ export default function BoardStage({
         <header className={styles.turnHeader}>
           <div className={styles.turnTeamDisplay}>
             <span>{activeTeam?.pawn}</span>
-            <span>Mission Turn: {activeTeam?.name}</span>
+            <span>{t('lingoparty.missionTurn', { team: activeTeam?.name })}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <button
@@ -583,7 +585,7 @@ export default function BoardStage({
 
       {/* Right Panel: Holographic Dice Controller */}
       <aside className={`glass-card ${styles.rightPanel}`}>
-        <div className={styles.panelTitle}>🎲 Warp Drive</div>
+        <div className={styles.panelTitle}>{t('lingoparty.warpDrive')}</div>
 
         <div className={styles.diceSection}>
           <div className={`${styles.diceBox} ${isRolling ? styles.diceRolling : ''}`}>
@@ -596,16 +598,16 @@ export default function BoardStage({
               onClick={handleRevealQuestion}
             >
               {showQuestionReady === 'trophy' || showQuestionReady === 'finish'
-                ? '👑 Face the Boss!'
+                ? t('lingoparty.faceBoss')
                 : showQuestionReady === 'chance'
-                  ? '🎁 Open Mystery Box'
+                  ? t('lingoparty.openMystery')
                   : showQuestionReady === 'shop'
-                    ? '🛒 Enter Shop'
+                    ? t('lingoparty.enterShop')
                     : showQuestionReady === 'vortex' || showQuestionReady === 'asteroid'
-                      ? '💥 Brace for Impact!'
+                      ? t('lingoparty.impact')
                       : showQuestionReady === 'start'
-                        ? '🚀 Continue Adventure'
-                        : '❓ Show Question'}
+                        ? t('lingoparty.adventure')
+                        : t('lingoparty.showQuestion')}
             </button>
           ) : (
             <button
@@ -613,7 +615,7 @@ export default function BoardStage({
               onClick={handleRollDice}
               disabled={isRolling || activeModal !== null || orbitResult !== null}
             >
-              {isRolling ? '⚡ Warping...' : '🎲 Throw the Die!'}
+              {isRolling ? t('lingoparty.rolling') : t('lingoparty.roll')}
             </button>
           )}
         </div>
@@ -624,27 +626,27 @@ export default function BoardStage({
             style={{ width: '100%' }}
             onClick={() => setActiveModal('shop')}
           >
-            🛸 Space Station Shop
+            {t('lingoparty.shop')}
           </button>
           <button
             className="btn-secondary"
             style={{ width: '100%', marginTop: '0.4rem' }}
             onClick={() => setActiveModal('guide')}
           >
-            📜 Card Guide & Rules
+            {t('lingoparty.guide')}
           </button>
           <button
             className="btn-secondary"
             style={{
               width: '100%',
               marginTop: '0.4rem',
-              background: showQuestionTester ? 'rgba(168, 85, 247, 0.35)' : undefined,
-              borderColor: showQuestionTester ? '#a855f7' : undefined,
-              boxShadow: showQuestionTester ? '0 0 12px rgba(168, 85, 247, 0.4)' : undefined,
+              background: showQuestionTester ? 'rgba(200, 162, 74, 0.28)' : undefined,
+              borderColor: showQuestionTester ? '#c8a24a' : undefined,
+              boxShadow: showQuestionTester ? '0 0 12px rgba(200, 162, 74, 0.4)' : undefined,
             }}
             onClick={() => setShowQuestionTester(true)}
           >
-            🔍 Question Tester
+            {t('lingoparty.tester')}
           </button>
           <button
             className="btn-secondary"
@@ -654,7 +656,7 @@ export default function BoardStage({
               setGameState(prev => ({ ...prev, activeScreen: 'setup' }));
             }}
           >
-            ⚙️ Mission Settings
+            {t('lingoparty.settings')}
           </button>
         </div>
       </aside>

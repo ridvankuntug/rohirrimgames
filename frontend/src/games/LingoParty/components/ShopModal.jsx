@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './ShopModal.module.css';
+import { useTranslation } from '../../../i18n';
 
 const SHOP_ITEMS = [
   { id: 'double_dice', name: 'Warp Boost', cost: 2, icon: '🚀', effect: 'Advance +3 extra planets immediately!' },
@@ -14,6 +15,7 @@ const SHOP_ITEMS = [
 ];
 
 export default function ShopModal({ isOpen, activeTeam, onBuyItem, onClose, playSound }) {
+  const { t } = useTranslation();
   if (!isOpen || !activeTeam) return null;
 
   const handlePurchase = (item) => {
@@ -31,14 +33,14 @@ export default function ShopModal({ isOpen, activeTeam, onBuyItem, onClose, play
     <div className={styles.modalOverlay}>
       <div className={`glass-card ${styles.shopCard}`}>
         <div className={styles.shopHeader}>
-          <h2>🛸 Space Station Shop</h2>
+          <h2>{t('lingoparty.shopTitle')}</h2>
           <div className={styles.teamWallet}>
-            🏆 {activeTeam.name}'s Wallet: {activeTeam.trophies} {activeTeam.trophies === 1 ? 'Trophy' : 'Trophies'}
+            {t('lingoparty.wallet', { team: activeTeam.name, count: activeTeam.trophies, trophy: activeTeam.trophies === 1 ? t('lingoparty.trophy') : t('lingoparty.trophies') })}
           </div>
         </div>
 
         <p style={{ color: '#94a3b8', fontSize: '0.92rem', marginTop: '-0.4rem' }}>
-          Select 1 power-up or attack item for your crew. The station auto-docks after purchase!
+          {t('lingoparty.shopHelp')}
         </p>
 
         <div className={styles.itemsGrid}>
@@ -56,7 +58,7 @@ export default function ShopModal({ isOpen, activeTeam, onBuyItem, onClose, play
                   disabled={!canAfford}
                   onClick={() => handlePurchase(item)}
                 >
-                  {isCube ? '🧊 Acquire Cube' : isAttack ? '⚡ Launch Attack' : 'Buy'} ({item.cost} 🏆)
+                  {isCube ? t('lingoparty.acquireCube') : isAttack ? t('lingoparty.launchAttack') : t('lingoparty.buy')} ({item.cost} 🏆)
                 </button>
               </div>
             );
@@ -68,7 +70,7 @@ export default function ShopModal({ isOpen, activeTeam, onBuyItem, onClose, play
           style={{ width: '100%', padding: '0.9rem', fontSize: '1.05rem', fontWeight: 800, marginTop: '0.6rem' }}
           onClick={onClose}
         >
-          ❌ Exit Station Without Buying
+          {t('lingoparty.exitShop')}
         </button>
       </div>
     </div>

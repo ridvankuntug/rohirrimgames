@@ -17,8 +17,8 @@ export default function GuideModal({ onClose }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem', padding: '0.5rem 0' }}>
 
           {/* Section 1: Mystery Cards */}
-          <div style={{ background: 'rgba(139, 92, 246, 0.12)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '14px', padding: '1rem' }}>
-            <h3 style={{ color: '#c084fc', marginBottom: '0.8rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ background: 'rgba(182, 109, 61, 0.12)', border: '1px solid rgba(182, 109, 61, 0.3)', borderRadius: '14px', padding: '1rem' }}>
+            <h3 style={{ color: '#e6c877', marginBottom: '0.8rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span>🎁</span> Mystery & Fate Cards (Chance Tiles)
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.6rem' }}>
@@ -29,7 +29,7 @@ export default function GuideModal({ onClose }) {
                 <strong style={{ color: '#38bdf8' }}>🌀 Wormhole Jump:</strong> Warp forward +3 tiles on the flight path.
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#a78bfa' }}>🛡️ Free Shield:</strong> Grants a Grammar Shield item directly into inventory.
+                <strong style={{ color: '#6f8d52' }}>🛡️ Free Shield:</strong> Grants a Grammar Shield item directly into inventory.
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
                 <strong style={{ color: '#f43f5e' }}>⛈️ Solar Flare:</strong> Intercepted by cosmic waves! Lose 1 Trophy (blocked by Shield).
@@ -38,7 +38,7 @@ export default function GuideModal({ onClose }) {
                 <strong style={{ color: '#eab308' }}>💸 Energy Sharing:</strong> Transfer 1 Trophy to assist the team in last place.
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#ec4899' }}>🔄 Orbital Swap:</strong> Swap board tile positions with the leader.
+                <strong style={{ color: '#b66d3d' }}>🔄 Orbital Swap:</strong> Swap board tile positions with the leader.
               </div>
             </div>
           </div>
@@ -53,10 +53,10 @@ export default function GuideModal({ onClose }) {
                 <strong style={{ color: '#f59e0b' }}>🚀 Warp Boost (Cost: 2 🏆):</strong> Advance +3 extra planets immediately.
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#a78bfa' }}>🛡️ Grammar Shield (Cost: 2 🏆):</strong> Protects against hazard & attack penalties.
+                <strong style={{ color: '#6f8d52' }}>🛡️ Grammar Shield (Cost: 2 🏆):</strong> Protects against hazard & attack penalties.
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#ec4899' }}>☄️ Meteor Robbery (Cost: 3 🏆):</strong> Steal 2 Trophies from a rival crew.
+                <strong style={{ color: '#b66d3d' }}>☄️ Meteor Robbery (Cost: 3 🏆):</strong> Steal 2 Trophies from a rival crew.
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
                 <strong style={{ color: '#38bdf8' }}>🛸 UFO Zap Ray (Cost: 4 🏆):</strong> Zap a rival crew back -3 Planets.
@@ -71,10 +71,10 @@ export default function GuideModal({ onClose }) {
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.6rem' }}>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#a78bfa' }}>🕳️ Black Hole:</strong> Gravitational pull pulls crew 4 tiles backward.
+                <strong style={{ color: '#6f8d52' }}>🕳️ Black Hole:</strong> Gravitational pull pulls crew 4 tiles backward.
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#6366f1' }}>🌀 Cosmic Vortex:</strong> Teleports crew to a surprise position.
+                <strong style={{ color: '#16736b' }}>🌀 Cosmic Vortex:</strong> Teleports crew to a surprise position.
               </div>
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.85rem' }}>
                 <strong style={{ color: '#f59e0b' }}>☄️ Asteroid Belt:</strong> Gravitational collision field! Knockback maneuver pushes your ship back -2 spaces.

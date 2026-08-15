@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './MysteryFateModal.module.css';
+import { useTranslation } from '../../../i18n';
 
 const MYSTERY_EVENTS = [
   { icon: '🎲', title: 'Lucky Die Roll!', desc: 'Cosmic fortune shines on you! Throw the Die again immediately!', doubleRoll: true },
@@ -16,6 +17,7 @@ const MYSTERY_EVENTS = [
 ];
 
 export default function MysteryFateModal({ isOpen, activeTeam, onResolve, playSound }) {
+  const { t } = useTranslation();
   const [isRevealed, setIsRevealed] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const [currentIcon, setCurrentIcon] = useState('🎁');
@@ -65,8 +67,8 @@ export default function MysteryFateModal({ isOpen, activeTeam, onResolve, playSo
   return (
     <div className={styles.modalOverlay}>
       <div className={`glass-card ${styles.mysteryCardBox}`}>
-        <h2 className={styles.modalTitle}>🎁 Mystery Box of Fate</h2>
-        <p className={styles.teamSubtitle}>{activeTeam.name} stepped onto the Chance Planet!</p>
+        <h2 className={styles.modalTitle}>{t('lingoparty.mysteryTitle')}</h2>
+        <p className={styles.teamSubtitle}>{t('lingoparty.chancePlanet', { team: activeTeam.name })}</p>
 
         <div className={`${styles.revealArea} ${isRevealed ? styles.revealAreaRevealed : ''}`}>
           <div className={styles.giftIcon}>{currentIcon}</div>
@@ -80,14 +82,14 @@ export default function MysteryFateModal({ isOpen, activeTeam, onResolve, playSo
             onClick={handleReveal}
             disabled={isShuffling}
           >
-            {isShuffling ? 'Shuffling...' : '✨ Draw Your Fate Card!'}
+            {isShuffling ? t('lingoparty.shuffling') : t('lingoparty.revealFate')}
           </button>
         ) : (
           <button
             className={`btn-primary ${styles.actionBtn}`}
             onClick={handleClose}
           >
-            {drawnEvent?.doubleRoll ? '🎲 Throw the Die Again!' : '🚀 Continue Adventure!'}
+            {drawnEvent?.doubleRoll ? t('lingoparty.throwAgain') : t('lingoparty.continue')}
           </button>
         )}
       </div>

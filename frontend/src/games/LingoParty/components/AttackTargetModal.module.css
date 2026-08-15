@@ -5,7 +5,7 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 2, 12, 0.88);
+  background: rgba(12, 21, 13, 0.88);
   backdrop-filter: blur(8px);
   z-index: 1100;
   display: flex;
@@ -56,7 +56,7 @@
 
 .subtitle {
   font-size: 0.92rem;
-  color: #94a3b8;
+  color: #b8ac88;
   margin-top: -0.6rem;
 }
 
@@ -72,7 +72,7 @@
   gap: 0.8rem;
   padding: 0.9rem 1.1rem;
   border-radius: 14px;
-  background: rgba(15, 12, 35, 0.7);
+  background: rgba(31, 49, 29, 0.7);
   border: 1px solid rgba(239, 68, 68, 0.25);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -91,12 +91,12 @@
 
 .teamName {
   font-weight: 800;
-  color: #e2e8f0;
+  color: #f2e7ca;
   flex: 1;
 }
 
 .teamMeta {
   font-size: 0.82rem;
-  color: #94a3b8;
+  color: #b8ac88;
   font-weight: 700;
 }

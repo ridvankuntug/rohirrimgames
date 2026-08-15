@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useDeckLibrary from '../../../hooks/useDeckLibrary';
 import GenerationConsole from '../../../components/Common/GenerationConsole';
 import ApiKeyModal from '../../../components/Common/ApiKeyModal';
 import {
   getTeacherContext,
   hasTeacherKey,
+  probeBackend,
   saveTeacherSettings,
 } from '../../../services/platformApi';
 import styles from './SetupScreen.module.css';
+import { useTranslation } from '../../../i18n';
 
 const DEFAULT_DECK = [
   // --- A1 / A2 Beginner & Elementary ---
@@ -91,6 +93,8 @@ const GAME_MODES = [
 ];
 
 export default function SetupScreen({ onStartGame, playSound }) {
+  const { t } = useTranslation();
+  const [backendOnline, setBackendOnline] = useState(false);
   const [mode, setMode] = useState('crew');
   const [teamCount, setTeamCount] = useState(3);
   const [boardLength, setBoardLength] = useState(30);
@@ -120,7 +124,25 @@ export default function SetupScreen({ onStartGame, playSound }) {
   const [launching, setLaunching] = useState(false);
   const [launchError, setLaunchError] = useState('');
   const [activeGeneratedDeck, setActiveGeneratedDeck] = useState(null);
-  const deckLibrary = useDeckLibrary('lingoparty');
+  const deckLibrary = useDeckLibrary('lingoparty', { enabled: backendOnline });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    probeBackend()
+      .then((online) => {
+        if (!isMounted) return;
+        setBackendOnline(online);
+        setKeyActive(online && hasTeacherKey());
+      })
+      .catch(() => {
+        if (isMounted) setBackendOnline(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const addLog = (message, type = 'info') => {
     const now = new Date();
@@ -160,6 +182,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
   }));
 
   const loadSavedDecks = async () => {
+    if (!backendOnline) return;
     setIsLoadingDecks(true);
     try {
       const res = await fetch('/api/lingoparty-decks');
@@ -204,16 +227,18 @@ export default function SetupScreen({ onStartGame, playSound }) {
     });
   };
 
-  const handleLaunchClick = async (e) => {
+  const handleLaunchClick = (e) => {
     const isShiftDebug = Boolean(e && e.shiftKey);
     const teams = buildTeams();
-    const ensuredDeck = await deckLibrary.ensureDeck().catch(() => null);
-    const systemDeck = deckLibrary.decks.find(d => d.isSystem || d.name?.toLowerCase().includes('system') || d.name?.toLowerCase().includes('starter')) || ensuredDeck || deckLibrary.decks[0];
-
-    const targetDeckObj = activeGeneratedDeck || deckLibrary.selectedDeck || systemDeck || ensuredDeck;
+    // A launch must never wait for network/deck discovery. The built-in deck is
+    // always ready; a locally available generated or selected deck can replace it.
+    const systemDeck = deckLibrary.decks.find((deck) => (
+      deck.isSystem || deck.name?.toLowerCase().includes('system') || deck.name?.toLowerCase().includes('starter')
+    )) || deckLibrary.decks[0];
+    const targetDeckObj = activeGeneratedDeck || deckLibrary.selectedDeck || systemDeck;
     const cards = targetDeckObj?.currentVersion?.content || targetDeckObj?.cards || DEFAULT_DECK;
-    const deckId = targetDeckObj?.id || targetDeckObj?.deckId || systemDeck?.id || null;
-    const deckVersionId = targetDeckObj?.currentVersion?.id || targetDeckObj?.versionId || systemDeck?.currentVersion?.id || null;
+    const deckId = targetDeckObj?.id || targetDeckObj?.deckId || null;
+    const deckVersionId = targetDeckObj?.currentVersion?.id || targetDeckObj?.versionId || null;
 
     if (cards && cards.length > 0) {
       if (playSound) playSound('correct');
@@ -353,13 +378,13 @@ export default function SetupScreen({ onStartGame, playSound }) {
     <div className={styles.setupContainer}>
       <div className={`glass-card ${styles.setupCard}`}>
         <div className={styles.header}>
-          <h1>Mission Briefing & Crew Setup</h1>
-          <p>Launch an exact registered challenge-deck version and record the voyage.</p>
+          <h1>{t('lingoparty.setupTitle')}</h1>
+          <p>{t('lingoparty.setupSubtitle')}</p>
         </div>
 
         <div className={styles.formGrid}>
           <div className={`${styles.formGroup} ${styles.fullSpan}`}>
-            <label>Game Mode</label>
+            <label>{t('lingoparty.gameMode')}</label>
             <div className={styles.modeSegmented}>
               {GAME_MODES.map(m => (
                 <button
@@ -376,7 +401,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
           </div>
 
           <div className={styles.formGroup}>
-            <label>Number of Teams</label>
+            <label>{t('lingoparty.teams')}</label>
             <div className={styles.stepper}>
               <button
                 type="button"
@@ -386,7 +411,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
               >
                 −
               </button>
-              <span className={styles.stepperValue}>{teamCount} {teamCount === 1 ? 'Team' : 'Teams'}</span>
+              <span className={styles.stepperValue}>{teamCount} {teamCount === 1 ? t('lingoparty.team') : t('lingoparty.teamsPlural')}</span>
               <button
                 type="button"
                 className={styles.stepperBtn}
@@ -398,7 +423,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
             </div>
           </div>
           <div className={styles.formGroup}>
-            <label>Orbits to Win</label>
+            <label>{t('lingoparty.orbits')}</label>
             <div className={styles.stepper}>
               <button
                 type="button"
@@ -408,7 +433,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
               >
                 −
               </button>
-              <span className={styles.stepperValue}>{orbitCount} {orbitCount === 1 ? 'Orbit' : 'Orbits'}</span>
+              <span className={styles.stepperValue}>{orbitCount} {orbitCount === 1 ? t('lingoparty.orbit') : t('lingoparty.orbitsPlural')}</span>
               <button
                 type="button"
                 className={styles.stepperBtn}
@@ -420,7 +445,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
             </div>
           </div>
           <div className={styles.formGroup}>
-            <label>Flight path length</label>
+            <label>{t('lingoparty.flightPath')}</label>
             <select
               className={styles.selectField}
               value={boardLength}
@@ -433,7 +458,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
             </select>
           </div>
           <div className={`${styles.formGroup} ${styles.fullSpan}`}>
-            <label>Standard planet color</label>
+            <label>{t('lingoparty.planetColor')}</label>
             <div className={styles.colorPickerRow}>
               <input
                 type="color"
@@ -455,8 +480,8 @@ export default function SetupScreen({ onStartGame, playSound }) {
 
           {/* Compact Team Rows */}
           <div className={`${styles.formGroup} ${styles.fullSpan}`}>
-            <label style={{ fontSize: '1.05rem', fontWeight: 800, color: '#c4b5fd', marginBottom: '0.6rem', display: 'block' }}>
-              👥 Teams ({mode === 'solo' ? '1 student' : mode === 'duo' ? '2 students' : '3+ students'} per pawn)
+            <label style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '0.6rem', display: 'block' }}>
+              👥 {t('lingoparty.teamSetup', { students: mode === 'solo' ? t('lingoparty.student1') : mode === 'duo' ? t('lingoparty.student2') : t('lingoparty.student3') })}
             </label>
             <div className={styles.teamRows}>
               {Array.from({ length: teamCount }).map((_, i) => (
@@ -487,10 +512,10 @@ export default function SetupScreen({ onStartGame, playSound }) {
             </div>
           </div>
 
-          {/* AI Mission Center */}
-          <div className={`${styles.formGroup} ${styles.fullSpan}`}>
-            <div className={styles.aiSection}>
-              <div className={styles.aiTitle}>🤖 AI Mission Center (Gemini 2.5 Flash)</div>
+          {backendOnline ? (
+            <div className={`${styles.formGroup} ${styles.fullSpan}`}>
+              <div className={styles.aiSection}>
+                <div className={styles.aiTitle}>{t('lingoparty.aiCenter')}</div>
 
               <div className={styles.aiTabs}>
                 <button
@@ -498,14 +523,14 @@ export default function SetupScreen({ onStartGame, playSound }) {
                   className={`${styles.aiTab} ${aiView === 'generate' ? styles.aiTabActive : ''}`}
                   onClick={() => setAiView('generate')}
                 >
-                  ✨ Generate New Deck
+                  {t('lingoparty.generateDeck')}
                 </button>
                 <button
                   type="button"
                   className={`${styles.aiTab} ${aiView === 'saved' ? styles.aiTabActive : ''}`}
                   onClick={() => { setAiView('saved'); loadSavedDecks(); }}
                 >
-                  📚 Saved Decks
+                  {t('lingoparty.savedDecks')}
                 </button>
               </div>
 
@@ -513,7 +538,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
                 <>
                   <div className={styles.formGrid} style={{ gap: '1rem' }}>
                     <div className={styles.formGroup}>
-                      <label>Teacher Name</label>
+                      <label>{t('lingoparty.teacherName')}</label>
                       <input
                         type="text"
                         className={styles.inputField}
@@ -524,18 +549,18 @@ export default function SetupScreen({ onStartGame, playSound }) {
                     </div>
 
                     <div className={styles.formGroup}>
-                      <label>AI Key</label>
+                      <label>{t('lingoparty.aiKey')}</label>
                       <button
                         type="button"
                         className={`${styles.inputField} ${styles.apiKeyBtn}`}
                         onClick={() => setIsApiKeyModalOpen(true)}
                       >
-                        {keyActive ? '🟢 AI Key Active' : '🔴 Set Gemini Key'}
+                        {keyActive ? t('lingoparty.keyActive') : t('lingoparty.setKey')}
                       </button>
                     </div>
 
                     <div className={styles.formGroup}>
-                      <label>Deck Title</label>
+                      <label>{t('lingoparty.deckTitle')}</label>
                       <input
                         type="text"
                         className={styles.inputField}
@@ -546,7 +571,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
                     </div>
 
                     <div className={styles.formGroup}>
-                      <label>CEFR Difficulty Level</label>
+                      <label>{t('lingoparty.cefr')}</label>
                       <select
                         className={styles.selectField}
                         value={cefr}
@@ -562,7 +587,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
                     </div>
 
                     <div className={styles.formGroup}>
-                      <label>Mission Topic / Vocabulary Focus</label>
+                      <label>{t('lingoparty.topic')}</label>
                       <input
                         type="text"
                         className={styles.inputField}
@@ -578,20 +603,20 @@ export default function SetupScreen({ onStartGame, playSound }) {
                     onClick={handleGenerateAiDeck}
                     disabled={isGenerating}
                   >
-                    {isGenerating ? '⚡ Generating AI Challenge Deck...' : '✨ Generate AI Deck'}
+                    {isGenerating ? t('lingoparty.generatingAi') : t('lingoparty.generateAi')}
                   </button>
                 </>
               ) : (
                 <div className={styles.savedDecksPanel}>
                   <div className={styles.savedDecksHeader}>
-                    <span>📚 Shared Deck Library ({savedDecks.length})</span>
+                    <span>{t('lingoparty.sharedDecks', { count: savedDecks.length })}</span>
                     <button type="button" className={styles.debugClearBtn} onClick={loadSavedDecks} disabled={isLoadingDecks}>
-                      {isLoadingDecks ? 'Loading...' : '🔄 Refresh'}
+                      {isLoadingDecks ? t('lingoparty.loading') : t('lingoparty.refresh')}
                     </button>
                   </div>
                   {savedDecks.length === 0 && !isLoadingDecks && (
                     <div className={styles.savedDecksEmpty}>
-                      No saved decks yet — generate a deck and it will appear here for everyone.
+                      {t('lingoparty.noDecks')}
                     </div>
                   )}
                   <div className={styles.savedDecksList}>
@@ -609,7 +634,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
                           className={`btn-primary ${styles.savedDeckLaunchBtn}`}
                           onClick={() => launchSavedDeck(deck)}
                         >
-                          🚀 Launch
+                          {t('lingoparty.launch')}
                         </button>
                       </div>
                     ))}
@@ -626,8 +651,16 @@ export default function SetupScreen({ onStartGame, playSound }) {
                   }}
                 />
               )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className={`${styles.formGroup} ${styles.fullSpan}`}>
+              <div className={`${styles.aiSection} ${styles.offlineDeckNotice}`}>
+                <strong>{t('lingoparty.builtInDeck')}</strong>
+                <p>{t('lingoparty.offlineDeckNotice')}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className={styles.btnRow}>
@@ -638,7 +671,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
           >
             {activeGeneratedDeck
               ? `🚀 Launch "${activeGeneratedDeck.name || activeGeneratedDeck.title}"`
-              : '🚀 Launch Mission!'}
+              : t('lingoparty.launchMission')}
           </button>
         </div>
 

@@ -4,6 +4,12 @@ const STORAGE_KEYS = {
   geminiKey: 'oct_gemini_key',
 };
 
+// Static Workers deployments deliberately have no /api implementation. Keep
+// this state in the client so optional AI, registered-deck and telemetry UI is
+// only offered after a real backend health response; a Workers 404 page must
+// never be mistaken for an available service.
+let backendAvailable = null;
+
 export class PlatformApiError extends Error {
   constructor(message, { status = 0, code = 'PLATFORM_REQUEST_FAILED' } = {}) {
     super(message);
@@ -49,15 +55,30 @@ export function saveTeacherSettings({
 }
 
 export function hasTeacherKey() {
-  return true; // Server AI provider pool is active out-of-the-box for all users
+  return backendAvailable === true;
 }
 
 export function declineAiFeatures() {
-  window.sessionStorage.setItem('oct_ai_declined', 'false');
+  window.sessionStorage.setItem('oct_ai_declined', 'true');
 }
 
 export function wantsAiFeatures() {
-  return true;
+  return backendAvailable === true && window.sessionStorage.getItem('oct_ai_declined') !== 'true';
+}
+
+export function isBackendAvailable() {
+  return backendAvailable === true;
+}
+
+export async function probeBackend() {
+  try {
+    const response = await fetch('/api/health');
+    const body = await response.json();
+    backendAvailable = response.ok && body?.status === 'ok';
+  } catch {
+    backendAvailable = false;
+  }
+  return backendAvailable;
 }
 
 async function request(url, options) {
@@ -65,9 +86,11 @@ async function request(url, options) {
   try {
     response = await fetch(url, options);
   } catch {
+    backendAvailable = false;
     throw new PlatformApiError('Unable to reach the game server');
   }
   const body = await response.json().catch(() => ({}));
+  backendAvailable = response.ok;
   if (!response.ok) {
     throw new PlatformApiError(body.error || 'The game server rejected the request', {
       status: response.status,

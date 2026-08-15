@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="hub.css" />
     <link rel="stylesheet" href="theme.css" />
     <script src="theme.js"></script>
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <link rel="canonical" href="https://play.metrix.dpdns.org/" />
     <meta property="og:type" content="website" />
@@ -39,15 +41,16 @@
 
     <div class="hub-container">
         <header class="hub-header">
+            <div id="language-selector" class="language-selector-wrap"></div>
             <span class="hub-icon emoji">🎮</span>
             <h1>Rohirrim Game Hub</h1>
-            <p class="hub-tagline">Hand-crafted interactive games for classrooms & groups</p>
+            <p class="hub-tagline" data-i18n="legacy.hubTagline">Hand-crafted interactive games for classrooms & groups</p>
         </header>
 
         <div class="category-tabs">
-            <button class="cat-tab active" data-filter="all"><span class="tab-emoji emoji">🎮</span> All Games</button>
-            <button class="cat-tab" data-filter="solo"><span class="tab-emoji emoji">👤</span> Solo Games</button>
-            <button class="cat-tab" data-filter="multi"><span class="tab-emoji emoji">👥</span> Multiplayer</button>
+            <button class="cat-tab active" data-filter="all"><span class="tab-emoji emoji">🎮</span> <span data-i18n="legacy.allGames">All Games</span></button>
+            <button class="cat-tab" data-filter="solo"><span class="tab-emoji emoji">👤</span> <span data-i18n="legacy.soloGames">Solo Games</span></button>
+            <button class="cat-tab" data-filter="multi"><span class="tab-emoji emoji">👥</span> <span data-i18n="legacy.multiplayer">Multiplayer</span></button>
         </div>
 
         <div class="game-grid">

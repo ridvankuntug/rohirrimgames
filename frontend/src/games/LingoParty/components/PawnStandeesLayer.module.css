@@ -39,13 +39,13 @@
 
 /* ── Crew Name Pill ── */
 .crewNamePill {
-  background: rgba(10, 8, 26, 0.9);
-  border: 1px solid rgba(139, 92, 246, 0.45);
+  background: rgba(22, 36, 23, 0.9);
+  border: 1px solid rgba(200, 162, 74, 0.45);
   border-radius: 20px;
   padding: 1px 8px;
   font-size: 0.68rem;
   font-weight: 800;
-  color: #c4b5fd;
+  color: #e6c877;
   white-space: nowrap;
   letter-spacing: 0.3px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);

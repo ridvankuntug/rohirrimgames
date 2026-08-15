@@ -1,18 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import styles from './CosmicWheelModal.module.css';
+import { useTranslation } from '../../../i18n';
 
 const WHEEL_SEGMENTS = [
-  { type: 'riddle', label: 'Riddle', color: '#8b5cf6', icon: '🧩' },
+  { type: 'riddle', label: 'Riddle', color: '#c8a24a', icon: '🧩' },
   { type: 'scramble', label: 'Scramble', color: '#06b6d4', icon: '🔤' },
   { type: 'pronunciation', label: 'Tongue-Twister', color: '#14b8a6', icon: '👅' },
   { type: 'grammar', label: 'Grammar', color: '#f43f5e', icon: '✍️' },
   { type: 'speed', label: 'Speed Trivia', color: '#eab308', icon: '⚡' },
-  { type: 'roleplay', label: 'Roleplay', color: '#a855f7', icon: '💬' },
+  { type: 'roleplay', label: 'Roleplay', color: '#b66d3d', icon: '💬' },
   { type: 'ordering', label: 'Ordering', color: '#f97316', icon: '🔢' }
 ];
 
 export default function CosmicWheelModal({ activeTeam, onSpinResult, onClose, playSound }) {
+  const { t } = useTranslation();
   const canvasRef = useRef(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedResult, setSelectedResult] = useState(null);
@@ -24,7 +26,7 @@ export default function CosmicWheelModal({ activeTeam, onSpinResult, onClose, pl
       particleCount: 70,
       spread: 80,
       origin: { y: 0.5 },
-      colors: ['#a855f7', '#6366f1', '#ec4899', '#f59e0b', '#06b6d4']
+      colors: ['#c8a24a', '#6f8d52', '#b66d3d', '#f59e0b', '#16736b']
     });
   };
 
@@ -96,7 +98,7 @@ export default function CosmicWheelModal({ activeTeam, onSpinResult, onClose, pl
     // Outer neon ring
     ctx.beginPath();
     ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.strokeStyle = '#a855f7';
+    ctx.strokeStyle = '#c8a24a';
     ctx.lineWidth = 8;
     ctx.stroke();
 
@@ -195,9 +197,9 @@ export default function CosmicWheelModal({ activeTeam, onSpinResult, onClose, pl
     <div className={styles.modalOverlay}>
       <div className={`glass-card ${styles.wheelCard}`}>
         <div className={styles.wheelHeader}>
-          <h2>🌀 Wheel of Cosmic Fate</h2>
+          <h2>{t('lingoparty.wheelTitle')}</h2>
           <p className={styles.turnSubtext}>
-            {activeTeam?.pawn} {activeTeam?.name}'s Turn — Spin to determine your mission!
+            {t('lingoparty.wheelTurn', { pawn: activeTeam?.pawn, team: activeTeam?.name })}
           </p>
         </div>
 
@@ -226,7 +228,7 @@ export default function CosmicWheelModal({ activeTeam, onSpinResult, onClose, pl
             onClick={spinWheel}
             disabled={isSpinning}
           >
-            {isSpinning ? '🌀 Spinning Wheel...' : '⚡ SPIN THE WHEEL'}
+            {isSpinning ? t('lingoparty.spinning') : t('lingoparty.spin')}
           </button>
         </div>
       </div>

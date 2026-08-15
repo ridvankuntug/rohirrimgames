@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import styles from './VictoryModal.module.css';
+import { useTranslation } from '../../../i18n';
 
 export default function VictoryModal({ isOpen, teams = [], orbitCount = 3, onPlayAgain, playSound }) {
+  const { t } = useTranslation();
   useEffect(() => {
     if (isOpen && playSound) {
       playSound('trophy');
@@ -28,7 +30,7 @@ export default function VictoryModal({ isOpen, teams = [], orbitCount = 3, onPla
     if (index === 0) return { medal: '🥇', label: '1ST PLACE CHAMPION', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' };
     if (index === 1) return { medal: '🥈', label: '2ND PLACE RUNNER-UP', color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.15)' };
     if (index === 2) return { medal: '🥉', label: '3RD PLACE FINALIST', color: '#d97706', bg: 'rgba(217, 119, 6, 0.15)' };
-    return { medal: `#${index + 1}`, label: `${index + 1}TH PLACE`, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)' };
+    return { medal: `#${index + 1}`, label: `${index + 1}TH PLACE`, color: '#6f8d52', bg: 'rgba(111, 141, 82, 0.15)' };
   };
 
   return (
@@ -39,34 +41,34 @@ export default function VictoryModal({ isOpen, teams = [], orbitCount = 3, onPla
           <div className={styles.crownContainer}>
             <span className={styles.crownEmoji}>👑</span>
           </div>
-          <div className={styles.gameOverBadge}>🌌 MISSION ACCOMPLISHED</div>
-          <h1 className={styles.title}>Cosmic Victory!</h1>
+          <div className={styles.gameOverBadge}>{t('lingoparty.victoryBadge')}</div>
+          <h1 className={styles.title}>{t('lingoparty.victoryTitle')}</h1>
           <p className={styles.subtitle}>
-            The galaxy has a new legend! Orbit requirements ({orbitCount}/{orbitCount} Cubes) achieved.
+            {t('lingoparty.victorySubtitle', { count: orbitCount })}
           </p>
         </div>
 
         {/* Winner Hero Card */}
         {winner && (
           <div className={styles.winnerHeroCard}>
-            <div className={styles.winnerBadge}>🏆 CHAMPION CREW</div>
+            <div className={styles.winnerBadge}>{t('lingoparty.champion')}</div>
             <div className={styles.winnerPawn}>{winner.pawn}</div>
             <h2 className={styles.winnerName}>{winner.name}</h2>
             <div className={styles.winnerStatsRow}>
               <div className={styles.winnerStatBox}>
                 <span className={styles.statIcon}>🧊</span>
                 <span className={styles.statVal}>{winner.gibelCubes || 0}</span>
-                <span className={styles.statLbl}>Gibel Cubes</span>
+                <span className={styles.statLbl}>{t('lingoparty.gibelCubes')}</span>
               </div>
               <div className={styles.winnerStatBox}>
                 <span className={styles.statIcon}>🏆</span>
                 <span className={styles.statVal}>{winner.trophies || 0}</span>
-                <span className={styles.statLbl}>Trophies</span>
+                <span className={styles.statLbl}>{t('lingoparty.trophies')}</span>
               </div>
               <div className={styles.winnerStatBox}>
                 <span className={styles.statIcon}>📍</span>
-                <span className={styles.statVal}>Tile {winner.position || 0}</span>
-                <span className={styles.statLbl}>Final Reach</span>
+                <span className={styles.statVal}>{t('lingoparty.tile', { position: winner.position || 0 })}</span>
+                <span className={styles.statLbl}>{t('lingoparty.finalReach')}</span>
               </div>
             </div>
           </div>
@@ -74,7 +76,7 @@ export default function VictoryModal({ isOpen, teams = [], orbitCount = 3, onPla
 
         {/* Leaderboard Table */}
         <div className={styles.leaderboardSection}>
-          <h3 className={styles.leaderboardTitle}>📊 Final Crew Rankings</h3>
+          <h3 className={styles.leaderboardTitle}>{t('lingoparty.finalRankings')}</h3>
           <div className={styles.leaderboardList}>
             {sortedTeams.map((team, idx) => {
               const badge = getRankBadge(idx);
@@ -108,10 +110,10 @@ export default function VictoryModal({ isOpen, teams = [], orbitCount = 3, onPla
         {/* Footer Actions */}
         <div className={styles.actionRow}>
           <button className={`btn-primary ${styles.btnRematch}`} onClick={onPlayAgain}>
-            🔄 Play Again / Rematch
+            {t('lingoparty.playAgain')}
           </button>
           <a href="/" className={`btn-secondary ${styles.btnHub}`}>
-            🏠 Main Menu
+            {t('lingoparty.mainMenu')}
           </a>
         </div>
       </div>

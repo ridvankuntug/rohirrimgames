@@ -6,7 +6,7 @@ function formatTime() {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 }
 
-export default function useDeckLibrary(gameType) {
+export default function useDeckLibrary(gameType, { enabled = true } = {}) {
   const [decks, setDecks] = useState([]);
   const [selectedId, setSelectedId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -19,6 +19,11 @@ export default function useDeckLibrary(gameType) {
   }, []);
 
   const refresh = useCallback(async () => {
+    if (!enabled) {
+      setLoading(false);
+      setError('');
+      return [];
+    }
     setLoading(true);
     setError('');
     try {
@@ -36,11 +41,17 @@ export default function useDeckLibrary(gameType) {
     } finally {
       setLoading(false);
     }
-  }, [gameType]);
+  }, [enabled, gameType]);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      setError('');
+      return undefined;
+    }
     refresh().catch(() => {});
-  }, [refresh]);
+    return undefined;
+  }, [enabled, refresh]);
 
   const selectedDeck = useMemo(
     () => decks.find((deck) => deck.id === selectedId) || null,

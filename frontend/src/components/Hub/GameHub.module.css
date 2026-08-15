@@ -30,12 +30,13 @@
 
 .titleIcon {
   font-size: 2.8rem;
-  filter: drop-shadow(0 4px 14px rgba(168, 85, 247, 0.5));
+  filter: drop-shadow(0 4px 14px rgba(200, 162, 74, 0.5));
   margin-right: 0.6rem;
 }
 
 .gradientText {
-  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, var(--color-primary) 100%);
+  font-family: var(--font-display);
+  background: linear-gradient(135deg, #ffffff 0%, #ded0aa 50%, var(--color-primary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -53,9 +54,9 @@
 }
 
 .btnApiKey {
-  background: rgba(168, 85, 247, 0.15);
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  color: #c084fc;
+  background: rgba(200, 162, 74, 0.15);
+  border: 1px solid rgba(200, 162, 74, 0.4);
+  color: #e6c877;
   padding: 0.6rem 1.2rem;
   border-radius: 50px;
   font-size: 0.95rem;
@@ -66,14 +67,14 @@
 }
 
 .btnApiKey:hover {
-  background: rgba(168, 85, 247, 0.3);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+  background: rgba(200, 162, 74, 0.3);
+  box-shadow: 0 0 20px rgba(200, 162, 74, 0.3);
 }
 
 .btnAdmin {
-  background: rgba(56, 189, 248, 0.15);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  color: #38bdf8;
+  background: rgba(122, 67, 36, 0.16);
+  border: 1px solid rgba(200, 162, 74, 0.38);
+  color: #e6c877;
   padding: 0.6rem 1.2rem;
   border-radius: 50px;
   font-size: 0.95rem;
@@ -84,15 +85,15 @@
 }
 
 .btnAdmin:hover {
-  background: rgba(56, 189, 248, 0.3);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+  background: rgba(122, 67, 36, 0.3);
+  box-shadow: 0 0 20px rgba(200, 162, 74, 0.28);
 }
 
 .statusBadge {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(25, 39, 26, 0.7);
   border: 1px solid rgba(16, 185, 129, 0.4);
   padding: 0.6rem 1.2rem;
   border-radius: 50px;
@@ -121,13 +122,13 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1rem;
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  border: 1px solid rgba(200, 162, 74, 0.35);
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.68);
+  background: rgba(25, 39, 26, 0.68);
   backdrop-filter: blur(14px);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  color: #bae6fd;
+  color: #f0db91;
   font-size: 0.95rem;
   font-weight: 700;
   list-style: none;
@@ -141,15 +142,15 @@
 .teacherGuide summary::after {
   content: '⌄';
   margin-left: 0.15rem;
-  color: #7dd3fc;
+  color: #e6c877;
   transition: transform 0.2s ease;
 }
 
 .teacherGuide summary:hover,
 .teacherGuide[open] summary {
-  border-color: rgba(56, 189, 248, 0.65);
-  background: rgba(14, 116, 144, 0.22);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.16);
+  border-color: rgba(200, 162, 74, 0.65);
+  background: rgba(122, 67, 36, 0.22);
+  box-shadow: 0 0 20px rgba(200, 162, 74, 0.16);
 }
 
 .teacherGuide[open] summary::after {
@@ -163,10 +164,10 @@
   width: min(440px, calc(100vw - 2rem));
   box-sizing: border-box;
   padding: 1.1rem;
-  border: 1px solid rgba(168, 85, 247, 0.32);
+  border: 1px solid rgba(200, 162, 74, 0.32);
   border-radius: 20px;
   background:
-    linear-gradient(145deg, rgba(27, 18, 55, 0.94), rgba(8, 15, 35, 0.96));
+    linear-gradient(145deg, rgba(36, 52, 28, 0.94), rgba(14, 27, 16, 0.96));
   backdrop-filter: blur(24px);
   box-shadow:
     0 24px 65px rgba(0, 0, 0, 0.52),
@@ -189,12 +190,12 @@
   height: 36px;
   flex: 0 0 36px;
   border-radius: 12px;
-  background: rgba(168, 85, 247, 0.18);
-  box-shadow: 0 0 18px rgba(168, 85, 247, 0.18);
+  background: rgba(200, 162, 74, 0.18);
+  box-shadow: 0 0 18px rgba(200, 162, 74, 0.18);
 }
 
 .guideIntro strong {
-  color: #f5f3ff;
+  color: var(--color-text);
   font-size: 1rem;
 }
 
@@ -231,14 +232,14 @@
   height: 26px;
   flex: 0 0 26px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #7c3aed, #db2777);
+  background: linear-gradient(135deg, #8b5a2b, #a85f35);
   color: white;
   font-size: 0.78rem;
   font-weight: 800;
 }
 
 .guideStep strong {
-  color: #e2e8f0;
+  color: #f2e7ca;
   font-size: 0.88rem;
 }
 
@@ -248,7 +249,7 @@
 }
 
 .guideStep a {
-  color: #7dd3fc;
+  color: #e6c877;
   font-weight: 700;
 }
 
@@ -258,10 +259,10 @@
   border-radius: 999px;
   padding: 0.65rem 0.9rem;
   color: white;
-  background: linear-gradient(135deg, #7c3aed, #db2777);
+  background: linear-gradient(135deg, #8b5a2b, #a85f35);
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.24);
+  box-shadow: 0 10px 24px rgba(139, 90, 43, 0.24);
 }
 
 @keyframes pulseDot {
@@ -361,8 +362,8 @@
 
 .gameCard:hover {
   transform: translateY(-6px) scale(1.02);
-  border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 18px 45px rgba(168, 85, 247, 0.3);
+  border-color: rgba(200, 162, 74, 0.5);
+  box-shadow: 0 18px 45px rgba(200, 162, 74, 0.3);
 }
 
 .emojiWrapper {
@@ -380,9 +381,9 @@
 
 .gameCard:hover .emojiWrapper {
   transform: scale(1.1);
-  background: rgba(168, 85, 247, 0.2);
-  border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+  background: rgba(200, 162, 74, 0.2);
+  border-color: rgba(200, 162, 74, 0.5);
+  box-shadow: 0 0 25px rgba(200, 162, 74, 0.4);
 }
 
 .gameIcon {
@@ -393,7 +394,7 @@
 .cardTitle {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--color-text);
   margin: 0;
   text-align: center;
   letter-spacing: -0.2px;

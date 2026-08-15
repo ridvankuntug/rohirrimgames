@@ -7,7 +7,9 @@ test('LingoParty setup launches an exact registered deck version', async () => {
         new URL('../frontend/src/games/LingoParty/components/SetupScreen.jsx', import.meta.url),
         'utf8'
     );
-    assert.match(source, /useDeckLibrary\('lingoparty'\)/);
+    // Static deployments disable the optional remote deck library until the
+    // backend health probe succeeds; the registered-deck integration remains.
+    assert.match(source, /useDeckLibrary\('lingoparty'(?:,\s*\{\s*enabled:\s*backendOnline\s*\})?\)/);
     assert.match(source, /deckId:\s*deck\.id/);
     assert.match(source, /deckVersionId:\s*deck\.currentVersion\.id/);
     assert.match(source, /deckName/);

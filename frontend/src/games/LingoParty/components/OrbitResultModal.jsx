@@ -1,7 +1,9 @@
 import React from 'react';
 import styles from './OrbitResultModal.module.css';
+import { useTranslation } from '../../../i18n';
 
 export default function OrbitResultModal({ orbitResult, onContinue }) {
+  const { t } = useTranslation();
   if (!orbitResult) return null;
 
   const { orbitNumber, cubeTeamName, cubeTeamPawn, cubeCount, requiredCubes, teams } = orbitResult;
@@ -16,24 +18,24 @@ export default function OrbitResultModal({ orbitResult, onContinue }) {
     <div className={styles.overlay}>
       <div className={`glass-card ${styles.card}`}>
         <div className={styles.header}>
-          <div className={styles.orbitBadge}>🛸 ORBIT {orbitNumber} COMPLETE</div>
-          <h2 className={styles.title}>Orbit Results</h2>
+          <div className={styles.orbitBadge}>{t('lingoparty.orbitComplete', { number: orbitNumber })}</div>
+          <h2 className={styles.title}>{t('lingoparty.orbitResults')}</h2>
         </div>
 
         <div className={styles.cubeAward}>
           <span className={styles.cubeIcon}>🧊</span>
           <div>
             <div className={styles.cubeText}>
-              {cubeTeamPawn} {cubeTeamName} earned a Gibel Cube!
+              {t('lingoparty.earnedCube', { pawn: cubeTeamPawn, team: cubeTeamName })}
             </div>
             <div className={styles.cubeProgress}>
-              Cubes: {cubeCount} / {requiredCubes}
+              {t('lingoparty.cubes', { count: cubeCount, required: requiredCubes })}
             </div>
           </div>
         </div>
 
         <div className={styles.standings}>
-          <h3 className={styles.standingsTitle}>📊 Crew Standings</h3>
+          <h3 className={styles.standingsTitle}>{t('lingoparty.standings')}</h3>
           {sortedTeams.map((team, idx) => (
             <div key={team.id} className={`${styles.teamRow} ${idx === 0 ? styles.teamRowFirst : ''}`}>
               <div className={styles.teamLeft}>
@@ -50,7 +52,7 @@ export default function OrbitResultModal({ orbitResult, onContinue }) {
         </div>
 
         <button className={styles.continueBtn} onClick={onContinue}>
-          🚀 Launch Orbit {nextOrbit} — Board Shuffled!
+          {t('lingoparty.launchOrbit', { number: nextOrbit })}
         </button>
       </div>
     </div>

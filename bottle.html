@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="bottle.css" />
     <link rel="stylesheet" href="theme.css" />
     <script src="theme.js"></script>
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <meta name="description" content="Spin the bottle to pick a student and draw a speaking prompt - a classroom icebreaker." />
     <link rel="canonical" href="https://play.metrix.dpdns.org/bottle.html" />
@@ -41,6 +43,7 @@
     <div id="screen-setup" class="screen active">
         <div class="glass-card setup-card">
             <div class="logo-area">
+                <div id="language-selector" class="language-selector-wrap"></div>
                 <span class="logo-icon">🍾</span>
                 <h1>Spin the Bottle</h1>
                 <p class="tagline">Add players and spin!</p>
@@ -48,14 +51,14 @@
             <div class="players-input-area">
                 <div class="players-list" id="players-list"></div>
                 <div class="add-row">
-                    <input id="player-input" class="theme-input" type="text" placeholder="Player name…"
+                    <input id="player-input" class="theme-input" type="text" placeholder="Player name…" data-i18n-placeholder="legacy.playerName"
                         maxlength="20" />
                     <button id="btn-add" class="btn-accent btn-add-player">+</button>
                 </div>
             </div>
             <div class="zebra-toggle-row">
                 <label class="toggle-label" for="zebra-toggle">
-                    <span class="toggle-icon">🦓</span> Zebra Mode
+                    <span class="toggle-icon">🦓</span> <span data-i18n="legacy.zebraMode">Zebra Mode</span>
                     <span class="toggle-hint">(doubles names for more randomness)</span>
                 </label>
                 <label class="toggle-switch">
@@ -64,11 +67,11 @@
                 </label>
             </div>
             <button id="btn-start" class="btn-primary pulse" disabled>
-                <span class="btn-text">Start</span>
+                <span class="btn-text" data-i18n="common.start">Start</span>
                 <span class="btn-arrow">→</span>
             </button>
             <div class="divider"><span>or</span></div>
-            <a href="index.html" class="btn-secondary" style="text-decoration:none;">🏠 Main Menu</a>
+            <a href="index.html" class="btn-secondary" style="text-decoration:none;" data-i18n="legacy.mainMenu">🏠 Main Menu</a>
         </div>
     </div>
 
@@ -109,10 +112,10 @@
             <h2 class="prompt-display" id="prompt-display"></h2>
             <div class="game-controls">
                 <button id="btn-spin" class="btn-primary btn-spin-game">
-                    <span class="btn-text">Spin!</span>
+                    <span class="btn-text" data-i18n="legacy.spin">Spin!</span>
                 </button>
                 <button id="btn-shuffle" class="btn-secondary btn-shuffle" title="Shuffle player order">
-                    🔀 Shuffle
+                    <span data-i18n="legacy.shuffle">🔀 Shuffle</span>
                 </button>
             </div>
             <div class="game-controls-secondary">
@@ -126,7 +129,7 @@
                     </label>
                 </div>
                 <a href="index.html" class="btn-secondary btn-ingame-menu"
-                    style="text-decoration:none;font-size:.8rem;padding:.45rem 1.2rem;">🏠 Main Menu</a>
+                    style="text-decoration:none;font-size:.8rem;padding:.45rem 1.2rem;" data-i18n="legacy.mainMenu">🏠 Main Menu</a>
             </div>
         </div>
     </div>

@@ -1,12 +1,14 @@
 import { cpSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const outDir = join(rootDir, 'dist-static');
+const frontendDir = join(rootDir, 'frontend');
+const frontendDist = join(frontendDir, 'dist');
 
 const rootFiles = [
-    'index.html',
     'bottle.html', 'bottle.css', 'bottle.js',
     'flashcards.html', 'flashcards.css', 'flashcards.js',
     'hangman.html', 'hangman.css', 'hangman.js',
@@ -18,6 +20,7 @@ const rootFiles = [
     'wheel.html', 'wheel.css', 'wheel.js',
     'who.html',
     'game.js',
+    'i18n.js',
     'generated-content.js',
     'particles.js',
     'platform-client.js',
@@ -46,6 +49,18 @@ const iconFiles = [
     'site.webmanifest'
 ];
 
+// The React application is the canonical hub. Build it here instead of relying
+// on a stale checked-in frontend/dist directory; Wrangler invokes this script
+// for both Git builds and manual deploys.
+const npmCommand = process.platform === 'win32' ? 'cmd.exe' : 'npm';
+const npmArgs = process.platform === 'win32'
+    ? ['/d', '/s', '/c', 'npm run build']
+    : ['run', 'build'];
+execFileSync(npmCommand, npmArgs, {
+    cwd: frontendDir,
+    stdio: 'inherit'
+});
+
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 
@@ -73,10 +88,19 @@ for (const file of iconFiles) {
     cpSync(src, join(outDir, file));
 }
 
-// Cloudflare Pages serves index.html with a 200 status for any unmatched path
-// (including /api/*) unless a 404.html exists. Without a real 404, every
+// Copy the Vite output last, so its index.html is the deployed root while all
+// legacy standalone games above remain available alongside it.
+cpSync(frontendDist, outDir, { recursive: true, force: true });
+
+// Workers Static Assets does not provide SPA history fallback when configured
+// with a real 404 page. Give the only React deep-link a concrete entry point
+// instead, without making /api/* look successful to backend probes.
+mkdirSync(join(outDir, 'lingoparty'), { recursive: true });
+cpSync(join(frontendDist, 'index.html'), join(outDir, 'lingoparty', 'index.html'));
+
+// Without a real 404, every
 // backend-availability probe in the games (fetch('/api/...').ok) thinks the
 // backend is reachable and never falls back to static content.
-cpSync(join(outDir, 'index.html'), join(outDir, '404.html'));
+cpSync(join(frontendDist, 'index.html'), join(outDir, '404.html'));
 
 console.log(`Static site assembled in ${outDir}`);

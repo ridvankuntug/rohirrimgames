@@ -5,26 +5,33 @@ import ApiKeyModal from '../Common/ApiKeyModal';
 import TeacherKeyPrompt from '../Common/TeacherKeyPrompt';
 import {
   hasTeacherKey,
+  probeBackend,
   wantsAiFeatures,
 } from '../../services/platformApi';
+import { LanguageSelector, registerTranslations, useTranslation } from '../../i18n';
+
+registerTranslations('hub', {
+  en: {
+    tagline: 'Offline-ready classroom games for language, discussion, and play.', teacherGuide: 'Teacher Guide', buildActivities: 'Plan a classroom activity', buildActivitiesText: 'Choose a game, match it to your lesson objective, and begin with a built-in deck.', addKey: 'Optional teacher tools', chooseGame: 'Choose a game', chooseGameText: 'Select the activity that best supports your lesson objective and class level.', nameDecks: 'Start with a deck', nameDecksText: 'Every game remains playable with its included starter content.', keyText: 'When a classroom server is available, optional teacher tools can be configured for this browser tab.', changeKey: 'Change teacher settings', addKeyButton: 'Open teacher settings', activeKey: 'Teacher tools ready', disabledKey: 'Teacher tools unavailable', server: 'Mode: {status}', offlineReady: 'Offline-ready',
+  },
+  tr: {
+    tagline: 'Dil, tartışma ve oyun için çevrimdışı kullanıma hazır sınıf oyunları.', teacherGuide: 'Öğretmen Rehberi', buildActivities: 'Bir sınıf etkinliği planlayın', buildActivitiesText: 'Bir oyun seçin, ders hedefinizle eşleştirin ve yerleşik bir deste ile başlayın.', addKey: 'İsteğe bağlı öğretmen araçları', chooseGame: 'Bir oyun seçin', chooseGameText: 'Ders hedefinize ve sınıf seviyenize en uygun etkinliği seçin.', nameDecks: 'Bir deste ile başlayın', nameDecksText: 'Her oyun, içindeki başlangıç içeriğiyle oynanabilir.', keyText: 'Bir sınıf sunucusu kullanılabilir olduğunda, isteğe bağlı öğretmen araçları bu tarayıcı sekmesinde yapılandırılabilir.', changeKey: 'Öğretmen ayarlarını değiştir', addKeyButton: 'Öğretmen ayarlarını aç', activeKey: 'Öğretmen araçları hazır', disabledKey: 'Öğretmen araçları kullanılamıyor', server: 'Mod: {status}', offlineReady: 'Çevrimdışı hazır',
+  },
+});
 
 export default function GameHub() {
+  const { t } = useTranslation();
   const [serverHealth, setServerHealth] = useState({ status: 'checking' });
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [showKeyPrompt, setShowKeyPrompt] = useState(false);
-  const [keyActive, setKeyActive] = useState(hasTeacherKey());
+  const [keyActive, setKeyActive] = useState(false);
 
   useEffect(() => {
-    fetch('/api/health')
-      .then(res => res.json())
-      .then(() => {
-        setServerHealth({ status: 'online' });
-      })
-      .catch(() => {
-        setServerHealth({ status: 'offline' });
-      });
-
-    setShowKeyPrompt(!hasTeacherKey() && wantsAiFeatures());
+    probeBackend().then(isOnline => {
+      setServerHealth({ status: isOnline ? 'online' : 'offline' });
+      setKeyActive(isOnline && hasTeacherKey());
+      setShowKeyPrompt(isOnline && !hasTeacherKey() && wantsAiFeatures());
+    });
   }, []);
 
   const handlePromptClose = () => {
@@ -41,10 +48,10 @@ export default function GameHub() {
     {
       id: 'lingoparty',
       title: 'LingoParty',
-      subtitle: 'React Widescreen Flagship',
+      subtitle: 'Widescreen Adventure Board',
       icon: '🎲',
-      desc: 'Mario Party-style language board game with 16:9 widescreen winding adventure map, floating 3D character standees, AI challenges, and Mystery Box of Fate.',
-      tags: ['AI Powered', 'Multiplayer', 'Board Game'],
+      desc: 'A 16:9 language board game with a winding adventure map, character standees, and a Mystery Box of Fate.',
+      tags: ['Multiplayer', 'Board Game'],
       path: '/lingoparty',
       isReact: true
     },
@@ -53,8 +60,8 @@ export default function GameHub() {
       title: 'Who Am I?',
       subtitle: 'Character Guessing',
       icon: '🎭',
-      desc: 'Classic character guessing game with AI-generated classroom lists, countdown timer, and glassmorphism cards.',
-      tags: ['AI Powered', 'Party'],
+      desc: 'Classic character guessing with classroom lists, a countdown timer, and illustrated cards.',
+      tags: ['Party'],
       path: '/who.html',
       isReact: false
     },
@@ -63,7 +70,7 @@ export default function GameHub() {
       title: 'Taboo',
       subtitle: 'Word Description',
       icon: '💬',
-      desc: 'Describe target vocabulary without saying forbidden words. Features team scoring and AI card generation.',
+      desc: 'Describe target vocabulary without saying forbidden words, with team scoring and built-in cards.',
       tags: ['Teams', 'Vocabulary'],
       path: '/taboo.html',
       isReact: false
@@ -73,7 +80,7 @@ export default function GameHub() {
       title: 'Hangman',
       subtitle: 'Classic Word Guess',
       icon: '🪵',
-      desc: 'Guess vocabulary letters before the SVG gallows completes. AI topic generator and hint system.',
+      desc: 'Guess vocabulary letters before the SVG gallows completes, with built-in topics and hints.',
       tags: ['SVG Animation', 'Word Game'],
       path: '/hangman.html',
       isReact: false
@@ -146,23 +153,24 @@ export default function GameHub() {
         <div className={styles.titleSection}>
           <h1>
             <span className={styles.titleIcon}>🎮</span>
-            <span className={styles.gradientText}>OpenClassTools Game Hub</span>
+            <span className={styles.gradientText}>Rohirrim Game Hub</span>
           </h1>
-          <p>Next-Gen AI-Powered Classroom Party Games & Widescreen Interactive Board Suite</p>
+          <p>{t('hub.tagline')}</p>
         </div>
 
         <div className={styles.headerActions}>
+          {serverHealth.status === 'online' && <>
           <details className={styles.teacherGuide}>
             <summary>
               <span aria-hidden="true">🎓</span>
-              Teacher Guide
+              {t('hub.teacherGuide', undefined, 'Teacher Guide')}
             </summary>
             <div className={styles.teacherGuideBody}>
               <div className={styles.guideIntro}>
                 <span aria-hidden="true">✨</span>
                 <div>
-                  <strong>Build classroom-ready activities</strong>
-                  <p>Choose a game, match your lesson objective, and reuse shared decks.</p>
+                  <strong>{t('hub.buildActivities')}</strong>
+                  <p>{t('hub.buildActivitiesText')}</p>
                 </div>
               </div>
 
@@ -170,36 +178,30 @@ export default function GameHub() {
                 <div className={styles.guideStep}>
                   <span className={styles.guideStepNumber}>1</span>
                   <div>
-                    <strong>Add your API key</strong>
-                    <p>
-                      Get a Gemini key from{' '}
-                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">
-                        Google AI Studio
-                      </a>
-                      . It is temporary and stays only in this browser tab.
-                    </p>
+                    <strong>{t('hub.addKey')}</strong>
+                    <p>{t('hub.keyText')}</p>
                   </div>
                 </div>
 
                 <div className={styles.guideStep}>
                   <span className={styles.guideStepNumber}>2</span>
                   <div>
-                    <strong>Choose a game</strong>
-                    <p>Select the activity that best supports your lesson objective and class level.</p>
+                    <strong>{t('hub.chooseGame')}</strong>
+                    <p>{t('hub.chooseGameText')}</p>
                   </div>
                 </div>
 
                 <div className={styles.guideStep}>
                   <span className={styles.guideStepNumber}>3</span>
                   <div>
-                    <strong>Name decks clearly</strong>
-                    <p>Include the topic and CEFR level so other teachers can find and reuse them.</p>
+                    <strong>{t('hub.nameDecks', undefined, 'Name decks clearly')}</strong>
+                    <p>{t('hub.nameDecksText')}</p>
                   </div>
                 </div>
               </div>
 
               <button type="button" onClick={() => setIsApiKeyModalOpen(true)}>
-                {keyActive ? 'Change API key' : 'Add API key'}
+                {keyActive ? t('hub.changeKey') : t('hub.addKeyButton')}
               </button>
             </div>
           </details>
@@ -208,13 +210,17 @@ export default function GameHub() {
             className={styles.btnApiKey}
             onClick={() => setIsApiKeyModalOpen(true)}
           >
-            {keyActive ? '🟢 AI Key Active' : '🔴 AI Generation Disabled'}
+            {keyActive ? t('hub.activeKey') : t('hub.disabledKey')}
           </button>
+          </>}
 
           <div className={styles.statusBadge}>
             <div className={styles.statusDot} style={{ background: serverHealth.status === 'offline' ? '#ef4444' : '#10b981' }}></div>
-            <span>Server: {serverHealth.status === 'offline' ? 'Offline' : 'Online'}</span>
+            <span>{serverHealth.status === 'offline'
+              ? t('hub.offlineReady', undefined, 'Offline-ready')
+              : t('hub.server', { status: serverHealth.status === 'checking' ? '…' : t('common.online') })}</span>
           </div>
+          <LanguageSelector className={styles.languageSelector} />
         </div>
       </header>
 
@@ -241,14 +247,16 @@ export default function GameHub() {
         })}
       </section>
 
-      <ApiKeyModal
-        isOpen={isApiKeyModalOpen}
-        onClose={handleApiModalClose}
-      />
-      <TeacherKeyPrompt
-        isOpen={showKeyPrompt}
-        onClose={handlePromptClose}
-      />
+      {serverHealth.status === 'online' && <>
+        <ApiKeyModal
+          isOpen={isApiKeyModalOpen}
+          onClose={handleApiModalClose}
+        />
+        <TeacherKeyPrompt
+          isOpen={showKeyPrompt}
+          onClose={handlePromptClose}
+        />
+      </>}
     </div>
   );
 }

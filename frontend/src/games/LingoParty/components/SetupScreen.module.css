@@ -9,8 +9,8 @@
   justify-content: center;
   padding: 2rem;
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, rgba(168, 85, 247, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 30% 20%, rgba(111, 141, 82, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(200, 162, 74, 0.04) 0%, transparent 50%);
 }
 
 .setupCard {
@@ -20,10 +20,10 @@
   display: flex;
   flex-direction: column;
   gap: 1.8rem;
-  background: rgba(10, 8, 24, 0.85) !important;
-  border-color: rgba(139, 92, 246, 0.25) !important;
+  background: rgba(22, 36, 23, 0.85) !important;
+  border-color: rgba(200, 162, 74, 0.25) !important;
   box-shadow:
-    0 0 60px rgba(139, 92, 246, 0.1),
+    0 0 60px rgba(200, 162, 74, 0.1),
     inset 0 0 40px rgba(0, 0, 0, 0.5) !important;
   position: relative;
   overflow: hidden;
@@ -41,7 +41,7 @@
   background: conic-gradient(
     from var(--scan-angle, 0deg),
     transparent 0%,
-    rgba(139, 92, 246, 0.3) 5%,
+    rgba(200, 162, 74, 0.3) 5%,
     transparent 15%,
     transparent 100%
   );
@@ -68,14 +68,14 @@
 .header h1 {
   font-size: 2.2rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #e2e8f0 0%, #c4b5fd 50%, #a855f7 100%);
+  background: linear-gradient(135deg, #f2e7ca 0%, #e6c877 50%, #c8a24a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.5rem;
 }
 
 .header p {
-  color: #94a3b8;
+  color: #b8ac88;
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -100,7 +100,7 @@
 .formGroup label {
   font-size: 0.82rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #b8ac88;
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
@@ -108,13 +108,13 @@
 /* Sci-fi form fields */
 .selectField,
 .inputField {
-  background: rgba(15, 12, 35, 0.7);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(31, 49, 29, 0.7);
+  border: 1px solid rgba(200, 162, 74, 0.2);
   border-radius: 12px;
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: #f2e7ca;
   font-family: var(--font-main);
   transition: all 0.2s ease;
   outline: none;
@@ -122,8 +122,8 @@
 
 .selectField:focus,
 .inputField:focus {
-  border-color: rgba(139, 92, 246, 0.6);
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+  border-color: rgba(200, 162, 74, 0.6);
+  box-shadow: 0 0 15px rgba(200, 162, 74, 0.15);
 }
 
 .apiKeyBtn {
@@ -134,14 +134,14 @@
   justify-content: center;}
 
 .selectField option {
-  background: #0a0818;
-  color: #e2e8f0;
+  background: #162417;
+  color: #f2e7ca;
 }
 
 /* ── AI Section ── */
 .aiSection {
-  background: rgba(236, 72, 153, 0.04);
-  border: 1px solid rgba(236, 72, 153, 0.15);
+  background: rgba(182, 109, 61, 0.04);
+  border: 1px solid rgba(182, 109, 61, 0.15);
   border-radius: 16px;
   padding: 1.4rem;
   display: flex;
@@ -152,10 +152,27 @@
 .aiTitle {
   font-size: 1rem;
   font-weight: 800;
-  color: #c4b5fd;
+  color: #e6c877;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.offlineDeckNotice {
+  gap: 0.5rem;
+  color: #cbd5e1;
+}
+
+.offlineDeckNotice strong {
+  color: #fbbf24;
+  font-size: 1rem;
+}
+
+.offlineDeckNotice p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 /* ── Buttons ── */
@@ -191,8 +208,8 @@
 
 /* ── Debug Console Box ── */
 .debugBox {
-  background: rgba(6, 4, 16, 0.95);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(17, 28, 18, 0.95);
+  border: 1px solid rgba(200, 162, 74, 0.3);
   border-radius: 12px;
   padding: 0.8rem 1rem;
   margin-top: 0.8rem;
@@ -205,17 +222,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #c4b5fd;
+  color: #e6c877;
   font-weight: 700;
   margin-bottom: 0.5rem;
   padding-bottom: 0.4rem;
-  border-bottom: 1px dashed rgba(139, 92, 246, 0.2);
+  border-bottom: 1px dashed rgba(200, 162, 74, 0.2);
 }
 
 .debugClearBtn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  color: #94a3b8;
+  color: #b8ac88;
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   cursor: pointer;
@@ -241,11 +258,11 @@
 }
 
 .debugTime {
-  color: #64748b;
+  color: #8f886c;
   margin-right: 0.3rem;
 }
 
-.info { color: #a78bfa; }
+.info { color: #dbc16c; }
 .success { color: #34d399; font-weight: 600; }
 .warn { color: #fbbf24; }
 .error { color: #f87171; font-weight: 700; }
@@ -277,8 +294,8 @@
   align-items: center;
   gap: 0.15rem;
   padding: 0.6rem 0.5rem;
-  background: rgba(15, 12, 35, 0.7);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(31, 49, 29, 0.7);
+  border: 1px solid rgba(200, 162, 74, 0.2);
   border-radius: 12px;
   cursor: pointer;
   font-family: var(--font-main);
@@ -286,25 +303,25 @@
 }
 
 .modeOption:hover {
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgba(200, 162, 74, 0.5);
 }
 
 .modeOptionActive {
-  border-color: #a855f7;
-  background: rgba(168, 85, 247, 0.18);
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.25);
+  border-color: #c8a24a;
+  background: rgba(200, 162, 74, 0.18);
+  box-shadow: 0 0 15px rgba(200, 162, 74, 0.25);
 }
 
 .modeOptionLabel {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #f2e7ca;
 }
 
 .modeOptionDesc {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: #b8ac88;
 }
 
 /* ── Team Count Stepper ── */
@@ -312,8 +329,8 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  background: rgba(15, 12, 35, 0.7);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(31, 49, 29, 0.7);
+  border: 1px solid rgba(200, 162, 74, 0.2);
   border-radius: 12px;
   padding: 0.4rem 0.6rem;
 }
@@ -322,9 +339,9 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  background: rgba(139, 92, 246, 0.15);
-  color: #e2e8f0;
+  border: 1px solid rgba(200, 162, 74, 0.35);
+  background: rgba(200, 162, 74, 0.15);
+  color: #f2e7ca;
   font-size: 1.15rem;
   font-weight: 800;
   cursor: pointer;
@@ -332,7 +349,7 @@
 }
 
 .stepperBtn:hover:not(:disabled) {
-  background: rgba(139, 92, 246, 0.35);
+  background: rgba(200, 162, 74, 0.35);
 }
 
 .stepperBtn:disabled {
@@ -345,7 +362,7 @@
   text-align: center;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #f2e7ca;
 }
 
 /* ── Compact Team Rows ── */
@@ -368,8 +385,8 @@
 
 .teamEmojiBtn {
   font-size: 1.4rem;
-  background: rgba(168, 85, 247, 0.2);
-  border: 1px solid rgba(168, 85, 247, 0.4);
+  background: rgba(200, 162, 74, 0.2);
+  border: 1px solid rgba(200, 162, 74, 0.4);
   border-radius: 12px;
   padding: 3px 9px;
   cursor: pointer;
@@ -377,16 +394,16 @@
 }
 
 .teamEmojiBtn:hover {
-  border-color: rgba(168, 85, 247, 0.7);
+  border-color: rgba(200, 162, 74, 0.7);
 }
 
 .teamColorInput {
   width: 40px;
   height: 38px;
   padding: 3px;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(200, 162, 74, 0.3);
   border-radius: 10px;
-  background: rgba(15, 12, 35, 0.7);
+  background: rgba(31, 49, 29, 0.7);
   cursor: pointer;
 }
 
@@ -400,11 +417,11 @@
   width: 46px;
   height: 42px;
   padding: 4px;
-  border: 1px solid rgba(139, 92, 246, 0.4);
+  border: 1px solid rgba(200, 162, 74, 0.4);
   border-radius: 10px;
-  background: rgba(15, 12, 35, 0.9);
+  background: rgba(31, 49, 29, 0.9);
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 10px rgba(200, 162, 74, 0.2);
 }
 
 .colorInputSquare::-webkit-color-swatch-wrapper {
@@ -431,10 +448,10 @@
 .aiTab {
   flex: 1;
   padding: 0.55rem 0.5rem;
-  background: rgba(15, 12, 35, 0.7);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(31, 49, 29, 0.7);
+  border: 1px solid rgba(200, 162, 74, 0.2);
   border-radius: 12px;
-  color: #94a3b8;
+  color: #b8ac88;
   font-size: 0.88rem;
   font-weight: 700;
   font-family: var(--font-main);
@@ -443,14 +460,14 @@
 }
 
 .aiTab:hover {
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgba(200, 162, 74, 0.5);
 }
 
 .aiTabActive {
-  border-color: #a855f7;
-  background: rgba(168, 85, 247, 0.18);
-  color: #e2e8f0;
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.25);
+  border-color: #c8a24a;
+  background: rgba(200, 162, 74, 0.18);
+  color: #f2e7ca;
+  box-shadow: 0 0 15px rgba(200, 162, 74, 0.25);
 }
 
 /* ── Saved Deck Library ── */
@@ -466,15 +483,15 @@
   align-items: center;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #c4b5fd;
+  color: #e6c877;
 }
 
 .savedDecksEmpty {
   padding: 1rem;
   text-align: center;
   font-size: 0.85rem;
-  color: #94a3b8;
-  border: 1px dashed rgba(139, 92, 246, 0.3);
+  color: #b8ac88;
+  border: 1px dashed rgba(200, 162, 74, 0.3);
   border-radius: 12px;
 }
 
@@ -491,8 +508,8 @@
   align-items: center;
   gap: 0.7rem;
   padding: 0.6rem 0.8rem;
-  background: rgba(15, 12, 35, 0.7);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(31, 49, 29, 0.7);
+  border: 1px solid rgba(200, 162, 74, 0.2);
   border-radius: 12px;
 }
 
@@ -504,7 +521,7 @@
 .savedDeckTitle {
   font-size: 0.92rem;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #f2e7ca;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -513,7 +530,7 @@
 .savedDeckSub {
   font-size: 0.74rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: #b8ac88;
   margin-top: 0.15rem;
 }
 

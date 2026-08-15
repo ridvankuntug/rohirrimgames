@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
     <script src="theme.js"></script>
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <link rel="canonical" href="https://play.metrix.dpdns.org/taboo.html" />
     <meta property="og:type" content="website" />
@@ -43,6 +45,7 @@
     <div id="screen-setup" class="screen active">
         <div class="glass-card setup-card">
             <div class="logo-area">
+                <div id="language-selector" class="language-selector-wrap"></div>
                 <span class="logo-icon">🃏</span>
                 <h1>Taboo</h1>
                 <p class="tagline">Describe it without the forbidden words!</p>
@@ -70,17 +73,17 @@
 
             <section id="static-deck-wrap" class="deck-library" hidden>
                 <div class="deck-library__row">
-                    <label>Deck<select id="static-deck-select"></select></label>
+                    <label><span data-i18n="legacy.deck">Deck</span><select id="static-deck-select"></select></label>
                 </div>
             </section>
 
             <button id="btn-start" class="btn-primary pulse">
-                <span class="btn-text">Start Game</span>
+                <span class="btn-text" data-i18n="legacy.startGame">Start Game</span>
                 <span class="btn-arrow">→</span>
             </button>
 
             <div id="ai-generate-wrap">
-                <div class="divider"><span>or</span></div>
+                <div class="divider"><span data-i18n="legacy.or">or</span></div>
 
                 <div class="generate-section">
                     <div style="display: flex; gap: .5rem; margin-bottom: .8rem;">
@@ -92,27 +95,27 @@
                     </div>
                     <button id="btn-generate" class="btn-accent">
                         <span class="btn-icon">✨</span>
-                        <span class="btn-text">Generate Cards with AI</span>
+                        <span class="btn-text" data-i18n="legacy.generateCards">Generate Cards with AI</span>
                     </button>
                     <p id="generate-status" class="generate-status"></p>
                     <div id="deck-library-mount"></div>
                 </div>
             </div>
-            <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden>Reuse Last Generated</button>
+            <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden data-i18n="legacy.reuseGenerated">Reuse Last Generated</button>
 
-            <div class="divider"><span>or play</span></div>
-            <a href="index.html" class="btn-secondary" style="text-decoration:none;">🏠 Main Menu</a>
+            <div class="divider"><span data-i18n="legacy.orPlay">or play</span></div>
+            <a href="index.html" class="btn-secondary" style="text-decoration:none;" data-i18n="legacy.mainMenu">🏠 Main Menu</a>
         </div>
     </div>
 
     <!-- ===== TURN INTRO SCREEN ===== -->
     <div id="screen-turn-intro" class="screen">
         <div class="glass-card turn-intro-card">
-            <p class="turn-label">Get Ready!</p>
+            <p class="turn-label" data-i18n="legacy.getReady">Get Ready!</p>
             <h2 id="turn-team-name" class="team-heading"></h2>
             <p class="turn-sub">Your turn is about to begin…</p>
             <button id="btn-go" class="btn-primary">
-                <span class="btn-text">Go!</span>
+                <span class="btn-text" data-i18n="common.start">Go!</span>
             </button>
         </div>
     </div>
@@ -145,9 +148,9 @@
 
             <!-- Action buttons -->
             <div class="action-buttons">
-                <button id="btn-correct" class="btn-action btn-correct">✓ Correct</button>
-                <button id="btn-pass" class="btn-action btn-pass">⟳ Pass</button>
-                <button id="btn-taboo" class="btn-action btn-taboo">✗ Taboo!</button>
+                <button id="btn-correct" class="btn-action btn-correct" data-i18n="legacy.correct">✓ Correct</button>
+                <button id="btn-pass" class="btn-action btn-pass" data-i18n="legacy.pass">⟳ Pass</button>
+                <button id="btn-taboo" class="btn-action btn-taboo" data-i18n="legacy.taboo">✗ Taboo!</button>
             </div>
 
             <a href="index.html" class="btn-secondary btn-ingame-menu"
@@ -158,7 +161,7 @@
     <!-- ===== TURN END SCREEN ===== -->
     <div id="screen-turn-end" class="screen">
         <div class="glass-card turn-end-card">
-            <p class="turn-label">Time's Up!</p>
+            <p class="turn-label" data-i18n="legacy.timeUp">Time's Up!</p>
             <h2 id="turn-end-team" class="team-heading"></h2>
             <div class="round-stats">
                 <div class="stat-item stat-correct">
@@ -176,7 +179,7 @@
             </div>
             <p class="turn-score-text">Net points: <strong id="turn-points">0</strong></p>
             <button id="btn-next-turn" class="btn-primary">
-                <span class="btn-text">Next Turn</span>
+                <span class="btn-text" data-i18n="legacy.nextTurn">Next Turn</span>
                 <span class="btn-arrow">→</span>
             </button>
         </div>
@@ -199,7 +202,7 @@
                 </div>
             </div>
             <div class="scoreboard-actions">
-                <button id="btn-new-game" class="btn-primary">New Game</button>
+                <button id="btn-new-game" class="btn-primary" data-i18n="legacy.newGame">New Game</button>
                 <a href="index.html" class="btn-secondary" style="text-decoration:none;">🏠 Main Menu</a>
             </div>
         </div>

@@ -49,17 +49,17 @@ export function getMapCoordinates(index, totalLength) {
 const TILE_CONFIG = {
   start:         { color: '#10b981', glow: 'rgba(16,185,129,0.5)',  icon: '🌍',  label: 'LAUNCH', cssClass: 'tileStart' },
   trophy:        { color: '#f59e0b', glow: 'rgba(245,158,11,0.5)', icon: '⭐',  label: 'GOAL',   cssClass: 'tileTrophy' },
-  chance:        { color: '#ec4899', glow: 'rgba(236,72,153,0.5)', icon: '🪐',  label: 'FATE',   cssClass: 'tileChance' },
+  chance:        { color: '#b66d3d', glow: 'rgba(182,109,61,0.5)', icon: '🪐',  label: 'FATE',   cssClass: 'tileChance' },
   shop:          { color: '#3b82f6', glow: 'rgba(59,130,246,0.5)', icon: '🛸',  label: 'SHOP',   cssClass: 'tileShop' },
-  challenge:     { color: '#a855f7', glow: 'rgba(168,85,247,0.5)', icon: '🎯',  label: 'Challenge' },
-  riddle:        { color: '#a855f7', glow: 'rgba(168,85,247,0.5)', icon: '🎯',  label: 'Challenge' },
-  scramble:      { color: '#a855f7', glow: 'rgba(168,85,247,0.5)', icon: '🎯',  label: 'Challenge' },
-  pronunciation: { color: '#a855f7', glow: 'rgba(168,85,247,0.5)', icon: '🎯',  label: 'Challenge' },
-  association:   { color: '#a855f7', glow: 'rgba(168,85,247,0.5)', icon: '🎯',  label: 'Challenge' },
-  grammar:       { color: '#a855f7', glow: 'rgba(168,85,247,0.5)', icon: '🎯',  label: 'Challenge' },
-  speed:         { color: '#a855f7', glow: 'rgba(168,85,247,0.5)', icon: '🎯',  label: 'Challenge' },
-  roleplay:      { color: '#a855f7', glow: 'rgba(168,85,247,0.5)', icon: '🎯',  label: 'Challenge' },
-  vortex:        { color: '#312e81', glow: 'rgba(99,102,241,0.9)', icon: '🌀', label: 'VORTEX', cssClass: 'tileVortex' },
+  challenge:     { color: '#c8a24a', glow: 'rgba(200,162,74,0.5)', icon: '🎯',  label: 'Challenge' },
+  riddle:        { color: '#c8a24a', glow: 'rgba(200,162,74,0.5)', icon: '🎯',  label: 'Challenge' },
+  scramble:      { color: '#c8a24a', glow: 'rgba(200,162,74,0.5)', icon: '🎯',  label: 'Challenge' },
+  pronunciation: { color: '#c8a24a', glow: 'rgba(200,162,74,0.5)', icon: '🎯',  label: 'Challenge' },
+  association:   { color: '#c8a24a', glow: 'rgba(200,162,74,0.5)', icon: '🎯',  label: 'Challenge' },
+  grammar:       { color: '#c8a24a', glow: 'rgba(200,162,74,0.5)', icon: '🎯',  label: 'Challenge' },
+  speed:         { color: '#c8a24a', glow: 'rgba(200,162,74,0.5)', icon: '🎯',  label: 'Challenge' },
+  roleplay:      { color: '#c8a24a', glow: 'rgba(200,162,74,0.5)', icon: '🎯',  label: 'Challenge' },
+  vortex:        { color: '#1f5a4c', glow: 'rgba(31,90,76,0.9)', icon: '🌀', label: 'VORTEX', cssClass: 'tileVortex' },
   asteroid:      { color: '#451a03', glow: 'rgba(245,158,11,0.9)', icon: '☄️', label: 'ASTEROID', cssClass: 'tileAsteroid' },
   ordering:      { color: '#f97316', glow: 'rgba(249,115,22,0.5)', icon: '🔢', label: 'Challenge' },
 };
@@ -132,11 +132,11 @@ const SPHERE_TEXTURES = ['bands', 'craters', 'ring'];
    Orbit Galaxy Theme Configuration — Unique Galaxy Palettes Per Orbit
    ═══════════════════════════════════════════════════════════════ */
 const ORBIT_THEMES = [
-  { name: 'Violet Nebula', color: '#8b5cf6', glow: 'rgba(139,92,246,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(139, 92, 246, 0.22) 0%, transparent 60%)' },
-  { name: 'Cyan Cyber Galaxy', color: '#06b6d4', glow: 'rgba(6,182,212,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(6, 182, 212, 0.22) 0%, transparent 60%)' },
-  { name: 'Solar Flare Supernova', color: '#f59e0b', glow: 'rgba(245,158,11,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(245, 158, 11, 0.22) 0%, transparent 60%)' },
-  { name: 'Emerald Quantum Void', color: '#10b981', glow: 'rgba(16,185,129,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(16, 185, 129, 0.22) 0%, transparent 60%)' },
-  { name: 'Prism Deep Space', color: '#ec4899', glow: 'rgba(236,72,153,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(236, 72, 153, 0.22) 0%, transparent 60%)' }
+  { name: 'Rohan Dawn', color: '#6f8d52', glow: 'rgba(111,141,82,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(111, 141, 82, 0.22) 0%, transparent 60%)' },
+  { name: 'Anduin Current', color: '#16736b', glow: 'rgba(22,115,107,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(22, 115, 107, 0.22) 0%, transparent 60%)' },
+  { name: 'Golden Hall', color: '#f59e0b', glow: 'rgba(245,158,11,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(245, 158, 11, 0.22) 0%, transparent 60%)' },
+  { name: 'Riddermark Grove', color: '#10b981', glow: 'rgba(16,185,129,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(16, 185, 129, 0.22) 0%, transparent 60%)' },
+  { name: 'Westfold Ember', color: '#b66d3d', glow: 'rgba(182,109,61,0.6)', bg: 'radial-gradient(ellipse at 30% 20%, rgba(182, 109, 61, 0.22) 0%, transparent 60%)' }
 ];
 
 export function getOrbitTheme(orbitNumber = 1) {
@@ -197,9 +197,9 @@ export default function BoardMap({ tiles = [], teams = [], tileStyle = 'hex', ro
           {/* Cosmic trail gradient */}
           <linearGradient id="cosmicTrailGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-            <stop offset="30%" stopColor="#6366f1" stopOpacity="0.9" />
-            <stop offset="60%" stopColor="#a855f7" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#ec4899" stopOpacity="0.8" />
+            <stop offset="30%" stopColor="#6f8d52" stopOpacity="0.9" />
+            <stop offset="60%" stopColor="#c8a24a" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#b66d3d" stopOpacity="0.8" />
           </linearGradient>
 
           {/* Glow filter for planets */}
@@ -233,9 +233,9 @@ export default function BoardMap({ tiles = [], teams = [], tileStyle = 'hex', ro
 
           // Distinct cosmic color palette for each planet sphere
           const PLANET_SPHERE_COLORS = [
-            '#8b5cf6', '#06b6d4', '#3b82f6', '#ec4899', '#10b981',
-            '#f59e0b', '#6366f1', '#14b8a6', '#a855f7', '#f97316',
-            '#0284c7', '#d946ef'
+            '#6f8d52', '#16736b', '#3b82f6', '#b66d3d', '#10b981',
+            '#f59e0b', '#c8a24a', '#14b8a6', '#8b5a3c', '#f97316',
+            '#0284c7', '#a87842'
           ];
           const sphereColor = isIconicTile ? conf.color : PLANET_SPHERE_COLORS[tp.idx % PLANET_SPHERE_COLORS.length];
 

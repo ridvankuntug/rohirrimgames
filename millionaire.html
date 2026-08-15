@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
     <script src="theme.js"></script>
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <meta name="description" content="Play a classroom quiz-show game with AI-generated questions and lifelines." />
     <link rel="canonical" href="https://play.metrix.dpdns.org/millionaire.html" />
@@ -43,6 +45,7 @@
 
     <div class="screen active" id="start-screen">
         <div class="glass-card start-card">
+            <div id="language-selector" class="language-selector-wrap"></div>
             <span class="game-icon">&#128176;</span>
             <p class="eyebrow">Quiz Show Mode</p>
             <h1>Who Wants to Be a Millionaire?</h1>
@@ -50,7 +53,7 @@
 
             <section id="static-deck-wrap" class="deck-library" hidden>
                 <div class="deck-library__row">
-                    <label>Deck<select id="static-deck-select"></select></label>
+                    <label><span data-i18n="legacy.deck">Deck</span><select id="static-deck-select"></select></label>
                 </div>
             </section>
 
@@ -62,12 +65,12 @@
                 </div>
                 <div id="deck-library-mount"></div>
             </div>
-            <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden>Reuse Last Generated</button>
+            <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden data-i18n="legacy.reuseGenerated">Reuse Last Generated</button>
 
             <div class="mode-buttons">
                 <button class="btn-primary" id="btn-start-ai">
                     <span class="btn-icon">&#10024;</span>
-                    Generate with AI
+                    <span data-i18n="legacy.generateAi">Generate with AI</span>
                 </button>
                 <button class="btn-secondary" id="btn-start-default">
                     <span class="btn-icon">&#9654;</span>
@@ -78,7 +81,7 @@
             <button class="btn-text" id="btn-how-to-play">How to Play</button>
 
             <div class="back-link">
-                <a href="index.html">Back to Hub</a>
+                <a href="index.html" data-i18n="legacy.backToHub">Back to Hub</a>
             </div>
         </div>
     </div>
@@ -95,7 +98,7 @@
                 <li>You can <strong>walk away</strong> with your current winnings at any time.</li>
                 <li>A wrong answer drops you back to your last safe haven.</li>
             </ul>
-            <button class="btn-primary" id="btn-close-help">Continue</button>
+            <button class="btn-primary" id="btn-close-help" data-i18n="legacy.continue">Continue</button>
         </div>
     </div>
 

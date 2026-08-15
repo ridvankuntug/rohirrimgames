@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="lingoparty.css">
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <meta name="description" content="A cosmic board-game race where teams answer vocabulary challenges to reach the finish." />
     <link rel="canonical" href="https://play.metrix.dpdns.org/lingoparty.html" />
@@ -43,7 +45,8 @@
         <section id="setup-screen" class="screen active">
             <div class="glass-card setup-card">
                 <header class="game-header">
-                    <a href="index.html" class="back-link">🏠 Main Menu</a>
+                    <div id="language-selector" class="language-selector-wrap"></div>
+                    <a href="index.html" class="back-link" data-i18n="legacy.mainMenu">🏠 Main Menu</a>
                     <h1 class="game-title">🎲 Lingo<span class="accent-text">Party</span></h1>
                     <p class="game-subtitle">The Ultimate Interactive Language Board Game Odyssey</p>
                 </header>
@@ -51,7 +54,7 @@
                 <div class="setup-grid">
                     <!-- Teams Setup -->
                     <div class="setup-section">
-                        <h3>👥 Teams Setup</h3>
+                        <h3 data-i18n="legacy.teamsSetup">👥 Teams Setup</h3>
                         <div class="teams-list" id="teams-list">
                             <div class="team-setup-row" data-team="0">
                                 <span class="team-pawn red-pawn" style="cursor:pointer;" title="Click to change emoji">🐉</span>
@@ -71,7 +74,7 @@
                             </div>
                         </div>
                         <div class="team-count-controls">
-                            <label>Active Teams:</label>
+                            <label data-i18n="legacy.activeTeams">Active Teams:</label>
                             <select id="team-count-select" class="theme-input small-select">
                                 <option value="2">2 Teams</option>
                                 <option value="3" selected>3 Teams</option>
@@ -82,10 +85,10 @@
 
                     <!-- Board & Topic Configuration -->
                     <div class="setup-section">
-                        <h3>🗺️ Board & Challenge Topic</h3>
+                        <h3 data-i18n="legacy.boardTopic">🗺️ Board & Challenge Topic</h3>
                         
                         <div class="input-group">
-                            <label for="board-length">Board Length (Total Tiles):</label>
+                            <label for="board-length" data-i18n="legacy.boardLength">Board Length (Total Tiles):</label>
                             <select id="board-length" class="theme-input">
                                 <option value="15">⚡ Quick Track (15 Tiles ~15 mins)</option>
                                 <option value="22" selected>🏁 Standard Island (22 Tiles ~25 mins)</option>
@@ -94,7 +97,7 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="cefr-select">Target CEFR Level:</label>
+                            <label for="cefr-select" data-i18n="legacy.targetCefr">Target CEFR Level:</label>
                             <select id="cefr-select" class="theme-input">
                                 <option value="A1">A1 – Beginner</option>
                                 <option value="A2" selected>A2 – Elementary</option>
@@ -105,16 +108,16 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="topic-input">Classroom Vocabulary Topic:</label>
+                            <label for="topic-input" data-i18n="legacy.vocabularyTopic">Classroom Vocabulary Topic:</label>
                             <input type="text" id="topic-input" class="theme-input" placeholder="e.g., Food & Dining, Business English, Phrasal Verbs" value="General Classroom English">
                         </div>
 
                         <div class="button-row">
                             <button id="btn-generate-ai" class="btn-primary btn-ai">
-                                ✨ AI Generate Deck
+                                <span data-i18n="legacy.generateDeck">✨ AI Generate Deck</span>
                             </button>
                             <button id="btn-default-deck" class="btn-secondary">
-                                ▶️ Play Default Deck
+                                <span data-i18n="legacy.playDefaultDeck">▶️ Play Default Deck</span>
                             </button>
                         </div>
 
@@ -131,7 +134,7 @@
 
                 <!-- Tile Guide Box -->
                 <div class="tile-guide-box">
-                    <h4>🎯 Action Tile Guide</h4>
+                    <h4 data-i18n="legacy.actionGuide">🎯 Action Tile Guide</h4>
                     <div class="guide-items">
                         <span class="guide-tag riddle-tag">🧩 Riddle (+15 Coins)</span>
                         <span class="guide-tag scramble-tag">🔡 Scramble (+15 Coins)</span>
@@ -151,7 +154,7 @@
         <section id="game-screen" class="screen">
             <header class="board-header glass-card">
                 <div class="header-left">
-                    <a href="index.html" class="back-link mini-link">🏠 Exit</a>
+                    <a href="index.html" class="back-link mini-link" data-i18n="legacy.exit">🏠 Exit</a>
                     <h2 class="board-title">🎲 Lingo<span class="accent-text">Odyssey</span></h2>
                 </div>
                 
@@ -169,7 +172,7 @@
             <div class="game-stage">
                 <!-- Left: Leaderboard & Teams Panel -->
                 <aside class="leaderboard-panel glass-card">
-                    <h3>🏆 Scoreboard</h3>
+                    <h3 data-i18n="legacy.scoreboard">🏆 Scoreboard</h3>
                     <div id="leaderboard-list" class="leaderboard-list">
                         <!-- Dynamically populated -->
                     </div>
@@ -249,9 +252,9 @@
             </div>
 
             <footer class="challenge-actions">
-                <button id="btn-challenge-correct" class="btn-primary btn-correct">✅ Correct (+Coins)</button>
-                <button id="btn-challenge-wrong" class="btn-secondary btn-wrong">❌ Wrong (0 Coins)</button>
-                <button id="btn-challenge-pass" class="btn-secondary btn-pass">⏭️ Skip / Pass</button>
+                <button id="btn-challenge-correct" class="btn-primary btn-correct" data-i18n="legacy.correctCoins">✅ Correct (+Coins)</button>
+                <button id="btn-challenge-wrong" class="btn-secondary btn-wrong" data-i18n="legacy.wrongCoins">❌ Wrong (0 Coins)</button>
+                <button id="btn-challenge-pass" class="btn-secondary btn-pass" data-i18n="legacy.skipPass">⏭️ Skip / Pass</button>
             </footer>
         </div>
     </div>

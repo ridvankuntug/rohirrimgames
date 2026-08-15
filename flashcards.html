@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
     <script src="theme.js"></script>
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <meta name="description" content="Flip through AI-generated vocabulary flashcards with your class." />
     <link rel="canonical" href="https://play.metrix.dpdns.org/flashcards.html" />
@@ -41,24 +43,25 @@
 
     <main class="flashcards-stage">
         <header class="game-header">
-            <a href="index.html" class="back-link">🏠 Main Menu</a>
-            <h1 class="page-title">Vocabulary <span class="accent-text">Flashcards</span></h1>
+            <div id="language-selector" class="language-selector-wrap"></div>
+            <a href="index.html" class="back-link" data-i18n="legacy.mainMenu">🏠 Main Menu</a>
+            <h1 class="page-title" data-i18n="legacy.vocabularyFlashcards">Vocabulary Flashcards</h1>
         </header>
 
         <section class="board-surface glass-panel">
             <section id="static-deck-wrap" class="deck-library" hidden>
                 <div class="deck-library__row">
-                    <label>Deck<select id="static-deck-select"></select></label>
+                    <label><span data-i18n="legacy.deck">Deck</span><select id="static-deck-select"></select></label>
                 </div>
             </section>
 
             <div class="solo-controls glass-panel">
                 <div class="solo-top-row">
                     <div id="ai-generate-wrap" style="display:contents">
-                        <input type="text" id="theme-input" class="theme-input" placeholder="AI Topic (e.g. Kitchen Items, B1 Idioms, Travel)..." />
-                        <button id="btn-generate-ai" class="btn-primary"><span class="btn-icon">✨</span> AI Generate</button>
+                        <input type="text" id="theme-input" class="theme-input" placeholder="AI Topic (e.g. Kitchen Items, B1 Idioms, Travel)..." data-i18n-placeholder="legacy.aiTopic" />
+                        <button id="btn-generate-ai" class="btn-primary" data-i18n="legacy.aiGenerate">✨ AI Generate</button>
                     </div>
-                    <button id="btn-use-default" class="btn-secondary"><span class="btn-icon">▶️</span> Default Deck</button>
+                    <button id="btn-use-default" class="btn-secondary" data-i18n="legacy.defaultDeck">▶️ Default Deck</button>
                     <button id="btn-review-mode" class="btn-secondary btn-review-mode" title="Study only cards marked for review" hidden>🔁 Review Mode (0)</button>
                 </div>
                 <div id="deck-library-mount"></div>
@@ -79,7 +82,7 @@
                 <div id="flashcard" class="flashcard">
                     <div class="card-face card-front">
                         <div class="card-header-row">
-                            <span class="card-side-label">ENGLISH WORD</span>
+                            <span class="card-side-label" data-i18n="legacy.englishWord">ENGLISH WORD</span>
                             <button id="btn-pronounce" class="btn-pronounce" title="Listen to pronunciation">🔊</button>
                         </div>
                         <div class="card-body">
@@ -89,7 +92,7 @@
                     </div>
                     <div class="card-face card-back">
                         <div class="card-header-row">
-                            <span class="card-side-label">TURKISH MEANING</span>
+                            <span class="card-side-label" data-i18n="legacy.turkishMeaning">TURKISH MEANING</span>
                         </div>
                         <div class="card-body">
                             <h2 id="card-meaning" class="card-text">YUMURTA</h2>
@@ -100,11 +103,11 @@
             </div>
 
             <div class="card-actions-bar">
-                <button id="btn-prev" class="action-btn btn-nav" title="Previous Card (Left Arrow)">⬅️ Previous</button>
-                <button id="btn-mark-review" class="action-btn btn-mark-review" title="Mark for review (R)">❌ Needs Review</button>
-                <button id="btn-flip" class="action-btn btn-flip-card" title="Flip Card (Space)">🔄 Flip Card</button>
-                <button id="btn-mark-mastered" class="action-btn btn-mark-mastered" title="Mark mastered (M)">✅ Mastered</button>
-                <button id="btn-next" class="action-btn btn-nav" title="Next Card (Right Arrow)">Next ➡️</button>
+                <button id="btn-prev" class="action-btn btn-nav" title="Previous Card (Left Arrow)" data-i18n="legacy.previous">⬅️ Previous</button>
+                <button id="btn-mark-review" class="action-btn btn-mark-review" title="Mark for review (R)" data-i18n="legacy.needsReview">❌ Needs Review</button>
+                <button id="btn-flip" class="action-btn btn-flip-card" title="Flip Card (Space)" data-i18n="legacy.flip">🔄 Flip Card</button>
+                <button id="btn-mark-mastered" class="action-btn btn-mark-mastered" title="Mark mastered (M)" data-i18n="legacy.mastered">✅ Mastered</button>
+                <button id="btn-next" class="action-btn btn-nav" title="Next Card (Right Arrow)" data-i18n="legacy.next">Next ➡️</button>
             </div>
 
             <p id="status-banner" class="status-banner glass-panel">Welcome! Flip the card to study, or generate custom decks with AI above.</p>

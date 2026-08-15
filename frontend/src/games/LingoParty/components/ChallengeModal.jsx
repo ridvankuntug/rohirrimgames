@@ -193,10 +193,10 @@ export default function ChallengeModal({ challenge, activeTeam, onResolve, playS
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', textAlign: 'left', marginTop: '0.4rem' }}>
           {steps.map((step, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span style={{ background: '#8b5cf6', color: '#fff', width: '26px', height: '26px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem', flexShrink: 0 }}>
+              <span style={{ background: '#c8a24a', color: '#fff', width: '26px', height: '26px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem', flexShrink: 0 }}>
                 {i + 1}
               </span>
-              <span style={{ fontSize: '1.1rem', color: '#f3e8ff', fontWeight: 600 }}>
+              <span style={{ fontSize: '1.1rem', color: '#fff3d3', fontWeight: 600 }}>
                 {step.replace(/^([1-9]\d*[\.\)]|step\s*\d+:?|line\s*\d+:?)\s*/i, '')}
               </span>
             </div>
@@ -336,7 +336,7 @@ export default function ChallengeModal({ challenge, activeTeam, onResolve, playS
         )}
 
         {challenge.type === 'roleplay' && (
-          <div className={styles.subcontentBox} style={{ background: 'rgba(168, 85, 247, 0.15)', borderColor: 'rgba(168, 85, 247, 0.4)' }}>
+          <div className={styles.subcontentBox} style={{ background: 'rgba(200, 162, 74, 0.15)', borderColor: 'rgba(200, 162, 74, 0.4)' }}>
             <strong>🎭 Speaking Task: </strong>Perform this out loud for 30 seconds — solo or with your crew! Use natural expressions & target vocabulary.
           </div>
         )}

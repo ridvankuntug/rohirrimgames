@@ -5,7 +5,7 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 2, 12, 0.88);
+  background: rgba(12, 21, 13, 0.88);
   backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
@@ -29,7 +29,7 @@
   flex-direction: column;
   gap: 1.4rem;
   animation: stationDock 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  background: rgba(10, 8, 24, 0.92) !important;
+  background: rgba(22, 36, 23, 0.92) !important;
   border-color: rgba(59, 130, 246, 0.3) !important;
   box-shadow:
     0 0 60px rgba(59, 130, 246, 0.12),
@@ -61,7 +61,7 @@
 .shopHeader h2 {
   font-size: 1.4rem;
   font-weight: 900;
-  color: #e2e8f0;
+  color: #f2e7ca;
 }
 
 .teamWallet {
@@ -94,7 +94,7 @@
 }
 
 .itemCard {
-  background: rgba(15, 12, 35, 0.7);
+  background: rgba(31, 49, 29, 0.7);
   border: 1px solid rgba(59, 130, 246, 0.15);
   border-radius: 16px;
   padding: 1.2rem;
@@ -117,7 +117,7 @@
   right: -1px;
   bottom: -1px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), transparent 50%, rgba(139, 92, 246, 0.1));
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), transparent 50%, rgba(200, 162, 74, 0.1));
   z-index: -1;
 }
 
@@ -135,12 +135,12 @@
 .itemName {
   font-weight: 800;
   font-size: 1rem;
-  color: #e2e8f0;
+  color: #f2e7ca;
 }
 
 .itemDesc {
   font-size: 0.82rem;
-  color: #94a3b8;
+  color: #b8ac88;
   line-height: 1.4;
 }
 
@@ -189,7 +189,7 @@
 /* ── Gibel Cube Item ── */
 .cubeItemCard {
   border-color: rgba(56, 189, 248, 0.4) !important;
-  background: rgba(10, 20, 35, 0.8) !important;
+  background: rgba(28, 44, 29, 0.8) !important;
   box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.08);
 }
 

@@ -13,8 +13,8 @@
   gap: 1rem;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(168, 85, 247, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 0%, rgba(111, 141, 82, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(200, 162, 74, 0.04) 0%, transparent 50%);
 }
 
 /* ════════════════════════════════════════════════
@@ -28,21 +28,21 @@
   padding: 1.2rem;
   overflow-y: auto;
   max-height: 100%;
-  background: rgba(8, 6, 26, 0.7) !important;
-  border-color: rgba(139, 92, 246, 0.2) !important;
+  background: rgba(21, 34, 22, 0.7) !important;
+  border-color: rgba(200, 162, 74, 0.2) !important;
   box-shadow:
     inset 0 0 30px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(139, 92, 246, 0.08) !important;
+    0 0 20px rgba(200, 162, 74, 0.08) !important;
 }
 
 .panelTitle {
   font-size: 1.15rem;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #f2e7ca;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  border-bottom: 1px solid rgba(200, 162, 74, 0.2);
   padding-bottom: 0.7rem;
   letter-spacing: 0.5px;
 }
@@ -54,8 +54,8 @@
 }
 
 .teamItem {
-  background: rgba(15, 12, 35, 0.7);
-  border: 1px solid rgba(139, 92, 246, 0.15);
+  background: rgba(31, 49, 29, 0.7);
+  border: 1px solid rgba(200, 162, 74, 0.15);
   border-radius: 14px;
   padding: 0.8rem 1rem;
   display: flex;
@@ -65,12 +65,12 @@
 }
 
 .teamItemActive {
-  border-color: rgba(139, 92, 246, 0.7);
+  border-color: rgba(200, 162, 74, 0.7);
   box-shadow:
-    0 0 20px rgba(139, 92, 246, 0.35),
-    inset 0 0 15px rgba(139, 92, 246, 0.12);
+    0 0 20px rgba(200, 162, 74, 0.35),
+    inset 0 0 15px rgba(200, 162, 74, 0.12);
   transform: none;
-  background: rgba(139, 92, 246, 0.12);
+  background: rgba(200, 162, 74, 0.12);
 }
 
 .teamInfo {
@@ -87,7 +87,7 @@
 .teamName {
   font-weight: 800;
   font-size: 0.95rem;
-  color: #e2e8f0;
+  color: #f2e7ca;
 }
 
 .teamStats {
@@ -140,12 +140,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(8, 6, 26, 0.75);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(21, 34, 22, 0.75);
+  border: 1px solid rgba(200, 162, 74, 0.2);
   border-radius: 16px;
   padding: 0.7rem 1.4rem;
   backdrop-filter: blur(12px);
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.06);
+  box-shadow: 0 0 15px rgba(200, 162, 74, 0.06);
 }
 
 .turnTeamDisplay {
@@ -154,24 +154,24 @@
   gap: 0.7rem;
   font-size: 1.15rem;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #f2e7ca;
 }
 
 .roundCounter {
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.4);
+  background: rgba(200, 162, 74, 0.15);
+  border: 1px solid rgba(200, 162, 74, 0.4);
   padding: 0.35rem 1.1rem;
   border-radius: 50px;
   font-weight: 800;
   font-size: 0.88rem;
-  color: #c4b5fd;
+  color: #e6c877;
   letter-spacing: 0.5px;
 }
 
 .tileStyleBtn {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.35));
-  border: 1px solid rgba(168, 85, 247, 0.5);
-  color: #f3e8ff;
+  background: linear-gradient(135deg, rgba(200, 162, 74, 0.25), rgba(111, 141, 82, 0.35));
+  border: 1px solid rgba(200, 162, 74, 0.5);
+  color: #fff3d3;
   padding: 0.35rem 1rem;
   border-radius: 50px;
   font-weight: 800;
@@ -181,14 +181,14 @@
   align-items: center;
   gap: 0.4rem;
   transition: all 0.25s ease;
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+  box-shadow: 0 0 12px rgba(200, 162, 74, 0.2);
 }
 
 .tileStyleBtn:hover {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.45), rgba(99, 102, 241, 0.55));
-  border-color: rgba(236, 72, 153, 0.8);
+  background: linear-gradient(135deg, rgba(200, 162, 74, 0.45), rgba(111, 141, 82, 0.55));
+  border-color: rgba(182, 109, 61, 0.8);
   transform: translateY(-1px) scale(1.03);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.45);
+  box-shadow: 0 0 20px rgba(200, 162, 74, 0.45);
 }
 
 /* ════════════════════════════════════════════════
@@ -203,11 +203,11 @@
   align-items: center;
   justify-content: space-between;
   max-height: 100%;
-  background: rgba(8, 6, 26, 0.7) !important;
-  border-color: rgba(139, 92, 246, 0.2) !important;
+  background: rgba(21, 34, 22, 0.7) !important;
+  border-color: rgba(200, 162, 74, 0.2) !important;
   box-shadow:
     inset 0 0 30px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(139, 92, 246, 0.08) !important;
+    0 0 20px rgba(200, 162, 74, 0.08) !important;
 }
 
 .diceSection {
@@ -225,18 +225,18 @@
   width: 120px;
   height: 120px;
   background:
-    radial-gradient(circle at 30% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 60%),
-    rgba(10, 8, 24, 0.85);
-  border: 2px solid rgba(139, 92, 246, 0.5);
+    radial-gradient(circle at 30% 30%, rgba(200, 162, 74, 0.15) 0%, transparent 60%),
+    rgba(22, 36, 23, 0.85);
+  border: 2px solid rgba(200, 162, 74, 0.5);
   border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 4.5rem;
   box-shadow:
-    0 0 30px rgba(139, 92, 246, 0.3),
-    inset 0 0 20px rgba(139, 92, 246, 0.08),
-    0 0 60px rgba(139, 92, 246, 0.1);
+    0 0 30px rgba(200, 162, 74, 0.3),
+    inset 0 0 20px rgba(200, 162, 74, 0.08),
+    0 0 60px rgba(200, 162, 74, 0.1);
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
 }
@@ -254,10 +254,10 @@
 
 .diceRolling {
   animation: diceShake 0.35s infinite ease-in-out;
-  border-color: rgba(236, 72, 153, 0.7);
+  border-color: rgba(182, 109, 61, 0.7);
   box-shadow:
-    0 0 40px rgba(236, 72, 153, 0.4),
-    inset 0 0 20px rgba(236, 72, 153, 0.1);
+    0 0 40px rgba(182, 109, 61, 0.4),
+    inset 0 0 20px rgba(182, 109, 61, 0.1);
 }
 
 @keyframes diceShake {
@@ -311,13 +311,13 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  background: rgba(10, 8, 26, 0.94);
-  border: 2px solid var(--cat-color, #a855f7);
+  background: rgba(22, 36, 23, 0.94);
+  border: 2px solid var(--cat-color, #c8a24a);
   border-radius: 30px;
   padding: 0.6rem 1.8rem;
   box-shadow:
-    0 0 30px var(--cat-color, rgba(168, 85, 247, 0.7)),
-    inset 0 0 15px var(--cat-color, rgba(168, 85, 247, 0.3));
+    0 0 30px var(--cat-color, rgba(200, 162, 74, 0.7)),
+    inset 0 0 15px var(--cat-color, rgba(200, 162, 74, 0.3));
   animation: flashEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), pulseGlow 1.2s infinite alternate;
   pointer-events: none;
 }
@@ -332,7 +332,7 @@
   font-weight: 900;
   color: #ffffff;
   letter-spacing: 1.2px;
-  text-shadow: 0 0 12px var(--cat-color, rgba(168, 85, 247, 0.9));
+  text-shadow: 0 0 12px var(--cat-color, rgba(200, 162, 74, 0.9));
   white-space: nowrap;
 }
 
@@ -349,10 +349,10 @@
 
 @keyframes pulseGlow {
   0% {
-    box-shadow: 0 0 20px var(--cat-color, rgba(168, 85, 247, 0.5)), 0 0 8px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 20px var(--cat-color, rgba(200, 162, 74, 0.5)), 0 0 8px rgba(255, 255, 255, 0.15);
   }
   100% {
-    box-shadow: 0 0 45px var(--cat-color, rgba(168, 85, 247, 0.95)), 0 0 20px #fff;
+    box-shadow: 0 0 45px var(--cat-color, rgba(200, 162, 74, 0.95)), 0 0 20px #fff;
   }
 }
 
@@ -372,10 +372,10 @@
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f59e0b 100%) !important;
+  background: linear-gradient(135deg, #c8a24a 0%, #b66d3d 50%, #f59e0b 100%) !important;
   box-shadow:
-    0 0 30px rgba(168, 85, 247, 0.8),
-    0 0 18px rgba(236, 72, 153, 0.6) !important;
+    0 0 30px rgba(200, 162, 74, 0.8),
+    0 0 18px rgba(182, 109, 61, 0.6) !important;
   animation: questionPulse 1s ease-in-out infinite alternate !important;
   transition: transform 0.2s ease, filter 0.2s ease;
 }
@@ -383,30 +383,30 @@
 .showQuestionBtn:hover {
   transform: scale(1.05);
   filter: brightness(1.25);
-  box-shadow: 0 0 45px rgba(236, 72, 153, 1), 0 0 20px rgba(245, 158, 11, 0.8) !important;
+  box-shadow: 0 0 45px rgba(182, 109, 61, 1), 0 0 20px rgba(245, 158, 11, 0.8) !important;
 }
 
 @keyframes questionPulse {
   0% {
     transform: scale(1);
     filter: brightness(1);
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), 0 0 18px rgba(236, 72, 153, 0.6);
+    box-shadow: 0 0 30px rgba(200, 162, 74, 0.8), 0 0 18px rgba(182, 109, 61, 0.6);
   }
   100% {
     transform: scale(1.03);
     filter: brightness(1.2);
-    box-shadow: 0 0 40px rgba(236, 72, 153, 0.95), 0 0 24px rgba(245, 158, 11, 0.7);
+    box-shadow: 0 0 40px rgba(182, 109, 61, 0.95), 0 0 24px rgba(245, 158, 11, 0.7);
   }
 }
 
 /* ── Planet Hover Information Bar ── */
 .planetHoverInfoBar {
-  background: rgba(8, 6, 26, 0.85);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(21, 34, 22, 0.85);
+  border: 1px solid rgba(200, 162, 74, 0.3);
   border-radius: 14px;
   padding: 0.5rem 1.2rem;
   backdrop-filter: blur(12px);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.12);
+  box-shadow: 0 0 20px rgba(200, 162, 74, 0.12);
   height: 52px;
   max-height: 52px;
   box-sizing: border-box;
@@ -422,22 +422,22 @@
   align-items: center;
   gap: 0.6rem;
   font-size: 0.92rem;
-  color: #e2e8f0;
+  color: #f2e7ca;
   animation: fadeIn 0.2s ease-in-out;
 }
 
 .planetHoverIcon {
   font-size: 1.4rem;
-  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
+  filter: drop-shadow(0 0 8px rgba(200, 162, 74, 0.6));
 }
 
 .planetHoverTitle {
   font-weight: 800;
-  color: #c4b5fd;
+  color: #e6c877;
 }
 
 .planetHoverDesc {
-  color: #94a3b8;
+  color: #b8ac88;
   font-weight: 500;
 }
 

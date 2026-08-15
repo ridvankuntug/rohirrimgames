@@ -1,7 +1,7 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 2, 12, 0.88);
+  background: rgba(12, 21, 13, 0.88);
   backdrop-filter: blur(10px);
   z-index: 1100;
   display: flex;
@@ -23,9 +23,9 @@
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-  background: rgba(10, 8, 24, 0.96) !important;
-  border-color: rgba(168, 85, 247, 0.4) !important;
-  box-shadow: 0 0 60px rgba(168, 85, 247, 0.25) !important;
+  background: rgba(22, 36, 23, 0.96) !important;
+  border-color: rgba(200, 162, 74, 0.4) !important;
+  box-shadow: 0 0 60px rgba(200, 162, 74, 0.25) !important;
 }
 
 .header {
@@ -37,20 +37,20 @@
 .header h2 {
   font-size: 1.6rem;
   font-weight: 900;
-  color: #f3e8ff;
+  color: #fff3d3;
   margin: 0;
 }
 
 .subtext {
   font-size: 0.85rem;
-  color: #a78bfa;
+  color: #dbc16c;
   margin-top: 0.3rem;
 }
 
 .closeBtn {
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  color: #e2e8f0;
+  color: #f2e7ca;
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -71,32 +71,32 @@
 }
 
 .filterTab {
-  background: rgba(15, 12, 35, 0.7);
-  border: 1px solid rgba(168, 85, 247, 0.25);
+  background: rgba(31, 49, 29, 0.7);
+  border: 1px solid rgba(200, 162, 74, 0.25);
   border-radius: 20px;
   padding: 0.4rem 0.85rem;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #c4b5fd;
+  color: #e6c877;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .filterTab:hover {
-  border-color: rgba(168, 85, 247, 0.6);
+  border-color: rgba(200, 162, 74, 0.6);
   color: #ffffff;
 }
 
 .filterActive {
-  background: rgba(168, 85, 247, 0.3);
-  border-color: #a855f7;
+  background: rgba(200, 162, 74, 0.3);
+  border-color: #c8a24a;
   color: #ffffff;
-  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 12px rgba(200, 162, 74, 0.3);
 }
 
 .searchInput {
-  background: rgba(15, 12, 35, 0.8);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: rgba(31, 49, 29, 0.8);
+  border: 1px solid rgba(200, 162, 74, 0.3);
   border-radius: 12px;
   padding: 0.65rem 1rem;
   font-size: 0.92rem;
@@ -105,7 +105,7 @@
 }
 
 .searchInput:focus {
-  border-color: #a855f7;
+  border-color: #c8a24a;
 }
 
 .cardList {
@@ -118,8 +118,8 @@
 }
 
 .cardItem {
-  background: rgba(15, 12, 35, 0.85);
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  background: rgba(31, 49, 29, 0.85);
+  border: 1px solid rgba(200, 162, 74, 0.25);
   border-radius: 14px;
   padding: 1rem 1.2rem;
   display: flex;
@@ -134,8 +134,8 @@
 }
 
 .cardIndex {
-  background: rgba(168, 85, 247, 0.25);
-  color: #d8b4fe;
+  background: rgba(200, 162, 74, 0.25);
+  color: #f1dda1;
   font-weight: 900;
   font-size: 0.85rem;
   padding: 0.2rem 0.6rem;
@@ -151,7 +151,7 @@
 
 .testRunBtn {
   margin-left: auto;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  background: linear-gradient(135deg, #c8a24a, #6f8d52);
   border: none;
   color: #ffffff;
   font-weight: 800;
@@ -163,13 +163,13 @@
 }
 
 .testRunBtn:hover {
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 12px rgba(200, 162, 74, 0.5);
   transform: translateY(-1px);
 }
 
 .cardPrompt {
   font-size: 0.95rem;
-  color: #e2e8f0;
+  color: #f2e7ca;
   line-height: 1.45;
 }
 

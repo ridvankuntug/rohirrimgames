@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
     <script src="theme.js"></script>
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <meta name="description" content="An English word game with AI-generated vocabulary decks." />
     <link rel="canonical" href="https://play.metrix.dpdns.org/kelime.html" />
@@ -40,6 +42,7 @@
     <div class="ambient ambient-two"></div>
 
     <main class="wordgame-stage">
+        <div id="language-selector" class="language-selector-wrap"></div>
         <section class="board-surface glass-panel">
             <div class="question-wrap">
                 <p id="question-text" class="question-text">Word Game is ready.</p>
@@ -51,11 +54,11 @@
 
             <div class="stats-row">
                 <div class="stat-card glass-panel">
-                    <span class="stat-label">Time</span>
+                    <span class="stat-label" data-i18n="legacy.time">Time</span>
                     <span id="timer-display" class="stat-value timer">04:00</span>
                 </div>
                 <div class="stat-card glass-panel">
-                    <span class="stat-label">Score</span>
+                    <span class="stat-label" data-i18n="legacy.score">Score</span>
                     <span id="score-display" class="stat-value score">0</span>
                 </div>
             </div>
@@ -64,26 +67,26 @@
 
             <section id="static-deck-wrap" class="deck-library" hidden>
                 <div class="deck-library__row">
-                    <label>Deck<select id="static-deck-select"></select></label>
+                    <label><span data-i18n="legacy.deck">Deck</span><select id="static-deck-select"></select></label>
                 </div>
             </section>
 
             <div class="solo-controls glass-panel">
                 <div id="setup-controls" class="solo-top-row">
                     <div id="ai-generate-wrap" style="display:contents">
-                        <input type="text" id="theme-input" class="theme-input" placeholder="AI Topic (e.g. Science, Cinema, Space)..." />
-                        <button id="btn-generate-ai" class="btn-primary"><span class="btn-icon">✨</span> AI Generate</button>
+                        <input type="text" id="theme-input" class="theme-input" placeholder="AI Topic (e.g. Science, Cinema, Space)..." data-i18n-placeholder="legacy.aiTopic" />
+                        <button id="btn-generate-ai" class="btn-primary" data-i18n="legacy.aiGenerate">✨ AI Generate</button>
                     </div>
-                    <button id="btn-use-default" class="btn-secondary"><span class="btn-icon">▶️</span> Play / Start</button>
+                    <button id="btn-use-default" class="btn-secondary" data-i18n="legacy.play">▶️ Play / Start</button>
                 </div>
                 <div id="deck-library-mount"></div>
                 <div class="solo-action-bar">
-                    <button id="btn-reveal-letter" class="action-btn btn-reveal" title="Reveal 1 random letter (-100 pts)">💡 Harf Al</button>
-                    <button id="btn-correct-answer" class="action-btn btn-correct" title="Mark correct & get points">✅ Doğru</button>
-                    <button id="btn-pass-question" class="action-btn btn-pass" title="Pass question without points">⏭️ Pas</button>
-                    <button id="btn-toggle-timer" class="action-btn btn-timer" title="Pause / Resume Timer">⏸️ Süre</button>
-                    <button id="btn-prev-question" class="action-btn btn-nav" title="Previous Question">⬅️ Önceki</button>
-                    <button id="btn-next-question" class="action-btn btn-nav" title="Next Question">Sıradaki ➡️</button>
+                    <button id="btn-reveal-letter" class="action-btn btn-reveal" title="Reveal 1 random letter (-100 pts)" data-i18n="legacy.revealLetter">💡 Harf Al</button>
+                    <button id="btn-correct-answer" class="action-btn btn-correct" title="Mark correct & get points" data-i18n="legacy.markCorrect">✅ Doğru</button>
+                    <button id="btn-pass-question" class="action-btn btn-pass" title="Pass question without points" data-i18n="legacy.skip">⏭️ Pas</button>
+                    <button id="btn-toggle-timer" class="action-btn btn-timer" title="Pause / Resume Timer" data-i18n="legacy.timer">⏸️ Süre</button>
+                    <button id="btn-prev-question" class="action-btn btn-nav" title="Previous Question" data-i18n="legacy.previous">⬅️ Önceki</button>
+                    <button id="btn-next-question" class="action-btn btn-nav" title="Next Question" data-i18n="legacy.next">Sıradaki ➡️</button>
                 </div>
             </div>
 

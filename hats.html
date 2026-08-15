@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="hats.css" />
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <link rel="canonical" href="https://play.metrix.dpdns.org/hats.html" />
     <meta property="og:type" content="website" />
@@ -41,6 +43,7 @@
     <div id="screen-setup" class="screen active">
         <div class="glass-card">
             <div class="logo-area">
+                <div id="language-selector" class="language-selector-wrap"></div>
                 <span class="logo-icon">🎩</span>
                 <h1>6 Thinking Hats</h1>
                 <p class="tagline">De Bono's critical thinking for ELT classrooms</p>
@@ -48,13 +51,13 @@
 
             <div class="setup-form">
                 <div class="form-group">
-                    <label class="form-label" for="topic-input">Discussion Topic</label>
+                    <label class="form-label" for="topic-input" data-i18n="legacy.discussionTopic">Discussion Topic</label>
                     <input id="topic-input" class="theme-input" type="text"
                         placeholder="e.g. Social Media, Climate Change, Space Travel…" maxlength="100" />
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="cefr-select">CEFR Level</label>
+                    <label class="form-label" for="cefr-select" data-i18n="legacy.cefrLevel">CEFR Level</label>
                     <select id="cefr-select" class="cefr-select">
                         <option value="">Auto (mixed levels)</option>
                         <option value="A1">A1 – Beginner</option>
@@ -67,22 +70,22 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Discussion Timer</label>
+                    <label class="form-label" data-i18n="legacy.discussionTimer">Discussion Timer</label>
                     <div class="timer-config">
                         <input id="timer-input" class="timer-input" type="number" min="1" max="15" value="5" />
-                        <span class="timer-unit">minutes per round</span>
+                        <span class="timer-unit" data-i18n="legacy.minutesPerRound">minutes per round</span>
                     </div>
                 </div>
             </div>
 
             <section id="static-deck-wrap" class="deck-library" hidden>
                 <div class="deck-library__row">
-                    <label>Deck<select id="static-deck-select"></select></label>
+                    <label><span data-i18n="legacy.deck">Deck</span><select id="static-deck-select"></select></label>
                 </div>
             </section>
 
             <button id="btn-generate" class="btn-primary" data-ai-purpose="start-deck">
-                <span class="btn-text">🎩 Generate Hats</span>
+                <span class="btn-text" data-i18n="legacy.generateHats">🎩 Generate Hats</span>
             </button>
             <div id="deck-library-mount"></div>
 
@@ -92,8 +95,8 @@
                 <span class="loading-text">Generating discussion prompts…</span>
             </div>
 
-            <div class="divider"><span>or</span></div>
-            <a href="index.html" class="btn-secondary" style="text-decoration:none;">🏠 Main Menu</a>
+            <div class="divider"><span data-i18n="legacy.or">or</span></div>
+            <a href="index.html" class="btn-secondary" style="text-decoration:none;" data-i18n="legacy.mainMenu">🏠 Main Menu</a>
         </div>
     </div>
 

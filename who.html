@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="deck-library.css" />
     <link rel="stylesheet" href="shared/ai-key-prompt.css" />
     <script src="theme.js"></script>
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <link rel="canonical" href="https://play.metrix.dpdns.org/who.html" />
     <meta property="og:type" content="website" />
@@ -44,23 +46,24 @@
     <div id="screen-start" class="screen active">
         <div class="glass-card start-card">
             <div class="logo-area">
+                <div id="language-selector" class="language-selector-wrap"></div>
                 <span class="logo-icon">🎭</span>
                 <h1>Who Am I?</h1>
                 <p class="tagline">Iconic characters • One question at a time</p>
             </div>
             <section id="static-deck-wrap" class="deck-library" hidden>
                 <div class="deck-library__row">
-                    <label>Deck<select id="static-deck-select"></select></label>
+                    <label><span data-i18n="legacy.deck">Deck</span><select id="static-deck-select"></select></label>
                 </div>
             </section>
 
             <button id="btn-play" class="btn-primary pulse" aria-label="Start Game">
-                <span class="btn-text">Play</span>
+                <span class="btn-text" data-i18n="legacy.play">Play</span>
                 <span class="btn-arrow">→</span>
             </button>
 
             <div id="ai-generate-wrap">
-                <div class="divider"><span>or</span></div>
+                <div class="divider"><span data-i18n="legacy.or">or</span></div>
 
                 <div class="generate-section">
                     <div style="display: flex; gap: .5rem; margin-bottom: .8rem;">
@@ -71,23 +74,23 @@
                     </div>
                     <button id="btn-generate" class="btn-accent" aria-label="Generate characters with AI">
                         <span class="btn-icon">✨</span>
-                        <span class="btn-text">Generate with AI</span>
+                        <span class="btn-text" data-i18n="legacy.generateAi">Generate with AI</span>
                     </button>
                     <p id="generate-status" class="generate-status"></p>
                     <div id="deck-library-mount"></div>
                 </div>
             </div>
-            <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden>Reuse Last Generated</button>
+            <button id="btn-reuse-generated" class="btn-secondary" type="button" hidden data-i18n="legacy.reuseGenerated">Reuse Last Generated</button>
 
-            <div class="divider"><span>or play</span></div>
-            <a href="index.html" class="btn-secondary" style="text-decoration:none;">🏠 Main Menu</a>
+            <div class="divider"><span data-i18n="legacy.orPlay">or play</span></div>
+            <a href="index.html" class="btn-secondary" style="text-decoration:none;" data-i18n="legacy.mainMenu">🏠 Main Menu</a>
         </div>
     </div>
 
     <!-- ===== COUNTDOWN SCREEN ===== -->
     <div id="screen-countdown" class="screen">
         <div class="glass-card countdown-card">
-            <p class="countdown-label">Get Ready!</p>
+            <p class="countdown-label" data-i18n="legacy.getReady">Get Ready!</p>
             <div class="countdown-ring">
                 <div id="countdown-number" class="countdown-number">5</div>
                 <svg viewBox="0 0 120 120">
@@ -109,11 +112,11 @@
                 <span class="sparkle s3">✦</span>
             </div>
             <button id="btn-replay" class="btn-primary" aria-label="Play Again">
-                <span class="btn-text">Play Again</span>
+                <span class="btn-text" data-i18n="legacy.playAgain">Play Again</span>
                 <span class="btn-arrow">→</span>
             </button>
             <button id="btn-menu" class="btn-secondary" aria-label="Back to Main Menu">
-                <span class="btn-text">Main Menu</span>
+                <span class="btn-text" data-i18n="legacy.mainMenu">🏠 Main Menu</span>
             </button>
         </div>
     </div>

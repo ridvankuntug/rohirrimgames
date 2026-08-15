@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="wheel.css" />
     <link rel="stylesheet" href="theme.css" />
     <script src="theme.js"></script>
+    <script src="i18n.js"></script>
+    <script src="shared/legacy-i18n.js"></script>
     <meta name="theme-color" content="#1c2a1c" />
     <meta name="description" content="Spin a random name wheel to pick students, teams or topics in class." />
     <link rel="canonical" href="https://play.metrix.dpdns.org/wheel.html" />
@@ -38,6 +40,7 @@
     <canvas id="particles"></canvas>
 
     <div class="app-layout" id="app">
+        <div id="language-selector" class="language-selector-wrap"></div>
         <!-- LEFT: Wheel -->
         <div class="wheel-side">
             <div class="wheel-wrapper">
@@ -47,23 +50,23 @@
             <h2 class="winner-display" id="winner-display"></h2>
             <div class="wheel-actions">
                 <button id="btn-spin" class="btn-primary btn-spin" disabled>
-                    <span class="btn-text">Spin!</span>
+                    <span class="btn-text" data-i18n="legacy.spin">Spin!</span>
                 </button>
-                <button id="btn-remove-winner" class="btn-danger" style="display:none;">Remove Winner</button>
+                <button id="btn-remove-winner" class="btn-danger" style="display:none;" data-i18n="legacy.removeWinner">Remove Winner</button>
             </div>
         </div>
 
         <!-- RIGHT: Names list -->
         <div class="names-side">
             <div class="glass-card names-card">
-                <h2 class="names-heading">Names</h2>
+                <h2 class="names-heading" data-i18n="legacy.names">Names</h2>
                 <div class="names-list-scroll" id="names-list"></div>
                 <div class="add-row">
-                    <input id="name-input" class="theme-input" type="text" placeholder="Add a name…" maxlength="25" />
+                    <input id="name-input" class="theme-input" type="text" placeholder="Add a name…" data-i18n-placeholder="legacy.addName" maxlength="25" />
                     <button id="btn-add" class="btn-accent btn-add">+</button>
                 </div>
                 <a href="index.html" class="btn-secondary" style="text-decoration:none;margin-top:.6rem;">🏠 Main
-                    Menu</a>
+                    <span data-i18n="legacy.mainMenu">🏠 Main Menu</span></a>
             </div>
         </div>
 
