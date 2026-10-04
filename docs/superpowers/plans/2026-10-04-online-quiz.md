@@ -20,7 +20,7 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 
 - **T1 — Deck module and first deck** (files: `shared/quiz-decks.js`, `tests/quiz-decks.test.js`)
   - [x] started — 2026-10-04 15:05
-  - [x] finished — 2026-10-04 15:20 — deck module + middle-earth-tr; commit (see T1 commit, hash recorded in T2's commit)
+  - [x] finished — 2026-10-04 15:20 — deck module + middle-earth-tr; commit 1d591cb
   - [x] T1.1 — deck schema (`id`, `name`, `language`, `questions[{id,text,options,correct}]`) + validator (2–4 options, one valid `correct`, unique ids)
   - [x] T1.2 — deck `middle-earth-tr` with the five questions below
   - [x] T1.3 — tests: validator, metadata export (no `correct`), every deck passes validation
@@ -33,15 +33,15 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
   5. Gandalf'ın Moria Madenleri'nde yüzleştiği ateş yaratığı hangisidir? — Balrog ✔ / Smaug / Shelob / Nazgûl
 
 - **T2 — Pure game engine** (files: `shared/quiz-engine.js`, `tests/quiz-engine.test.js`)
-  - [ ] started
-  - [ ] finished
-  - [ ] T2.1 — state shape + `reduce(state, event, ctx)` returning `{state, effects}`; injectable clock and RNG via `ctx`
-  - [ ] T2.2 — phases: lobby → question → reveal → … → final → ended; late join rules; lock; kick
-  - [ ] T2.3 — scoring formula, first-answer-locks, tie-break (score, total time, join order)
-  - [ ] T2.4 — liveness statuses (connected/pending/away, 20 s grace) and early-finish rule (active players only, ≥1, 3 s last call, setting)
-  - [ ] T2.5 — alarm effect: earliest of deadline / last-call / host-absence (30 min) / room expiry (2 h; final kept 30 min)
-  - [ ] T2.6 — snapshot builders for host and player; assert `correct` absent before reveal
-  - [ ] T2.7 — tests incl. fake-transport scenario with a host and 50 players, reconnect mid-question and mid-reveal
+  - [x] started — 2026-10-04 15:22
+  - [x] finished — 2026-10-04 16:05 — engine + 51 tests (3 review rounds, 1 test round); commit HASH_T2
+  - [x] T2.1 — state shape + `reduce(state, event, ctx)` returning `{state, effects}`; injectable clock and RNG via `ctx`
+  - [x] T2.2 — phases: lobby → question → reveal → … → final → ended; late join rules; lock; kick
+  - [x] T2.3 — scoring formula, first-answer-locks, tie-break (score, total time, join order)
+  - [x] T2.4 — liveness statuses (connected/pending/away, 20 s grace) and early-finish rule (active players only, ≥1, 3 s last call, setting)
+  - [x] T2.5 — alarm effect: earliest of deadline / last-call / host-absence (30 min) / room expiry (2 h; final kept 30 min)
+  - [x] T2.6 — snapshot builders for host and player; assert `correct` absent before reveal
+  - [x] T2.7 — tests incl. fake-transport scenario with a host and 50 players, reconnect mid-question and mid-reveal
 
 - **T3 — Protocol, names, room codes** (files: `shared/quiz-protocol.js`, `tests/quiz-protocol.test.js`)
   - [ ] started
