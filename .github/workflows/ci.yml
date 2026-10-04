@@ -1,0 +1,39 @@
+name: CI
+
+# Test gate only. Cloudflare Workers Builds does every deploy (see AGENTS.md, "Static Deployment").
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+
+      # The root postinstall also installs the frontend dependencies and builds the frontend.
+      - run: npm ci
+
+      - run: npm test
+
+      - run: npm --prefix frontend run lint
+
+      - name: Static build assembles
+        run: node scripts/build-pages-site.mjs

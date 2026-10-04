@@ -70,7 +70,12 @@ test('hub keeps optional teacher controls behind an online backend state', async
         header.indexOf('className={styles.btnApiKey}'),
         'Teacher Guide must appear to the left of the API status button'
     );
-    assert.match(header, /offlineReady/);
+    assert.doesNotMatch(header, /offlineReady|Offline-ready/, 'no "offline-ready" badge in the hub header');
+    assert.match(
+        header,
+        /serverHealth\.status === 'online' && \(\s*<div className=\{styles\.statusBadge\}>/,
+        'the status badge renders only while the Express backend is online'
+    );
     assert.match(header, /setIsApiKeyModalOpen\(true\)/);
     assert.doesNotMatch(source, /Why use your own API key\?/i);
     assert.match(hubHeaderStyles, /position:\s*relative/, 'header must establish a positioned layer');

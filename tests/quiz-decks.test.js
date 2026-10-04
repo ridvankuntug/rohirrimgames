@@ -130,41 +130,42 @@ test('every shipped deck passes validation and deck ids are unique', () => {
     assert.equal(new Set(ids).size, ids.length);
 });
 
-test('middle-earth-tr has exactly the five planned Turkish questions', () => {
+// Canonical answer key: changing a question, its options or its `correct` index must be a conscious edit here.
+const MIDDLE_EARTH_ANSWERS = [
+    'Ölüm Dağı (Orodruin)', 'Rohirrim', 'Gollum', 'Minas Tirith', 'Balrog',
+    'İmladris', 'Samwise Gamgee', '9', 'Mirkwood (Karanlık Orman)', 'Cüce',
+    'Ent', 'Arwen', 'Black Speech (Kara Dil)', 'Shadowfax', 'Sting',
+    'Yalnız Dağ (Erebor)', 'Bard', 'Dáin', 'Isildur', 'Orthanc',
+];
+
+test('middle-earth-tr is a 20-question Turkish deck with the agreed answer key', () => {
     const deck = getDeck('middle-earth-tr');
     assert.ok(deck);
     assert.equal(deck.language, 'tr');
-    // Verbatim from docs/superpowers/plans/2026-10-04-online-quiz.md (T1).
-    assert.deepEqual(
-        deck.questions.map(({ text, options, correct }) => ({ text, options: [...options], correct })),
-        [
-            {
-                text: "Yüzük'ün yok edilebileceği tek yer neresidir?",
-                options: ['Ölüm Dağı (Orodruin)', 'Minas Tirith', 'Helm Dibi', 'İmladris'],
-                correct: 0,
-            },
-            {
-                text: "Rohan'ın atlı savaşçı halkına ne ad verilir?",
-                options: ['Rohirrim', 'Haradrim', 'Dúnedain', 'Uruk-hai'],
-                correct: 0,
-            },
-            {
-                text: "Bilbo'nun mağarada bilmece oynadığı yaratık kimdir?",
-                options: ['Gollum', 'Saruman', 'Sauron', 'Boromir'],
-                correct: 0,
-            },
-            {
-                text: "Gondor'un Beyaz Ağacı hangi şehirde yer alır?",
-                options: ['Minas Tirith', 'Edoras', 'İmladris', 'Hobbiton'],
-                correct: 0,
-            },
-            {
-                text: "Gandalf'ın Moria Madenleri'nde yüzleştiği ateş yaratığı hangisidir?",
-                options: ['Balrog', 'Smaug', 'Shelob', 'Nazgûl'],
-                correct: 0,
-            },
-        ],
-    );
+    assert.equal(deck.questions.length, 20);
+    assert.deepEqual(deck.questions.map(question => question.id), Array.from({ length: 20 }, (_, i) => `q${i + 1}`));
+    for (const question of deck.questions) assert.equal(question.options.length, 4, question.id);
+    assert.deepEqual(deck.questions.map(question => question.options[question.correct]), MIDDLE_EARTH_ANSWERS);
+
+    // Hosts may switch option shuffling off, so the correct answer must be spread evenly over A–D.
+    const perPosition = [0, 1, 2, 3].map(index => deck.questions.filter(question => question.correct === index).length);
+    assert.deepEqual(perPosition, [5, 5, 5, 5]);
+});
+
+test('no middle-earth-tr question text gives away the answer of another question', () => {
+    const deck = getDeck('middle-earth-tr');
+    // Words are split on every non-letter/digit (so "Bilbo'nun" yields "bilbo") and compared exactly,
+    // lower-cased; answer words shorter than 4 characters ("Ent", "Elf", "9") are too generic to count.
+    const words = text => text.toLocaleLowerCase('tr').split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+    deck.questions.forEach((question, index) => {
+        const textWords = new Set(words(question.text));
+        deck.questions.forEach((other, otherIndex) => {
+            if (otherIndex === index) return;
+            const answerWords = words(other.options[other.correct]).filter(word => word.length >= 4);
+            const shared = answerWords.filter(word => textWords.has(word));
+            assert.deepEqual(shared, [], `${question.id} text contains words of the answer of ${other.id}`);
+        });
+    });
 });
 
 test('getDeck returns null for unknown or non-string ids', () => {
@@ -191,7 +192,7 @@ test('deck metadata exposes only id, name, questionCount and language', () => {
     assert.deepEqual(metadata.find(entry => entry.id === 'middle-earth-tr'), {
         id: 'middle-earth-tr',
         name: 'Orta Dünya',
-        questionCount: 5,
+        questionCount: 20,
         language: 'tr',
     });
 
