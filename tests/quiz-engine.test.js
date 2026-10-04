@@ -806,6 +806,7 @@ test('snapshots: stay small with 50 players', () => {
 // ---------------------------------------------------------------------------
 
 test('shuffle: deterministic with an injected RNG; answer by shown index; deck untouched', () => {
+    const deckBefore = JSON.stringify(DECK.questions);
     const play = seed => {
         const room = new Room({ random: seeded(seed) });
         room.host('host_connect');
@@ -825,7 +826,7 @@ test('shuffle: deterministic with an injected RNG; answer by shown index; deck u
         assert.deepEqual([...question.options].sort(), [...source.options].sort());
         assert.equal(question.options[question.correct], source.options[source.correct]);
     }
-    assert.equal(DECK.questions[0].correct, 0, 'frozen deck is not shuffled in place');
+    assert.equal(JSON.stringify(DECK.questions), deckBefore, 'frozen deck is not shuffled in place');
 
     const { room, ann } = first;
     room.answer(ann, room.question.correct);
@@ -977,6 +978,7 @@ test('fake transport: 1 host + 50 players play a full game with disconnects and 
     for (const player of players) player.id = room.sockets.get(player.socket).playerId;
     assert.equal(new Set(players.map(p => p.id)).size, 50);
 
+    room.hostCommand('configure', { settings: { questionCount: 5 } });
     room.hostCommand('start');
     const expected = new Map(players.map(p => [p.id, { score: 0, totalMs: 0 }]));
     const roundLength = room.state.round.length;
