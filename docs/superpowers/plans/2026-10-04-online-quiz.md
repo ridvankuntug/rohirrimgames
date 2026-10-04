@@ -11,7 +11,7 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 
 - **T0 — Spike: single Worker + Durable Object + assets** (files: `wrangler.jsonc`, `worker/index.js` (throwaway), local `wrangler dev`)
   - [x] started — 2026-10-04 14:47
-  - [x] finished — 2026-10-04 15:00 — all four open items passed locally; commit HASH_T0
+  - [x] finished — 2026-10-04 15:00 — all four open items passed locally; commit e7c38d8
   - [x] T0.1 — add `main`, `durable_objects`, `migrations`, `run_worker_first: ["/rt/*"]`; a hello-world `QuizRoom`
   - [x] T0.2 — confirm static pages, `404-page` behaviour and a real 404 for `/api/anything` still work
   - [x] T0.3 — confirm `worker/` can import from `../shared/` and `scripts/build-pages-site.mjs` still runs under `wrangler deploy`
@@ -19,11 +19,11 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
   - [x] T0.5 — write findings into the spec's "Open items" section; stop and report if any item fails
 
 - **T1 — Deck module and first deck** (files: `shared/quiz-decks.js`, `tests/quiz-decks.test.js`)
-  - [ ] started
-  - [ ] finished
-  - [ ] T1.1 — deck schema (`id`, `name`, `language`, `questions[{id,text,options,correct}]`) + validator (2–4 options, one valid `correct`, unique ids)
-  - [ ] T1.2 — deck `middle-earth-tr` with the five questions below
-  - [ ] T1.3 — tests: validator, metadata export (no `correct`), every deck passes validation
+  - [x] started — 2026-10-04 15:05
+  - [x] finished — 2026-10-04 15:20 — deck module + middle-earth-tr; commit (see T1 commit, hash recorded in T2's commit)
+  - [x] T1.1 — deck schema (`id`, `name`, `language`, `questions[{id,text,options,correct}]`) + validator (2–4 options, one valid `correct`, unique ids)
+  - [x] T1.2 — deck `middle-earth-tr` with the five questions below
+  - [x] T1.3 — tests: validator, metadata export (no `correct`), every deck passes validation
 
   Draft questions (Turkish; owner reviews wording):
   1. Yüzük'ün yok edilebileceği tek yer neresidir? — Ölüm Dağı (Orodruin) ✔ / Minas Tirith / Helm Dibi / İmladris
