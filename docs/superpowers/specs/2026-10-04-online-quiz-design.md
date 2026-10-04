@@ -52,7 +52,7 @@ Browser (player)─┘                         └─ Worker ── QuizRoom Dur
 }
 ```
 
-The combination assets + Durable Object + `404-page` was **not confirmed in the Cloudflare docs we read**; task T0 verifies it with `wrangler dev` before anything else is built.
+The combination assets + Durable Object + `404-page` was **not confirmed in the Cloudflare docs we read**; task T0 verified it locally with `wrangler dev` (see "Open items verified in T0").
 
 ### Routes (all under `/rt/`)
 
@@ -173,6 +173,7 @@ Route `/quiz` (React). Components: home (create / join), host panel (lobby, live
 
 1. **Turnstile**: Cloudflare dashboard → Turnstile → Add widget. Name e.g. `rohirrimgames-quiz`; hostnames `games.ortadunyaankara.org` (add `localhost` only if you want to test with real keys); mode Managed. Copy the **Site Key** (public) and **Secret Key** (private).
 2. **Secret**: Workers & Pages → `rohirrimgames` → Settings → Variables and Secrets → add secret `TURNSTILE_SECRET_KEY`. (CLI alternative: `npx wrangler secret put TURNSTILE_SECRET_KEY`.) Never paste it into chat or a file in the repo.
+   Done by the owner on 2026-10-04: widget created (Managed, pre-clearance off). **Site Key (public): `0x4AAAAAAFNa8Dr87NiLc5BK`** — goes into `frontend/src/config/`. The secret was set by the owner; it is never seen by Claude and is verified only by a real room-creation request in T8.
 3. **Local development**: use Cloudflare's published always-pass Turnstile test keys in a git-ignored `.dev.vars` file (`.dev.vars` is added to `.gitignore`).
 4. The existing Workers Builds connection to this repo is reused; no second project is needed.
 
@@ -188,6 +189,10 @@ Solo quiz game, rematch, custom/AI decks, images in questions, accounts, persist
 ## Open items verified in T0
 
 1. assets + Durable Object + `404-page` + `run_worker_first` work together in `wrangler dev`, and `/api/*` still returns a real 404.
+   Sonuç (2026-10-04): **passed** (wrangler 4.147.0, local). `/`, `/lingoparty`, `/taboo` → 200 (`/taboo.html` → 307 to `/taboo`, the existing clean-URL behaviour); `/olmayan-sayfa` → 404 with a body byte-identical to `dist-static/404.html`; `GET /api/anything` and `GET /api/decks?type=x` → 404 `text/html` (the 404 page, served by assets, not the Worker) for every `Sec-Fetch-Mode` (none/cors/no-cors/same-origin/navigate) and for Node `fetch` (`ok: false`); `POST /api/decks` → 405 (non-2xx). `/rt/health` → 200 JSON from the Worker; unknown `/rt/*` → Worker's own 404 JSON. WebSocket upgrade on `/rt/rooms/:code/ws` → 101; echo works; text `ping` → `pong` via `setWebSocketAutoResponse`.
 2. Worker code can import from `../shared/` and bundle under `wrangler deploy` via Workers Builds.
+   Sonuç (2026-10-04): **passed** locally. `worker/index.js` imports `../shared/feature-flags.js`; `wrangler deploy --dry-run --outdir …` exits 0, inlines the shared module into the bundle (2.60 KiB), lists the `QUIZ_ROOMS` binding and reads 67 asset files. The dry-run **does run** `build.command` (`[custom build] Static site assembled …`), so the static build keeps running under `wrangler deploy`; `wrangler dev` runs it too. Not verified on Workers Builds itself (no real deploy in T0). Note: on Windows the build's `rmSync(dist-static)` fails with EBUSY while a `wrangler dev` session is serving that directory; stop `wrangler dev` before a dry-run/deploy.
 3. Which API supplies reliable per-socket "last seen" under hibernation (`getWebSocketAutoResponseTimestamp` vs. attachments + close events).
+   Sonuç (2026-10-04): **use both, with different jobs.** Measured: `ctx.getWebSocketAutoResponseTimestamp(ws)` is `null` before the first ping and then matches the client's ping time within ~2 ms, also after 15 s idle where the `ping` was answered without our code running. `webSocketClose` fires for a clean close (1000) and for a killed client process (1006, "disconnected without sending Close frame"). Decision for T4: (a) close/error events mark the player `pending` immediately (fast path); (b) silent sockets (phone asleep, network gone without a TCP close) are detected by comparing the auto-response timestamp (client pings every ~20 s) against the grace window when the object is already awake (alarm, message, host action) — this costs no wake-ups and no storage writes; (c) `serializeAttachment` holds only the identity (`{role, playerId}`) so a woken object can map sockets to players, not a last-seen value (updating it per ping would wake the object). `last_seen` in SQLite is written only on status transitions, not per ping. Also observed: after a server-side clean close the Node client reported 1006, so T4 should reciprocate with `ws.close(code)` in `webSocketClose` and clients must treat 1006 as a normal reconnect case.
 4. Behaviour of live sockets across a deploy (expected: all disconnect, state intact).
+   Sonuç (2026-10-04): **consistent with the expectation, verified locally only; a real deploy was not tried.** Restarting the `wrangler dev` process (workerd killed) dropped an open socket with 1006; after restart the same room's SQLite counter continued (4 → 5), so storage survived. Editing `worker/index.js` did not hot-reload the Worker in this setup (custom `build.command` without `build.watch_dir`), so a code-reload test was not possible; restart is the closer analogue of a deploy anyway.

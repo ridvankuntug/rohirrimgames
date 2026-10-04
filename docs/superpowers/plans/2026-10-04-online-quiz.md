@@ -10,13 +10,13 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 ## Tasks
 
 - **T0 — Spike: single Worker + Durable Object + assets** (files: `wrangler.jsonc`, `worker/index.js` (throwaway), local `wrangler dev`)
-  - [ ] started
-  - [ ] finished
-  - [ ] T0.1 — add `main`, `durable_objects`, `migrations`, `run_worker_first: ["/rt/*"]`; a hello-world `QuizRoom`
-  - [ ] T0.2 — confirm static pages, `404-page` behaviour and a real 404 for `/api/anything` still work
-  - [ ] T0.3 — confirm `worker/` can import from `../shared/` and `scripts/build-pages-site.mjs` still runs under `wrangler deploy`
-  - [ ] T0.4 — decide the "last seen" mechanism under hibernation (auto-response timestamp vs. attachments + close events)
-  - [ ] T0.5 — write findings into the spec's "Open items" section; stop and report if any item fails
+  - [x] started — 2026-10-04 14:47
+  - [x] finished — 2026-10-04 15:00 — all four open items passed locally; commit HASH_T0
+  - [x] T0.1 — add `main`, `durable_objects`, `migrations`, `run_worker_first: ["/rt/*"]`; a hello-world `QuizRoom`
+  - [x] T0.2 — confirm static pages, `404-page` behaviour and a real 404 for `/api/anything` still work
+  - [x] T0.3 — confirm `worker/` can import from `../shared/` and `scripts/build-pages-site.mjs` still runs under `wrangler deploy`
+  - [x] T0.4 — decide the "last seen" mechanism under hibernation (auto-response timestamp vs. attachments + close events)
+  - [x] T0.5 — write findings into the spec's "Open items" section; stop and report if any item fails
 
 - **T1 — Deck module and first deck** (files: `shared/quiz-decks.js`, `tests/quiz-decks.test.js`)
   - [ ] started
