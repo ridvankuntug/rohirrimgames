@@ -69,7 +69,7 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 
 - **T6 — Quiz frontend** (files: `frontend/src/games/Quiz/**`, `frontend/src/App.jsx`, `scripts/build-pages-site.mjs`, `frontend/package.json` for the QR library)
   - [x] started — 2026-10-04 18:12
-  - [x] finished — 2026-10-04 20:07 — /quiz host + player UI, reconnecting socket hook, QR (2 review rounds, 1 test round, browser e2e 26+9+7 checks); commit HASH_T6
+  - [x] finished — 2026-10-04 20:07 — /quiz host + player UI, reconnecting socket hook, QR (2 review rounds, 1 test round, browser e2e 26+9+7 checks); commit 9a257ba
   - [x] T6.1 — `/quiz` route, home screen (create with Turnstile, join with code/nickname), `#join=` and `#host=` hash handling
   - [x] T6.2 — `useQuizSocket` hook: connect, snapshot state, reconnect (visibilitychange, online, back-off), 20 s ping, version-mismatch message
   - [x] T6.3 — host panel: lobby (settings, players, QR/link/code, lock, kick), question view, reveal view with Next, confirmed End question / End game, always-visible "Copy host link"
@@ -78,11 +78,11 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
   - [x] T6.6 — mobile-first layout checks (375 px), accessibility pass
 
 - **T7 — Documentation and contract tests** (files: `AGENTS.md`, `README.md`, `DEPLOY.md`, `PROJE_REHBERI_TR.md`, `tests/`)
-  - [ ] started
-  - [ ] finished
-  - [ ] T7.1 — keep AGENTS.md accurate to what shipped (online section, `/rt/` rule, no-deploy-during-events rule)
-  - [ ] T7.2 — README/DEPLOY/PROJE_REHBERI_TR: operator setup (Turnstile key, secret), event-day rule; no mention of the removed technology name
-  - [ ] T7.3 — run the whole contract-test set; fix or extend tests only where the new feature legitimately changes the contract
+  - [x] started — 2026-10-04 20:07
+  - [x] finished — 2026-10-04 20:18 — AGENTS/README/DEPLOY/PROJE_REHBERI_TR online sections + doc contract test (2 review rounds, 1 test round); commit HASH_T7
+  - [x] T7.1 — keep AGENTS.md accurate to what shipped (online section, `/rt/` rule, no-deploy-during-events rule)
+  - [x] T7.2 — README/DEPLOY/PROJE_REHBERI_TR: operator setup (Turnstile key, secret), event-day rule; no mention of the removed technology name
+  - [x] T7.3 — run the whole contract-test set; fix or extend tests only where the new feature legitimately changes the contract
 
 - **T8 — Manual end-to-end and budget check** (no code unless bugs are found)
   - [ ] started
