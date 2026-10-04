@@ -746,6 +746,23 @@
   background: rgba(0, 0, 0, 0.6);
 }
 
+.dialogWide {
+  max-width: min(560px, calc(100vw - 2rem));
+  /* Taller than a short or landscape phone screen: scroll inside the dialog so Close stays reachable. */
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+/* Inside a dialog the code/link column and the QR stack, so nothing overflows on narrow screens. */
+.dialogWide .joinInfo {
+  grid-template-columns: 1fr;
+}
+
+.dialogWide .qr {
+  width: min(168px, 50vw);
+}
+
 .dialogTitle {
   font-size: 1.15rem;
   color: var(--color-primary);

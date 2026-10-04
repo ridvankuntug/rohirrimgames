@@ -6,6 +6,7 @@ import { QuizQr } from './QuizQr';
 import {
   ConnectionBadge,
   Countdown,
+  InfoDialog,
   Notice,
   OptionLabel,
   TerminalScreen,
@@ -118,11 +119,12 @@ function PlayerTable({ snapshot, onKick }) {
   );
 }
 
-function JoinInfo({ code }) {
+/** Room code, join link and QR. `bare` drops the card chrome when it is shown inside a dialog. */
+function JoinInfo({ code, bare = false }) {
   const { t } = useTranslation();
   const link = buildJoinLink(window.location.origin, code);
   return (
-    <section className={`glass-card ${styles.panel} ${styles.joinInfo}`} aria-label={t('quiz.host.joinAt')}>
+    <section className={bare ? styles.joinInfo : `glass-card ${styles.panel} ${styles.joinInfo}`} aria-label={t('quiz.host.joinAt')}>
       <div>
         <p className={styles.fieldLabel}>{t('quiz.host.roomCode')}</p>
         <p className={styles.bigCode} aria-label={code.split('').join(' ')}>{code}</p>
@@ -138,6 +140,15 @@ function JoinInfo({ code }) {
       <QuizQr text={link} label={t('quiz.host.qrLabel', { link })} />
     </section>
   );
+}
+
+/** Who can join right now: new players only get in during the lobby and between questions, and not while locked. */
+function JoinNote({ snapshot }) {
+  const { t } = useTranslation();
+  // The engine refuses a join during a question before it looks at the lock, so the phase decides first.
+  let key = snapshot.locked ? 'joinNoteLocked' : 'joinNoteOpen';
+  if (snapshot.phase === 'question') key = snapshot.locked ? 'joinNoteQuestionLocked' : 'joinNoteQuestion';
+  return <p className={styles.hint} role="status">{t(`quiz.host.${key}`)}</p>;
 }
 
 function LobbySettings({ snapshot, send }) {
@@ -365,6 +376,8 @@ export default function HostPanel({ code, token, onExit, onForget }) {
   const buildAuthMessage = useCallback(() => ({ t: 'host_auth', hostToken: token }), [token]);
   const { status, snapshot, clockOffset, notice, terminal, send, restart, clearNotice, showNotice } = useQuizSocket({ code, buildAuthMessage });
   const confirm = useConfirm();
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   // While (re)connecting the controls are disabled (below). A command that still
   // cannot go out (e.g. confirmed in a dialog opened before the drop) is reported,
   // never queued or dropped silently.
@@ -379,6 +392,38 @@ export default function HostPanel({ code, token, onExit, onForget }) {
   useEffect(() => {
     if (terminal && (terminal.reason === 'room_gone' || terminal.reason === 'auth_failed')) onForget();
   }, [terminal, onForget]);
+
+  const finished = snapshot && (snapshot.phase === 'final' || snapshot.phase === 'ended');
+  // The lobby already shows the join info inline; afterwards it lives behind a button so late players can still be invited.
+  const canShowJoin = Boolean(snapshot) && !finished && snapshot.phase !== 'lobby';
+  const inLobby = Boolean(snapshot) && snapshot.phase === 'lobby';
+  // Never let a stale `joinOpen` reopen the dialog by itself after the button vanished or the connection was replaced.
+  useEffect(() => {
+    if (!canShowJoin || terminal) setJoinOpen(false);
+  }, [canShowJoin, terminal]);
+
+  // Closing the room from the lobby: end it for the players who already joined, then go back to the start page.
+  // The exit waits for the server to confirm (or 2 s) so the command is not cut off by the socket closing.
+  const snapshotPhase = snapshot?.phase;
+  useEffect(() => {
+    if (!leaving) return undefined;
+    if (snapshotPhase === 'final' || snapshotPhase === 'ended') {
+      onExit();
+      return undefined;
+    }
+    const id = setTimeout(onExit, 2000);
+    return () => clearTimeout(id);
+  }, [leaving, snapshotPhase, onExit]);
+  const leaveLobby = () => confirm.request({
+    title: t('quiz.host.leaveLobbyConfirmTitle'),
+    text: t('quiz.host.leaveLobbyConfirmText'),
+    confirmLabel: t('quiz.host.leaveLobbyConfirm'),
+    onConfirm: () => {
+      // `send` reports the live socket state at confirm time (`ready` could be stale from when the dialog opened).
+      if (send('end_game')) setLeaving(true);
+      else onExit();
+    },
+  });
 
   if (terminal) {
     const home = <button key="home" type="button" className={styles.btnSecondary} onClick={onExit}>{t('quiz.terminal.home')}</button>;
@@ -402,11 +447,20 @@ export default function HostPanel({ code, token, onExit, onForget }) {
     return <TerminalScreen message={message} actions={[home]} />;
   }
 
-  const finished = snapshot && (snapshot.phase === 'final' || snapshot.phase === 'ended');
   return (
     <div className={styles.hostLayout} aria-label={t('quiz.host.panelLabel')} role="region">
       <div className={styles.toolbar}>
         <ConnectionBadge status={status} />
+        {canShowJoin && (
+          <button type="button" className={styles.btnSecondary} onClick={() => setJoinOpen(true)}>
+            {t('quiz.host.showJoinInfo')}
+          </button>
+        )}
+        {inLobby && (
+          <button type="button" className={styles.btnSecondary} onClick={leaveLobby} disabled={leaving}>
+            {t('quiz.host.leaveLobby')}
+          </button>
+        )}
         <CopyButton
           text={buildHostLink(window.location.origin, code, token)}
           label={t('quiz.host.copyHostLink')}
@@ -432,6 +486,12 @@ export default function HostPanel({ code, token, onExit, onForget }) {
         <div className={styles.actions}>
           <button type="button" className={styles.btnPrimary} onClick={onExit}>{t('quiz.host.newQuiz')}</button>
         </div>
+      )}
+      {canShowJoin && (
+        <InfoDialog open={joinOpen} title={t('quiz.host.joinDialogTitle')} onClose={() => setJoinOpen(false)}>
+          <JoinNote snapshot={snapshot} />
+          <JoinInfo code={code} bare />
+        </InfoDialog>
       )}
       {confirm.dialog}
     </div>
