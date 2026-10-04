@@ -45,20 +45,20 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 
 - **T3 — Protocol, names, room codes** (files: `shared/quiz-protocol.js`, `tests/quiz-protocol.test.js`)
   - [x] started — 2026-10-04 16:07
-  - [x] finished — 2026-10-04 16:30 — protocol, names, room codes (2 review rounds, 1 test round); commit HASH_T3
+  - [x] finished — 2026-10-04 16:30 — protocol, names, room codes (2 review rounds, 1 test round); commit ef0b65c
   - [x] T3.1 — message schema validation (types, sizes, version `v: 1`, role/phase checks)
   - [x] T3.2 — nickname normalisation and uniqueness key (`İ/I/ı` folding), 2–20 chars
   - [x] T3.3 — room code alphabet/generator (injected RNG) and parser (case-insensitive, strips spaces)
   - [x] T3.4 — tests for all of the above, including hostile inputs
 
 - **T4 — Worker and Durable Object** (files: `worker/index.js`, `worker/quiz-room.js`, `wrangler.jsonc`, `.dev.vars` handling)
-  - [ ] started
-  - [ ] finished
-  - [ ] T4.1 — routes `/rt/health`, `/rt/decks`, `POST /rt/rooms`, WebSocket upgrade; same-origin check
-  - [ ] T4.2 — Turnstile verification (secret from `env`, test keys in dev)
-  - [ ] T4.3 — `QuizRoom`: hibernation API, SQLite persistence, per-connection attachments, auto-response ping, alarm handling, host/player auth with hashed tokens
-  - [ ] T4.4 — rate/size limits, room cap (50), cleanup on expiry
-  - [ ] T4.5 — unit tests for the pure parts (request validation, token hashing, storage adapter against a fake)
+  - [x] started — 2026-10-04 16:32
+  - [x] finished — 2026-10-04 17:40 — Worker routes, Turnstile, QuizRoom DO (3 review rounds, 1 test round, wrangler dev smoke 27/27); commit HASH_T4
+  - [x] T4.1 — routes `/rt/health`, `/rt/decks`, `POST /rt/rooms`, WebSocket upgrade; same-origin check
+  - [x] T4.2 — Turnstile verification (secret from `env`, test keys in dev)
+  - [x] T4.3 — `QuizRoom`: hibernation API, SQLite persistence, per-connection attachments, auto-response ping, alarm handling, host/player auth with hashed tokens
+  - [x] T4.4 — rate/size limits, room cap (50), cleanup on expiry
+  - [x] T4.5 — unit tests for the pure parts (request validation, token hashing, storage adapter against a fake)
 
 - **T5 — Hub categories and Online card** (files: `frontend/src/components/Hub/GameHub.jsx`, `GameHub.module.css`, `frontend/src/i18n.jsx`)
   - [ ] started

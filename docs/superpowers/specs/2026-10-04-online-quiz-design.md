@@ -144,6 +144,8 @@ Text only, 2–4 options, exactly one correct. Options are shuffled by the serve
 
 All state is persisted because the object can hibernate or restart. Tables: `meta` (single JSON row: phase, question index, deadlines, settings, hashed host token, timestamps), `players` (id, name, name_key, token_hash, score, total_ms, joined_at, last_seen), `answers` (q, player_id, choice, ms, points). Scores are computed once per reveal in one transaction to keep writes low.
 
+T4 implementation (2026-10-04): only `meta` is used — one row (`id INTEGER PRIMARY KEY` = 1) holding the whole engine state as JSON (`worker/room-store.js`). The engine changes state as a whole on every event, so every persisted event costs exactly **one row write** regardless of player count (a reveal with 50 players included); separate `players`/`answers` tables would cost up to 50 writes per reveal and 2 per answer. Rejected events and no-op events write nothing. Estimate for a 50-player, 20-question game: ~50 joins + ~20 × (50 answers + 3 transitions) + a few dozen status changes ≈ 1.1–1.3 k row writes, plus alarm updates (2–3 per question; whether they count as row writes is to be measured in T8).
+
 Free-plan budget (verified against the docs): 100,000 requests/day, 13,000 GB-s/day, 100,000 rows written/day, 5 million rows read/day; incoming WebSocket messages bill 20:1; exceeding a limit makes operations fail until 00:00 UTC. Rough estimate: 2–3 thousand row writes per 50-player, 20-question game → ~30–45 full games/day. Measure in T9.
 
 ### Security
