@@ -111,6 +111,45 @@ export function ConfirmDialog({ open, title, text, confirmLabel, onConfirm, onCa
   );
 }
 
+/** Informational modal (no decision to confirm): Esc or the Close button dismisses it. Focus starts on Close. */
+export function InfoDialog({ open, title, onClose, children }) {
+  const { t } = useTranslation();
+  const ref = useRef(null);
+  const closeRef = useRef(null);
+  const id = useId();
+
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    if (open && !dialog.open) {
+      dialog.showModal();
+      closeRef.current?.focus();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
+
+  return (
+    <dialog
+      ref={ref}
+      className={`${styles.dialog} ${styles.dialogWide}`}
+      aria-labelledby={`${id}-title`}
+      onCancel={event => {
+        event.preventDefault();
+        onClose();
+      }}
+    >
+      <h2 id={`${id}-title`} className={styles.dialogTitle}>{title}</h2>
+      {children}
+      <div className={styles.dialogActions}>
+        <button ref={closeRef} type="button" className={styles.btnSecondary} onClick={onClose}>
+          {t('quiz.host.close')}
+        </button>
+      </div>
+    </dialog>
+  );
+}
+
 /** Full-screen message for a connection that ended for good. */
 export function TerminalScreen({ message, actions }) {
   const headingRef = useFocusOnChange(message);
