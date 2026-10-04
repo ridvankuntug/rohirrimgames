@@ -34,7 +34,7 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 
 - **T2 — Pure game engine** (files: `shared/quiz-engine.js`, `tests/quiz-engine.test.js`)
   - [x] started — 2026-10-04 15:22
-  - [x] finished — 2026-10-04 16:05 — engine + 51 tests (3 review rounds, 1 test round); commit HASH_T2
+  - [x] finished — 2026-10-04 16:05 — engine + 51 tests (3 review rounds, 1 test round); commit 33a2b8f
   - [x] T2.1 — state shape + `reduce(state, event, ctx)` returning `{state, effects}`; injectable clock and RNG via `ctx`
   - [x] T2.2 — phases: lobby → question → reveal → … → final → ended; late join rules; lock; kick
   - [x] T2.3 — scoring formula, first-answer-locks, tie-break (score, total time, join order)
@@ -44,12 +44,12 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
   - [x] T2.7 — tests incl. fake-transport scenario with a host and 50 players, reconnect mid-question and mid-reveal
 
 - **T3 — Protocol, names, room codes** (files: `shared/quiz-protocol.js`, `tests/quiz-protocol.test.js`)
-  - [ ] started
-  - [ ] finished
-  - [ ] T3.1 — message schema validation (types, sizes, version `v: 1`, role/phase checks)
-  - [ ] T3.2 — nickname normalisation and uniqueness key (`İ/I/ı` folding), 2–20 chars
-  - [ ] T3.3 — room code alphabet/generator (injected RNG) and parser (case-insensitive, strips spaces)
-  - [ ] T3.4 — tests for all of the above, including hostile inputs
+  - [x] started — 2026-10-04 16:07
+  - [x] finished — 2026-10-04 16:30 — protocol, names, room codes (2 review rounds, 1 test round); commit HASH_T3
+  - [x] T3.1 — message schema validation (types, sizes, version `v: 1`, role/phase checks)
+  - [x] T3.2 — nickname normalisation and uniqueness key (`İ/I/ı` folding), 2–20 chars
+  - [x] T3.3 — room code alphabet/generator (injected RNG) and parser (case-insensitive, strips spaces)
+  - [x] T3.4 — tests for all of the above, including hostile inputs
 
 - **T4 — Worker and Durable Object** (files: `worker/index.js`, `worker/quiz-room.js`, `wrangler.jsonc`, `.dev.vars` handling)
   - [ ] started
