@@ -21,7 +21,8 @@
 //   4004 room_gone   the room does not exist (never created, expired or deleted)
 //   4008 auth_timeout  the socket sent no successful `join`/`host_auth` within
 //                    UNAUTHENTICATED_GRACE_MS and the room needed its slot for a
-//                    new connection; reconnect and authenticate right away
+//                    new connection; the client reconnects at once the first
+//                    time and with back-off on repeats (no fast loop)
 //   4029 room_busy   too many open sockets in this room; retry with back-off
 //   1008 rate_limited  the socket kept flooding after being told to slow down
 //   1009 too_big     a frame (text or binary) larger than the protocol limit (2048 bytes)

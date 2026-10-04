@@ -62,20 +62,20 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 
 - **T5 — Hub categories and Online card** (files: `frontend/src/components/Hub/GameHub.jsx`, `GameHub.module.css`, `frontend/src/i18n.jsx`)
   - [x] started — 2026-10-04 17:42
-  - [x] finished — 2026-10-04 18:10 — category tabs + Online Quiz card with /rt/health probe (2 review rounds, 1 test round); commit HASH_T5
+  - [x] finished — 2026-10-04 18:10 — category tabs + Online Quiz card with /rt/health probe (2 review rounds, 1 test round); commit cd35b0e
   - [x] T5.1 — `categories` per game (mirror legacy `data-category`), filter tabs All/Solo/Multiplayer/Online outside `<header>`
   - [x] T5.2 — Online quiz card; health probe of `/rt/health`; disabled + "offline" note when unreachable
   - [x] T5.3 — keep `tests/removal-contract.test.js` hub assertions green; add a contract test for the tabs
 
 - **T6 — Quiz frontend** (files: `frontend/src/games/Quiz/**`, `frontend/src/App.jsx`, `scripts/build-pages-site.mjs`, `frontend/package.json` for the QR library)
-  - [ ] started
-  - [ ] finished
-  - [ ] T6.1 — `/quiz` route, home screen (create with Turnstile, join with code/nickname), `#join=` and `#host=` hash handling
-  - [ ] T6.2 — `useQuizSocket` hook: connect, snapshot state, reconnect (visibilitychange, online, back-off), 20 s ping, version-mismatch message
-  - [ ] T6.3 — host panel: lobby (settings, players, QR/link/code, lock, kick), question view, reveal view with Next, confirmed End question / End game, always-visible "Copy host link"
-  - [ ] T6.4 — player view: join, question with letter+shape+colour options, locked-answer state, reveal with points/rank, final
-  - [ ] T6.5 — build script: emit `quiz/index.html`, nothing else added to the whitelist unless needed
-  - [ ] T6.6 — mobile-first layout checks (375 px), accessibility pass
+  - [x] started — 2026-10-04 18:12
+  - [x] finished — 2026-10-04 20:07 — /quiz host + player UI, reconnecting socket hook, QR (2 review rounds, 1 test round, browser e2e 26+9+7 checks); commit HASH_T6
+  - [x] T6.1 — `/quiz` route, home screen (create with Turnstile, join with code/nickname), `#join=` and `#host=` hash handling
+  - [x] T6.2 — `useQuizSocket` hook: connect, snapshot state, reconnect (visibilitychange, online, back-off), 20 s ping, version-mismatch message
+  - [x] T6.3 — host panel: lobby (settings, players, QR/link/code, lock, kick), question view, reveal view with Next, confirmed End question / End game, always-visible "Copy host link"
+  - [x] T6.4 — player view: join, question with letter+shape+colour options, locked-answer state, reveal with points/rank, final
+  - [x] T6.5 — build script: emit `quiz/index.html`, nothing else added to the whitelist unless needed
+  - [x] T6.6 — mobile-first layout checks (375 px), accessibility pass
 
 - **T7 — Documentation and contract tests** (files: `AGENTS.md`, `README.md`, `DEPLOY.md`, `PROJE_REHBERI_TR.md`, `tests/`)
   - [ ] started
