@@ -1,0 +1,4 @@
+# Copy to `.dev.vars` (git-ignored) for local `wrangler dev`.
+# This is Cloudflare's published always-pass Turnstile TEST secret, not a real one.
+# The real secret is a Worker secret set in the Cloudflare dashboard; never put it in a file.
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA

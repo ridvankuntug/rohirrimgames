@@ -1,11 +1,17 @@
 {
   "name": "rohirrimgames",
+  "main": "worker/index.js",
   "compatibility_date": "2026-08-14",
   "build": {
     "command": "node scripts/build-pages-site.mjs"
   },
   "assets": {
     "directory": "./dist-static",
-    "not_found_handling": "404-page"
-  }
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/rt/*"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "QUIZ_ROOMS", "class_name": "QuizRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["QuizRoom"] }]
 }

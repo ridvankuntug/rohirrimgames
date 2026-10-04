@@ -6,6 +6,8 @@ OpenClassTools, özellikle İngilizce/EFL sınıfları, akıllı tahtalar ve gru
 
 Projenin hedefi, öğretmenin kurulum ya da uzaktan kumanda altyapısı gerektirmeden hızlı biçimde sınıf etkinliği başlatabilmesidir. Veritabanı ve isteğe bağlı oturum kaydı kullanılamasa bile oyunların başlangıç içerikleriyle oynanabilmesi amaçlanır.
 
+Tek istisna **Online** kategorisidir: Kahoot tarzı online quiz'de her oyuncu kendi telefonundan katılır. Bu oyun yalnızca Cloudflare Worker yayınında çalışır (aşağıda "Online quiz" bölümü); diğer bütün oyunlar yerel ve bağımsız kalır.
+
 ## İçerdiği oyunlar ve araçlar
 
 | Oyun/araç | Kullanım amacı |
@@ -20,6 +22,7 @@ Projenin hedefi, öğretmenin kurulum ya da uzaktan kumanda altyapısı gerektir
 | Six Thinking Hats | Altı farklı bakış açısıyla yapılandırılmış sınıf tartışması. |
 | Wheel of Names | Öğrenci, konu veya takım seçmek için özelleştirilebilir çark. |
 | Spin the Bottle | Sıra belirleme ve rol yapma için şişe çevirme aracı. |
+| Online Quiz | Kahoot tarzı bilgi yarışması: yönetici (host) odayı yönetir, oyuncular kendi telefonlarından cevaplar. Yalnızca Cloudflare Worker yayınında çalışır. |
 
 İlk sekiz oyun **deste tabanlıdır**: seçilen soru/kelime seti oyunun içeriğini oluşturur. Çark ve şişe ise desteye gereksinim duymayan yardımcı araçlardır.
 
@@ -143,12 +146,13 @@ Bu tohumlama işlemi tekrar çalıştırılabilir; mevcut adlandırılmış dest
 
 ## Statik site olarak yayınlama (Cloudflare Workers Static Assets)
 
-Proje, Express/Supabase backend'i olmadan da **tamamen statik** bir site olarak yayınlanabilir. Bu modda yapay zekâ ile deste üretimi ve oturum kaydı çalışmaz; her deste tabanlı oyun bunun yerine kendi gömülü **statik desteleri** arasından seçim yapılan bir "Deck" açılır menüsü gösterir. Canlı örnek: [games.ortadunyaankara.org](https://games.ortadunyaankara.org).
+Proje, Express/Supabase backend'i olmadan da statik bir site olarak yayınlanabilir. Yayın tek bir Cloudflare Worker'dır (`rohirrimgames`): her şey statik dosya olarak sunulur; Worker kodu yalnızca `/rt/*` yolları (online quiz uçları ve `QuizRoom` Durable Object'i) için çalışır. Bu modda yapay zekâ ile deste üretimi ve oturum kaydı çalışmaz; her deste tabanlı oyun bunun yerine kendi gömülü **statik desteleri** arasından seçim yapılan bir "Deck" açılır menüsü gösterir. Canlı örnek: [games.ortadunyaankara.org](https://games.ortadunyaankara.org).
 
 Barındırma **Cloudflare Workers Static Assets** üzerinden yapılır (eskiden Cloudflare Pages kullanılıyordu; proje `rohirrim-ankara-smiali` kardeş projesiyle aynı yapıya taşındı). Deploy, Cloudflare'in kendi Git entegrasyonu (Workers Builds) ile yönetilir: repo Cloudflare hesabına bağlıdır, `main`'e her push otomatik olarak yeni bir build+deploy tetikler. Ayrı bir GitHub Actions workflow'u **yoktur**.
 
 ### Nasıl çalışır?
 
+- `wrangler.jsonc`, `main`'i `worker/index.js`'e, `assets.run_worker_first`'ü `["/rt/*"]`'e ayarlar ve `QUIZ_ROOMS` Durable Object bağlamasını (`QuizRoom` sınıfı) tanımlar; `/rt/*` dışındaki her istek doğrudan statik dosya katmanından yanıtlanır. Kendi uçlarımız `/rt/` altındadır, **asla** `/api/` altında değil — aşağıdaki gerçek 404 davranışı buna dayanır.
 - `wrangler.jsonc`, `assets.directory`'yi `./dist-static`'e, `assets.not_found_handling`'i `"404-page"`e ayarlar. Bu, eşleşmeyen her yolu (`/api/*` dahil) gerçek bir `404` durum koduyla (ama `dist-static/404.html` içeriğiyle) yanıtlamayı Workers'a native olarak yaptırır — Pages döneminde elle yapılan "index.html'i 404.html'e kopyala" hilesiyle aynı sonucu, platform desteğiyle sağlar.
 - Her oyun sayfası açılışta `/api/health` (ya da ilgili `/api/decks` ucu) ile backend'e ulaşmaya çalışır. Ulaşamazsa (statik barındırmada normal olan durum budur, çünkü `/api/*` gerçek 404 döner) yapay zekâ girdi alanlarını ve kayıtlı-deste seçiciyi gizler, yerine `#static-deck-wrap` içindeki basit bir `<select>` menüsünü gösterir.
 - Bu menüdeki seçenekler, ilgili oyunun `.js` dosyasında tanımlı `STATIC_DECKS` dizisinden gelir (örn. `who` için `game.js`, `hangman` için `hangman.js`). Her oyunda en az bir "Starter — General" destesi ve genelde oyunun kendi gömülü varsayılan içeriği (`DEFAULT_*`) bulunur.
@@ -171,6 +175,8 @@ npx wrangler deploy
 
 `wrangler.jsonc`'daki `build.command` ve `assets.directory` ayarları sayesinde build otomatik yapılır. Normal akışta buna gerek yoktur — `main`'e push yeterlidir.
 
+> **Canlı oyun sırasında deploy yok.** `main`'e her push bir deploy'dur; deploy tüm Durable Object'leri yeniden başlatır ve açık bütün WebSocket bağlantılarını koparır. Oda durumu korunur ve istemciler yeniden bağlanır, ama oyun herkes için kesintiye uğrar. Online quiz etkinliği sürerken push/merge yapmayın.
+
 ### Cloudflare Git entegrasyonu ve custom domain
 
 Repo, Cloudflare dashboard → Workers & Pages → Create → **Connect to Git** akışıyla `ridvankuntug/rohirrimgames`'e bağlanmıştır (GitHub App yetkilendirmesi tek seferlik). Özel alan adı, Workers projesinin **Domains** sekmesinden ya da doğrudan API ile eklenir:
@@ -186,6 +192,33 @@ Zone aynı Cloudflare hesabındaysa gerekli DNS kaydı (AAAA, proxied) otomatik 
 ### Tema ve renk şeması
 
 Görsel kimlik `theme.css`, `hub.css`, `style.css` ve her oyunun kendi `.css` dosyasındaki `:root` değişkenleriyle (`--bg-dark`, `--accent-1/2/3`, `--glass-bg`, `--glass-border`, `--text-primary/secondary`) belirlenir. Farklı bir renk şemasına geçmek için bu değişkenleri (ve varsa aynı tonların ham `rgba()`/hex hâllerini) tüm dosyalarda tutarlı şekilde güncellemek yeterlidir. Fonksiyonel/anlamsal renkler (doğru/yanlış geri bildirimi, Six Thinking Hats şapka renkleri, LingoParty kategori rozetleri) kasıtlı olarak değiştirilmeden bırakılmalıdır.
+
+## Online quiz
+
+Kahoot tarzı online quiz `/quiz` adresindedir ve oyun merkezinin **Online** sekmesinde görünür. Oyun kuralları `shared/quiz-engine.js` içindeki saf motordadır; her oda bir `QuizRoom` Durable Object'idir ve tarayıcılarla WebSocket üzerinden konuşur. Express sunucusunda (`npm start`) `/rt/*` uçları yoktur; orada Online kartı "çevrimdışı" görünür. Tasarım ve kararlar: [docs/superpowers/specs/2026-10-04-online-quiz-design.md](docs/superpowers/specs/2026-10-04-online-quiz-design.md).
+
+### Kısa kullanım
+
+1. **Yönetici (host)**: `/quiz` sayfasını açar, Turnstile doğrulamasından geçip oda oluşturur; lobide deste ve ayarları seçer.
+2. **Oyuncular**: `/quiz#join=<KOD>` bağlantısı, QR kod ya da `/quiz` sayfasına 6 karakterlik oda kodunu yazarak katılır ve bir takma ad seçer (bir cihaz = bir oyuncu).
+3. Yönetici oyunu başlatır; her sorunun sonucundan sonra **Sonraki soru** ile devam eder. Bağlantısı kopan oyuncunun puanı korunur, geri dönebilir.
+4. **Yönetici linkini kopyala** (`/quiz#host=…`) odanın yönetimini başka bir cihazda geri almayı sağlar. **Bu bağlantı odanın tam yetkisini verir; kimseyle paylaşmayın.**
+
+### Operatör kurulumu (bir kez)
+
+1. Cloudflare panosu → **Turnstile** → `games.ortadunyaankara.org` için bir widget ekleyin (mod: Managed).
+2. **Site Key** herkese açıktır ve `frontend/src/config/quizConfig.js` içinde durur.
+3. **Secret Key**, `TURNSTILE_SECRET_KEY` adlı bir Worker secret'ıdır: Workers & Pages → `rohirrimgames` → Settings → Variables and Secrets ya da `npx wrangler secret put TURNSTILE_SECRET_KEY`. Repoya, herhangi bir dosyaya veya sohbete **asla** yazılmaz. Secret yoksa oda oluşturma reddedilir (`503 turnstile_not_configured`).
+
+### Yerel geliştirme
+
+```bash
+cp .dev.vars.example .dev.vars    # git'e girmez; yalnızca Cloudflare'in her zaman geçen TEST secret'ı
+node scripts/build-pages-site.mjs
+npx wrangler dev
+```
+
+`wrangler dev`'in verdiği adreste `/quiz`'i açın; üretim dışı adreslerde ön yüz Cloudflare'in test site key'ini kullanır. Windows'ta `wrangler dev` açıkken `node scripts/build-pages-site.mjs` `EBUSY` hatası verir (`dist-static/` kilitli); önce `wrangler dev`'i durdurun. Dosya haritası ve kurallar: `AGENTS.md` → "Online games (quiz)".
 
 ## Kontrol ve test
 
