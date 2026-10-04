@@ -4,7 +4,9 @@
 
 OpenClassTools is a classroom game hub. React/Vite owns the main hub and LingoParty, while legacy HTML/CSS/JavaScript clients provide the other games. Express serves static assets and HTTP APIs for named decks, AI generation, and optional session recording.
 
-All game state is local to the browser. Do not add room codes, remote-control screens, or a real-time transport without an explicit new design.
+Most games keep all game state local to the browser. **Online games** (the Kahoot-style quiz) are the exception: they run on Cloudflare's free tier (one Worker with a Durable Object over WebSockets, same Worker that serves the static assets), so no paid server or VPS is needed. Do not add room codes, remote-control screens, or a real-time transport to any other game without an explicit new design. See `docs/superpowers/specs/2026-10-04-online-quiz-design.md`.
+
+Online-game rules: realtime endpoints live under `/rt/*` (never `/api/*`, whose real 404 the game clients rely on); game rules live in pure modules under `shared/`; and **do not deploy (push to `main`) while an online game is live** — a deploy disconnects every WebSocket.
 
 ## Commands
 
@@ -37,7 +39,7 @@ ssh -i "/home/berkay/Desktop/who/ssh keys/.ssh/id_ed25519" ubuntu@89.168.76.182 
 
 ## Static Deployment (Cloudflare Workers Static Assets)
 
-This repo also ships as a **fully static** build with no Express/Supabase backend at all — no AI generation, no registered-deck API, no session recording. Live at `https://games.ortadunyaankara.org`.
+This repo also ships as a **static** build with no Express/Supabase backend — no AI generation, no registered-deck API, no session recording. The only server-side code is the online-games Worker under `/rt/*` (Cloudflare free tier). Live at `https://games.ortadunyaankara.org`.
 
 Hosting is **Cloudflare Workers Static Assets** (migrated from Cloudflare Pages, to match the sibling `rohirrim-ankara-smiali` project's setup). Deploy runs through Cloudflare's own Git integration ("Workers Builds") connected to `ridvankuntug/rohirrimgames` — every push to `main` triggers an automatic build+deploy on Cloudflare's infrastructure. There is **no GitHub Actions workflow** for this anymore (the old `.github/workflows/deploy-cloudflare-pages.yml` was removed).
 

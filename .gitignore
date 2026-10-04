@@ -13,3 +13,4 @@ deploy.zip
 .claude/
 ssh keys/
 
+.dev.vars
