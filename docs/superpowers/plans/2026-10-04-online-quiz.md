@@ -53,7 +53,7 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 
 - **T4 — Worker and Durable Object** (files: `worker/index.js`, `worker/quiz-room.js`, `wrangler.jsonc`, `.dev.vars` handling)
   - [x] started — 2026-10-04 16:32
-  - [x] finished — 2026-10-04 17:40 — Worker routes, Turnstile, QuizRoom DO (3 review rounds, 1 test round, wrangler dev smoke 27/27); commit HASH_T4
+  - [x] finished — 2026-10-04 17:40 — Worker routes, Turnstile, QuizRoom DO (3 review rounds, 1 test round, wrangler dev smoke 27/27); commit cde00ac
   - [x] T4.1 — routes `/rt/health`, `/rt/decks`, `POST /rt/rooms`, WebSocket upgrade; same-origin check
   - [x] T4.2 — Turnstile verification (secret from `env`, test keys in dev)
   - [x] T4.3 — `QuizRoom`: hibernation API, SQLite persistence, per-connection attachments, auto-response ping, alarm handling, host/player auth with hashed tokens
@@ -61,11 +61,11 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
   - [x] T4.5 — unit tests for the pure parts (request validation, token hashing, storage adapter against a fake)
 
 - **T5 — Hub categories and Online card** (files: `frontend/src/components/Hub/GameHub.jsx`, `GameHub.module.css`, `frontend/src/i18n.jsx`)
-  - [ ] started
-  - [ ] finished
-  - [ ] T5.1 — `categories` per game (mirror legacy `data-category`), filter tabs All/Solo/Multiplayer/Online outside `<header>`
-  - [ ] T5.2 — Online quiz card; health probe of `/rt/health`; disabled + "offline" note when unreachable
-  - [ ] T5.3 — keep `tests/removal-contract.test.js` hub assertions green; add a contract test for the tabs
+  - [x] started — 2026-10-04 17:42
+  - [x] finished — 2026-10-04 18:10 — category tabs + Online Quiz card with /rt/health probe (2 review rounds, 1 test round); commit HASH_T5
+  - [x] T5.1 — `categories` per game (mirror legacy `data-category`), filter tabs All/Solo/Multiplayer/Online outside `<header>`
+  - [x] T5.2 — Online quiz card; health probe of `/rt/health`; disabled + "offline" note when unreachable
+  - [x] T5.3 — keep `tests/removal-contract.test.js` hub assertions green; add a contract test for the tabs
 
 - **T6 — Quiz frontend** (files: `frontend/src/games/Quiz/**`, `frontend/src/App.jsx`, `scripts/build-pages-site.mjs`, `frontend/package.json` for the QR library)
   - [ ] started
