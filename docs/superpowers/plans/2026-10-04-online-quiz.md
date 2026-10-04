@@ -79,17 +79,17 @@ Each task has two checkboxes (started / finished). Sub-steps use `[ ]` → `[/]`
 
 - **T7 — Documentation and contract tests** (files: `AGENTS.md`, `README.md`, `DEPLOY.md`, `PROJE_REHBERI_TR.md`, `tests/`)
   - [x] started — 2026-10-04 20:07
-  - [x] finished — 2026-10-04 20:18 — AGENTS/README/DEPLOY/PROJE_REHBERI_TR online sections + doc contract test (2 review rounds, 1 test round); commit HASH_T7
+  - [x] finished — 2026-10-04 20:18 — AGENTS/README/DEPLOY/PROJE_REHBERI_TR online sections + doc contract test (2 review rounds, 1 test round); commit 29de600
   - [x] T7.1 — keep AGENTS.md accurate to what shipped (online section, `/rt/` rule, no-deploy-during-events rule)
   - [x] T7.2 — README/DEPLOY/PROJE_REHBERI_TR: operator setup (Turnstile key, secret), event-day rule; no mention of the removed technology name
   - [x] T7.3 — run the whole contract-test set; fix or extend tests only where the new feature legitimately changes the contract
 
 - **T8 — Manual end-to-end and budget check** (no code unless bugs are found)
-  - [ ] started
+  - [x] started — 2026-10-04 20:18
   - [ ] finished
-  - [ ] T8.1 — `wrangler dev`: host + several phone/tab players through a full game including a mid-question disconnect and a mid-reveal reconnect
-  - [ ] T8.2 — measure rows written / requests for a 20-player, 5-question game and update the budget estimate in the spec
-  - [ ] T8.3 — owner-run Turnstile + secret setup, then one real run on a preview deploy before merging to `main`
+  - [x] T8.1 — `wrangler dev`: host + several phone/tab players through a full game including a mid-question disconnect and a mid-reveal reconnect
+  - [x] T8.2 — measure rows written / requests for a 20-player, 5-question game and update the budget estimate in the spec
+  - [ ] T8.3 — owner-run Turnstile + secret setup, then one real run on a preview deploy before merging to `main` (owner)
 
 ## After the first release (not planned yet)
 

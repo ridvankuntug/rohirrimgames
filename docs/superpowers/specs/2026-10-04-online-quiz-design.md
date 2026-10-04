@@ -1,6 +1,6 @@
 # Online Quiz (Kahoot-style) — Design
 
-Status: approved decisions, implementation not started. Plan: `docs/superpowers/plans/2026-10-04-online-quiz.md`.
+Status: approved decisions, implemented on `feat/quiz-online`; T8.3 (owner real-key check on a preview deploy) pending. Plan: `docs/superpowers/plans/2026-10-04-online-quiz.md`.
 
 ## Goal
 
@@ -146,7 +146,11 @@ All state is persisted because the object can hibernate or restart. Tables: `met
 
 T4 implementation (2026-10-04): only `meta` is used — one row (`id INTEGER PRIMARY KEY` = 1) holding the whole engine state as JSON (`worker/room-store.js`). The engine changes state as a whole on every event, so every persisted event costs exactly **one row write** regardless of player count (a reveal with 50 players included); separate `players`/`answers` tables would cost up to 50 writes per reveal and 2 per answer. Rejected events and no-op events write nothing. Estimate for a 50-player, 20-question game: ~50 joins + ~20 × (50 answers + 3 transitions) + a few dozen status changes ≈ 1.1–1.3 k row writes, plus alarm updates (2–3 per question; whether they count as row writes is to be measured in T8).
 
-Free-plan budget (verified against the docs): 100,000 requests/day, 13,000 GB-s/day, 100,000 rows written/day, 5 million rows read/day; incoming WebSocket messages bill 20:1; exceeding a limit makes operations fail until 00:00 UTC. Rough estimate: 2–3 thousand row writes per 50-player, 20-question game → ~30–45 full games/day. Measure in T9.
+Free-plan budget (verified against the docs): 100,000 requests/day, 13,000 GB-s/day, 100,000 rows written/day, 5 million rows read/day; incoming WebSocket messages bill 20:1; exceeding a limit makes operations fail until 00:00 UTC.
+
+Measured in T8 (2026-10-04, local `wrangler dev`, scripted WebSocket clients, 20 players + host, 5 questions, everyone answers every question, early finish on): **158 `meta` row writes** (1 insert + 133 during play — host connect, 20 joins, configure, start, 5 × (20 answers + reveal + next) — + 21 when every socket closed at the end + 2 alarm-driven `away` batches), counted with SQLite triggers added from outside to the room's local database. The alarm row (`_cf_METADATA`, where workerd refuses triggers) was polled every 2 ms: **39 value changes** during play (every lobby join moves the 2 h idle-expiry alarm; then per question: deadline, last call, reveal), so about 45–50 `setAlarm` calls including the re-arm after each fired alarm. The Cloudflare pricing docs bill each `setAlarm` as one row written (recalled, not re-checked in T8), so they are counted here. Room creation/deletion adds a handful (table creation, `deleteAll`). Total ≈ **210 row writes, ~250 with reconnect/liveness margin** (the 20-player scenario run with drop/return, late join, silent player, host reconnect and kick wrote 162 `meta` rows and 47 alarm changes — same range). Requests for the same game: 3 HTTP (`/rt/health`, `/rt/decks`, `POST /rt/rooms`) + 21 WebSocket upgrades (each reconnect adds one), 128 incoming JSON messages (≈ 7 billed requests at 20:1) and the text `ping`s (one per client per 20 s; answered by the runtime auto-response; ≈ 630 = 32 billed requests for a 10-minute game if they are billed at all) → **≈ 60–65 requests per game**. Rows read are negligible (the state is one row, read once per object wake-up).
+
+Daily capacity on the free plan (rows written is the binding limit): **20 players / 5 questions ≈ 250 rows → ~400 games/day** (requests: ~1,500 games/day). **50 players / 20 questions**, scaled linearly from the measured per-event cost (≈ 1 `meta` write per join and per answer + 2 per question; ≈ 1 alarm write per lobby join + 3–4 per question; ~55 for the closing tail) **≈ 1.3–1.5 k rows → ~65–75 games/day** (requests: ≈ 60 upgrades + ~55 billed messages + ~230 billed pings for a 30-minute game ≈ 350 → ~280 games/day). Not measured locally: Durable Object duration (GB-s). Upper bound if the object never hibernated: 128 MB × wall time ≈ 77 GB-s per 10-minute game, 230 GB-s per 30-minute game → 13,000 GB-s/day allows ~170 resp. ~56 games/day; hibernation between events (reveal waits, idle lobby) should keep the real figure well below that. Check the dashboard's rows-written and duration metrics after the first real event (T8.3).
 
 ### Security
 
@@ -167,7 +171,7 @@ Route `/quiz` (React). Components: home (create / join), host panel (lobby, live
 
 - `node --test` for everything pure: engine (phases, scoring, ties, early-finish, liveness, expiry), protocol validation, name normalisation, room code generation, snapshot builders (assert `correct` absent before reveal).
 - A fake in-memory transport simulates one host plus N players against the engine.
-- The Durable Object stays thin (storage + effects). Real Worker integration is verified manually with `wrangler dev` and several browser tabs/phones (T9).
+- The Durable Object stays thin (storage + effects). Real Worker integration is verified manually with `wrangler dev` and several browser tabs/phones (T8).
 - React UI: logic stays out of components; verified with `npm --prefix frontend run lint`, `npm --prefix frontend run build` and manual runs.
 - Full `npm test` must stay green. Existing contract tests that matter: `removal-contract.test.js` (no Socket.IO/`control-center`/room code in the listed legacy files, `package.json`, `server.js`, `App.jsx`), `documentation.test.js` (README/DEPLOY must not mention Socket.IO or `/control-center`), `inventory.test.js` (both hubs list remaining games). We do not touch the legacy files those tests scan, and we call the technology "WebSocket"/"Durable Objects", never "Socket.IO".
 
