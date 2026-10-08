@@ -60,12 +60,12 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
   - [ ] T3.8 — tests for every pause combination (Tabu confirm during observer pause, narrator away during confirmation, observer change while paused), time preserved to the ms across pause/handover, alarm values, expiry → `delete_room`
 
 - **T4 — Controller generalization (quiz unchanged)** (files: `worker/room-controller.js`, `worker/quiz-game.js`, `worker/quiz-room.js`, `tests/quiz-room.test.js` (construction only), `tests/room-controller-game.test.js`)
-  - [ ] başladı
-  - [ ] bitti
-  - [ ] T4.1 — `RoomController({ ctx, game, … })`; remove direct quiz engine/protocol imports from the controller; `game` adapter fields per spec table; `initRoom` validates through `game.parseInit`
-  - [ ] T4.2 — host paths (`host_auth`, `host_connect`/`host_disconnect`, `hostLastSeenAt`, host snapshots) only when `game.hasHost`; log prefix from `game.name`
-  - [ ] T4.3 — `worker/quiz-game.js` (quiz adapter); `QuizRoom` passes it; quiz tests: only `new RoomController(...)` gains `game: QUIZ_GAME`, no assertion edits; all green
-  - [ ] T4.4 — `tests/room-controller-game.test.js`: a minimal fake host-less game adapter proves the controller never calls host functions and that the actor `playerId` overwrite still holds
+  - [x] başladı — 2026-10-09 00:49
+  - [x] bitti — 2026-10-09 01:01 — engine/protocol injected via game adapter, quiz unchanged (review 2 rounds, tester mutation-checked)
+  - [x] T4.1 — `RoomController({ ctx, game, … })`; remove direct quiz engine/protocol imports from the controller; `game` adapter fields per spec table; `initRoom` validates through `game.parseInit`
+  - [x] T4.2 — host paths (`host_auth`, `host_connect`/`host_disconnect`, `hostLastSeenAt`, host snapshots) only when `game.hasHost`; log prefix from `game.name`
+  - [x] T4.3 — `worker/quiz-game.js` (quiz adapter); `QuizRoom` passes it; quiz tests: only `new RoomController(...)` gains `game: QUIZ_GAME`, no assertion edits; all green
+  - [x] T4.4 — `tests/room-controller-game.test.js`: a minimal fake host-less game adapter proves the controller never calls host functions and that the actor `playerId` overwrite still holds
 
 - **T5 — TabooRoom Durable Object, routes, wrangler** (files: `worker/taboo-game.js`, `worker/taboo-room.js`, `worker/index.js`, `worker/http.js`, `wrangler.jsonc`, `tests/taboo-room.test.js`, `tests/taboo-worker-http.test.js`)
   - [ ] başladı

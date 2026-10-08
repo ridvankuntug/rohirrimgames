@@ -1,17 +1,25 @@
-// Everything the QuizRoom Durable Object does, minus the `cloudflare:workers` glue.
+// Everything a room Durable Object (QuizRoom, ...) does, minus the
+// `cloudflare:workers` glue.
 //
 // Pure module: it gets the Durable Object `ctx` (or a fake in tests) and never
 // imports `cloudflare:workers`, so `node --test` can drive it with fake sockets.
 // It stays thin on purpose: load state -> `reduce` -> persist -> run effects.
-// Every game rule lives in `shared/quiz-engine.js`.
+// It is game-agnostic: the engine, the protocol and the message envelopes come
+// in through a `game` adapter (contract in `worker/quiz-game.js`). Every game
+// rule lives in the game's pure engine (`shared/quiz-engine.js`, ...).
+// Host paths (`host_auth`, `host_connect`/`host_disconnect`, `hostLastSeenAt`,
+// host snapshots) exist only when `game.hasHost`; in a host-less game a socket
+// only ever has role `undefined` or `'player'`.
 //
 // ---------------------------------------------------------------------------
 // Socket contract (for the client, T6)
 // ---------------------------------------------------------------------------
-// Messages: see `shared/quiz-protocol.js` (client -> server) and the engine
-// effects (server -> client: `joined`, `state`, `error`). Extra error codes sent
-// by this layer: `rate_limited` (message dropped), `room_gone` (no such room),
-// `room_busy` (socket cap reached), `not_host` (wrong host token).
+// Messages: see the game's protocol module, e.g. `shared/quiz-protocol.js`
+// (client -> server) and the engine effects (server -> client: `joined`,
+// `state`, `error`). Extra error codes sent by this layer: `rate_limited`
+// (message dropped), `room_gone` (no such room), `room_busy` (socket cap
+// reached), `not_host` (wrong host token; host games only), `bad_message`
+// (`host_auth` in a host-less game).
 // The text frame `ping` is answered with `pong` by the runtime auto-response.
 //
 // Close codes sent by the server:
@@ -25,7 +33,7 @@
 //                    time and with back-off on repeats (no fast loop)
 //   4029 room_busy   too many open sockets in this room; retry with back-off
 //   1008 rate_limited  the socket kept flooding after being told to slow down
-//   1009 too_big     a frame (text or binary) larger than the protocol limit (2048 bytes)
+//   1009 too_big     a frame (text or binary) larger than the protocol limit (`game.maxMessageBytes`; 2048 bytes for the quiz)
 //   1011 internal    unexpected server error (reconnect normally)
 // 1006 (no close frame) is the normal "network dropped" case: reconnect.
 //
@@ -35,21 +43,6 @@
 // this instance) — on events that wake the object anyway (alarm, and client
 // messages at most every LIVENESS_INTERVAL_MS). Nothing is written per ping.
 
-import {
-    PHASES,
-    buildHostSnapshot,
-    buildPlayerSnapshot,
-    createInitialState,
-    reduce,
-} from '../shared/quiz-engine.js';
-import {
-    PROTOCOL_LIMITS,
-    buildErrorMessage,
-    buildJoinedMessage,
-    buildStateMessage,
-    parseClientMessage,
-    parseRoomCode,
-} from '../shared/quiz-protocol.js';
 import { createTokenBucket } from './rate-limit.js';
 import { createRoomStore } from './room-store.js';
 import { newToken, randomUnit, sha256Hex, timingSafeEqual } from './tokens.js';
@@ -82,7 +75,37 @@ export const LIVENESS_INTERVAL_MS = 5000;
 export const UNAUTHENTICATED_GRACE_MS = 30_000;
 
 const OPEN = 1; // WebSocket.OPEN
-const HASH_PATTERN = /^[0-9a-f]{64}$/;
+
+const REQUIRED_GAME_FUNCTIONS = Object.freeze([
+    'parseInit',
+    'createInitialState',
+    'reduce',
+    'parseClientMessage',
+    'buildPlayerSnapshot',
+    'buildStateMessage',
+    'buildJoinedMessage',
+    'buildErrorMessage',
+]);
+
+// Fails at construction (Durable Object start) instead of on the first message.
+const assertGame = game => {
+    if (!game || typeof game !== 'object') throw new TypeError('RoomController: game adapter is required');
+    for (const key of REQUIRED_GAME_FUNCTIONS) {
+        if (typeof game[key] !== 'function') throw new TypeError(`RoomController: game.${key} must be a function`);
+    }
+    if (typeof game.name !== 'string' || game.name === '') throw new TypeError('RoomController: game.name must be a non-empty string');
+    if (typeof game.hasHost !== 'boolean') throw new TypeError('RoomController: game.hasHost must be a boolean');
+    if (game.hasHost && typeof game.buildHostSnapshot !== 'function') {
+        throw new TypeError('RoomController: game.buildHostSnapshot must be a function when game.hasHost');
+    }
+    if (typeof game.deletedPhase !== 'string' || game.deletedPhase === '') {
+        throw new TypeError('RoomController: game.deletedPhase must be a non-empty string');
+    }
+    if (!Number.isInteger(game.maxMessageBytes) || game.maxMessageBytes <= 0) {
+        throw new TypeError('RoomController: game.maxMessageBytes must be a positive integer');
+    }
+    return game;
+};
 
 // Codes a server may put in a Close frame (1005/1006/1015 are reserved for
 // reporting and would make `close()` throw).
@@ -95,8 +118,7 @@ const attachmentOf = ws => ws.deserializeAttachment() ?? {};
 
 // Exact UTF-8 size check against the protocol limit. UTF-16 length <= UTF-8
 // bytes <= 3 x UTF-16 length, so the encoder only runs in the ambiguous band.
-const utf8TooBig = text => {
-    const max = PROTOCOL_LIMITS.maxMessageBytes;
+const utf8TooBig = (text, max) => {
     if (text.length > max) return true;
     if (text.length * 3 <= max) return false;
     return new TextEncoder().encode(text).byteLength > max;
@@ -104,11 +126,13 @@ const utf8TooBig = text => {
 
 export class RoomController {
     /**
-     * @param {{ ctx: object, now?: () => number, cryptoImpl?: Crypto, log?: (message: string) => void }} options
+     * @param {{ ctx: object, game: object, now?: () => number, cryptoImpl?: Crypto, log?: (message: string) => void }} options
      *   `ctx` needs: storage.sql, storage.setAlarm/deleteAlarm/deleteAll, acceptWebSocket,
      *   getWebSockets, getWebSocketAutoResponseTimestamp.
+     *   `game` is the adapter (contract in worker/quiz-game.js).
      */
-    constructor({ ctx, now = () => Date.now(), cryptoImpl = globalThis.crypto, log = message => console.error(message) }) {
+    constructor({ ctx, game, now = () => Date.now(), cryptoImpl = globalThis.crypto, log = message => console.error(message) }) {
+        this.game = assertGame(game);
         this.ctx = ctx;
         this.now = now;
         this.crypto = cryptoImpl;
@@ -122,6 +146,15 @@ export class RoomController {
         this.lastLivenessAt = -Infinity;
     }
 
+    /**
+     * The socket role the protocol and the engine see. A host-less game only ever
+     * gets `'player'` or `undefined`, even if an attachment somehow says `'host'`.
+     */
+    roleOf({ role }) {
+        if (this.game.hasHost || role === 'player') return role;
+        return undefined;
+    }
+
     state() {
         if (this.cached === undefined) this.cached = this.store.load();
         return this.cached;
@@ -130,7 +163,7 @@ export class RoomController {
     /** The state, or null when the room does not exist or is being deleted. */
     liveState() {
         const state = this.state();
-        return state && state.phase !== PHASES.DELETED ? state : null;
+        return state && state.phase !== this.game.deletedPhase ? state : null;
     }
 
     // -----------------------------------------------------------------------
@@ -139,11 +172,9 @@ export class RoomController {
 
     /** @returns {Promise<{ ok: true } | { ok: false, reason: 'exists' | 'bad_request' }>} */
     async initRoom(init) {
-        const { code, hostTokenHash } = init ?? {};
-        if (typeof code !== 'string' || parseRoomCode(code) !== code || typeof hostTokenHash !== 'string' || !HASH_PATTERN.test(hostTokenHash)) {
-            return { ok: false, reason: 'bad_request' };
-        }
-        const state = createInitialState({ code, hostTokenHash }, { now: this.now() });
+        const engineInit = this.game.parseInit(init);
+        if (!engineInit) return { ok: false, reason: 'bad_request' };
+        const state = this.game.createInitialState(engineInit, { now: this.now() });
         if (!this.store.create(state)) return { ok: false, reason: 'exists' };
         this.cached = state;
         if (state.alarmAt !== null) await this.ctx.storage.setAlarm(state.alarmAt);
@@ -227,23 +258,23 @@ export class RoomController {
         const verdict = bucket.take(now);
         if (!verdict.allowed) {
             if (verdict.close) ws.close(CLOSE_CODES.RATE_LIMITED, 'rate_limited');
-            else if (verdict.notify) this.send(ws, buildErrorMessage('rate_limited'));
+            else if (verdict.notify) this.send(ws, this.game.buildErrorMessage('rate_limited'));
             return;
         }
         this.lastMessageAt.set(connectionId, now);
 
         // Binary frames are never valid (parseClientMessage answers bad_message),
         // but an oversized one closes the socket like an oversized text frame.
-        const tooBig =
-            typeof message === 'string' ? utf8TooBig(message) : (message?.byteLength ?? 0) > PROTOCOL_LIMITS.maxMessageBytes;
+        const max = this.game.maxMessageBytes;
+        const tooBig = typeof message === 'string' ? utf8TooBig(message, max) : (message?.byteLength ?? 0) > max;
         if (tooBig) {
             ws.close(CLOSE_CODES.TOO_BIG, 'too_big');
             return;
         }
 
-        const parsed = parseClientMessage(message, { role: attachmentOf(ws).role });
+        const parsed = this.game.parseClientMessage(message, { role: this.roleOf(attachmentOf(ws)) });
         if (!parsed.ok) {
-            this.send(ws, buildErrorMessage(parsed.code));
+            this.send(ws, this.game.buildErrorMessage(parsed.code));
             return;
         }
         const { event } = parsed;
@@ -253,6 +284,12 @@ export class RoomController {
         // is awaited, so interleaved messages cannot act on stale data (e.g. two
         // pipelined joins: the second one sees role 'player').
         if (event.type === 'host_auth') {
+            // Defence in depth: a host-less game's protocol already rejects
+            // `host_auth`; never let one (and its token) reach that engine.
+            if (!this.game.hasHost) {
+                this.send(ws, this.game.buildErrorMessage('bad_message'));
+                return;
+            }
             const hash = await sha256Hex(event.hostToken, this.crypto);
             await this.authenticateHost(ws, hash);
             return;
@@ -276,15 +313,17 @@ export class RoomController {
         // `playerId` is overloaded in the engine contract: it is the actor for a
         // player socket and the TARGET of a host `kick`. A host/unbound socket has no
         // actor playerId, so the message field is kept only there (the protocol
-        // pre-filter already limits `kick` to the host).
+        // pre-filter already limits `kick` to the host). A host-less game has no
+        // host sockets, so a message `playerId` never reaches its engine (Taboo
+        // names its kick target `targetId`).
         const engineEvent = {
             ...fields,
             ...(tokenHash === undefined ? {} : { tokenHash }),
             connectionId: actor.connectionId,
-            role: actor.role,
+            role: this.roleOf(actor),
         };
         if (actor.role === 'player') engineEvent.playerId = actor.playerId;
-        else if (actor.role !== 'host') delete engineEvent.playerId;
+        else if (!(this.game.hasHost && actor.role === 'host')) delete engineEvent.playerId;
         await this.dispatch(engineEvent, { issuedToken });
     }
 
@@ -292,17 +331,17 @@ export class RoomController {
         if (ws.readyState !== OPEN) return;
         const state = this.liveState();
         if (!state) {
-            this.send(ws, buildErrorMessage('room_gone'));
+            this.send(ws, this.game.buildErrorMessage('room_gone'));
             ws.close(CLOSE_CODES.ROOM_GONE, 'room_gone');
             return;
         }
         const { connectionId, role } = attachmentOf(ws);
         if (role !== undefined) {
-            this.send(ws, buildErrorMessage('already_joined'));
+            this.send(ws, this.game.buildErrorMessage('already_joined'));
             return;
         }
         if (!timingSafeEqual(hash, state.hostTokenHash)) {
-            this.send(ws, buildErrorMessage('not_host'));
+            this.send(ws, this.game.buildErrorMessage('not_host'));
             return;
         }
 
@@ -312,7 +351,7 @@ export class RoomController {
             if (other === ws || attachmentOf(other).role !== 'host') continue;
             this.unbindAndClose(other, CLOSE_CODES.REPLACED, 'replaced');
         }
-        this.send(ws, buildJoinedMessage({ role: 'host' }));
+        this.send(ws, this.game.buildJoinedMessage({ role: 'host' }));
         await this.checkLiveness();
         await this.dispatch({ type: 'host_connect' });
     }
@@ -331,6 +370,7 @@ export class RoomController {
 
         const others = this.openSockets().filter(other => attachmentOf(other).connectionId !== connectionId);
         if (role === 'host') {
+            if (!this.game.hasHost) return;
             if (!others.some(other => attachmentOf(other).role === 'host')) await this.dispatch({ type: 'host_disconnect' });
         } else if (role === 'player') {
             const stillOpen = others.some(other => {
@@ -347,7 +387,7 @@ export class RoomController {
             await this.ctx.storage.deleteAlarm();
             return;
         }
-        if (current.phase === PHASES.DELETED) {
+        if (current.phase === this.game.deletedPhase) {
             // An earlier purge failed half-way (its error made the runtime retry us).
             await this.purge();
             return;
@@ -376,7 +416,7 @@ export class RoomController {
     /**
      * Every player with the newest sign of life of their open sockets (null when
      * none is open, so a player left `connected` by a restart goes `pending`), and
-     * the same for the host.
+     * the same for the host (`hostLastSeenAt`, only when `game.hasHost`).
      */
     observe() {
         const state = this.state();
@@ -391,10 +431,8 @@ export class RoomController {
             if (role === 'host') hostLastSeenAt = Math.max(hostLastSeenAt ?? seen, seen);
             else if (role === 'player') seenByPlayer.set(playerId, Math.max(seenByPlayer.get(playerId) ?? seen, seen));
         }
-        return {
-            players: (state?.players ?? []).map(player => ({ playerId: player.id, lastSeenAt: seenByPlayer.get(player.id) ?? null })),
-            hostLastSeenAt,
-        };
+        const players = (state?.players ?? []).map(player => ({ playerId: player.id, lastSeenAt: seenByPlayer.get(player.id) ?? null }));
+        return this.game.hasHost ? { players, hostLastSeenAt } : { players };
     }
 
     /**
@@ -407,7 +445,7 @@ export class RoomController {
             if (event.connectionId !== undefined) {
                 const ws = this.socketById(event.connectionId);
                 if (ws) {
-                    this.send(ws, buildErrorMessage('room_gone'));
+                    this.send(ws, this.game.buildErrorMessage('room_gone'));
                     this.unbindAndClose(ws, CLOSE_CODES.ROOM_GONE, 'room_gone');
                 }
             }
@@ -415,7 +453,7 @@ export class RoomController {
         }
 
         const now = this.now();
-        const result = reduce(state, event, { now, random: () => randomUnit(this.crypto) });
+        const result = this.game.reduce(state, event, { now, random: () => randomUnit(this.crypto) });
         const deleting = result.effects.some(effect => effect.type === 'delete_room');
         if (deleting) {
             // Not persisted: the in-memory `deleted` phase makes every path treat the
@@ -437,7 +475,7 @@ export class RoomController {
                     break;
                 case 'error': {
                     const ws = this.socketById(effect.connectionId);
-                    if (ws) this.send(ws, buildErrorMessage(effect.code));
+                    if (ws) this.send(ws, this.game.buildErrorMessage(effect.code));
                     break;
                 }
                 case 'close':
@@ -446,10 +484,10 @@ export class RoomController {
                     }
                     break;
                 case 'broadcast':
-                    this.sendSnapshots(state, now, { host: true, playerIds: null });
+                    this.sendSnapshots(state, now, { host: this.game.hasHost, playerIds: null });
                     break;
                 case 'sync':
-                    this.sendSnapshots(state, now, { host: effect.host, playerIds: new Set(effect.playerIds) });
+                    this.sendSnapshots(state, now, { host: this.game.hasHost && effect.host, playerIds: new Set(effect.playerIds) });
                     break;
                 case 'set_alarm':
                     pending.push(effect.at === null ? this.ctx.storage.deleteAlarm() : this.ctx.storage.setAlarm(effect.at));
@@ -458,7 +496,7 @@ export class RoomController {
                     pending.push(this.purge());
                     break;
                 default:
-                    this.log(`quiz-room: unknown effect ${String(effect.type)}`);
+                    this.log(`${this.game.name}: unknown effect ${String(effect.type)}`);
             }
         }
         return pending;
@@ -486,7 +524,7 @@ export class RoomController {
         ws.serializeAttachment({ connectionId, role: 'player', playerId });
         this.send(
             ws,
-            buildJoinedMessage({ role: 'player', playerId, reconnected, ...(issuedToken === undefined ? {} : { playerToken: issuedToken }) }),
+            this.game.buildJoinedMessage({ role: 'player', playerId, reconnected, ...(issuedToken === undefined ? {} : { playerToken: issuedToken }) }),
         );
         // One device = one player: an older socket of the same player is replaced.
         for (const other of this.playerSockets(playerId)) {
@@ -498,12 +536,12 @@ export class RoomController {
         let hostMessage = null;
         for (const ws of this.openSockets()) {
             const { role, playerId } = attachmentOf(ws);
-            if (role === 'host' && host) {
-                hostMessage ??= JSON.stringify(buildStateMessage(buildHostSnapshot(state, now)));
+            if (role === 'host' && host && this.game.hasHost) {
+                hostMessage ??= JSON.stringify(this.game.buildStateMessage(this.game.buildHostSnapshot(state, now)));
                 this.sendRaw(ws, hostMessage);
             } else if (role === 'player' && (playerIds === null || playerIds.has(playerId))) {
-                const snapshot = buildPlayerSnapshot(state, playerId, now);
-                if (snapshot) this.sendRaw(ws, JSON.stringify(buildStateMessage(snapshot)));
+                const snapshot = this.game.buildPlayerSnapshot(state, playerId, now);
+                if (snapshot) this.sendRaw(ws, JSON.stringify(this.game.buildStateMessage(snapshot)));
             }
         }
     }

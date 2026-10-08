@@ -1,15 +1,16 @@
 // QuizRoom Durable Object: one instance per room code (the code is the object name).
 //
 // Only the `cloudflare:workers` glue lives here; all behaviour is in
-// `room-controller.js` (testable with `node --test`) and the rules in
-// `shared/quiz-engine.js`. Uses the WebSocket Hibernation API: the object can
+// `room-controller.js` (testable with `node --test`), wired to the quiz through
+// `quiz-game.js`, and the rules in `shared/quiz-engine.js`. Uses the WebSocket Hibernation API: the object can
 // be evicted between messages; state is reloaded from SQLite and each socket's
 // identity from its attachment.
 
 import { DurableObject } from 'cloudflare:workers';
+import { QUIZ_GAME } from './quiz-game.js';
 import { RoomController, SOCKET_REJECTIONS } from './room-controller.js';
 
-const LOG_PREFIX = 'quiz-room';
+const LOG_PREFIX = QUIZ_GAME.name;
 
 export class QuizRoom extends DurableObject {
     constructor(ctx, env) {
@@ -17,7 +18,7 @@ export class QuizRoom extends DurableObject {
         // Answered by the runtime without waking the object; the timestamp of the
         // last answer is the socket's "last seen" (T0 decision).
         ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
-        this.room = new RoomController({ ctx });
+        this.room = new RoomController({ ctx, game: QUIZ_GAME });
     }
 
     /** RPC from the Worker (`POST /rt/rooms`). */

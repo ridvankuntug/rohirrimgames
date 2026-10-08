@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { QUIZ_ENGINE_LIMITS } from '../shared/quiz-engine.js';
 import { getDeck } from '../shared/quiz-decks.js';
 import { isValidToken } from '../shared/quiz-protocol.js';
+import { QUIZ_GAME } from '../worker/quiz-game.js';
 import { CLOSE_CODES, MAX_SOCKETS, RoomController, SOCKET_REJECTIONS, UNAUTHENTICATED_GRACE_MS } from '../worker/room-controller.js';
 import { createRoomStore } from '../worker/room-store.js';
 import { newToken, sha256Hex } from '../worker/tokens.js';
@@ -45,7 +46,7 @@ test('room store: create once, load, save = one row write each; second create re
 
 const setup = async ({ clock = createClock(), ctx = createFakeCtx() } = {}) => {
     const logs = [];
-    const make = () => new RoomController({ ctx, now: clock.fn, log: message => logs.push(message) });
+    const make = () => new RoomController({ ctx, game: QUIZ_GAME, now: clock.fn, log: message => logs.push(message) });
     const harness = { ctx, clock, logs, room: make() };
     harness.hostToken = newToken();
     assert.deepEqual(await harness.room.initRoom({ code: CODE, hostTokenHash: await sha256Hex(harness.hostToken) }), { ok: true });
@@ -90,7 +91,7 @@ const errors = ws => ws.of('error').map(message => message.code);
 test('initRoom validates input, stores only the hash, arms the alarm and refuses a second init', async () => {
     const ctx = createFakeCtx();
     const clock = createClock();
-    const room = new RoomController({ ctx, now: clock.fn, log: () => {} });
+    const room = new RoomController({ ctx, game: QUIZ_GAME, now: clock.fn, log: () => {} });
     assert.deepEqual(await room.initRoom({ code: 'abcd23', hostTokenHash: 'a'.repeat(64) }), { ok: false, reason: 'bad_request' });
     assert.deepEqual(await room.initRoom({ code: CODE, hostTokenHash: 'xyz' }), { ok: false, reason: 'bad_request' });
     assert.deepEqual(await room.initRoom(undefined), { ok: false, reason: 'bad_request' });
@@ -104,14 +105,14 @@ test('initRoom validates input, stores only the hash, arms the alarm and refuses
     assert.equal(ctx.storage.alarm, state.alarmAt);
     assert.ok(state.alarmAt > clock.now);
 
-    const again = new RoomController({ ctx, now: clock.fn, log: () => {} });
+    const again = new RoomController({ ctx, game: QUIZ_GAME, now: clock.fn, log: () => {} });
     assert.deepEqual(await again.initRoom({ code: CODE, hostTokenHash: 'c'.repeat(64) }), { ok: false, reason: 'exists' });
     assert.equal(JSON.parse(ctx.storage.sql.row).hostTokenHash, hash);
 });
 
 test('a room that does not exist refuses sockets (room_gone) without storage writes', () => {
     const ctx = createFakeCtx();
-    const room = new RoomController({ ctx, log: () => {} });
+    const room = new RoomController({ ctx, game: QUIZ_GAME, log: () => {} });
     assert.equal(room.admissionError(), 'room_gone');
     assert.deepEqual(SOCKET_REJECTIONS.room_gone, { status: 404, closeCode: CLOSE_CODES.ROOM_GONE });
     assert.equal(ctx.sockets.length, 0);
