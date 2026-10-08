@@ -19,14 +19,14 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
 ## Tasks
 
 - **T0 — Shared Taboo decks + local taboo wiring** (files: `shared/taboo-decks-data.js`, `shared/taboo-decks.js`, `taboo.html`, `taboo.js`, `tests/taboo-decks.test.js`)
-  - [ ] başladı
-  - [ ] bitti
-  - [ ] T0.1 — `shared/taboo-decks-data.js`: classic-script IIFE (pattern of `shared/feature-flags.js`) setting `globalThis.OpenClassTabooDecks` to a deep-frozen list: `starter-general` (the 6 starter cards) and `classic-mix` (the 100 `DEFAULT_CARDS`), shape `{ id, name, language: 'en', cards: [{ word, forbidden }] }`, cards copied verbatim
-  - [ ] T0.2 — `shared/taboo-decks.js` (ES module): side-effect import of the data file; `TABOO_DECKS`, `getTabooDeck(id)`, `validateTabooDeck` (unique id, ≥1 card, non-empty word, ≥3 non-empty forbidden words, bounded lengths), `listTabooDeckMetadata()` → `{ id, name, cardCount, language }` (no cards)
-  - [ ] T0.3 — `taboo.html`: `<script src="shared/taboo-decks-data.js">` after `platform-client.js` and before `taboo.js`
-  - [ ] T0.4 — `taboo.js`: keep top-level `STATIC_DECKS` and `DEFAULT_CARDS`, now derived from `globalThis.OpenClassTabooDecks` (`{ name, content: cards }`; `DEFAULT_CARDS` = `classic-mix` cards, mutable copies); delete the inline card arrays; selection behaviour unchanged (last deck default, apply on populate and on change)
-  - [ ] T0.5 — tests: every deck validates; metadata has no cards; the data file's global equals the module export; `taboo.html` loads the data script before `taboo.js`; `taboo.js` no longer inlines the card list
-  - [ ] T0.6 — check `dist-static/shared/taboo-decks-data.js` exists after the build (the `shared/` dir is already copied whole — no whitelist change expected) and `/taboo` still plays with both decks in a browser
+  - [x] başladı — 2026-10-09 00:49
+  - [x] bitti — 2026-10-09 01:01 — shared decks module, local taboo uses it (review 2 rounds, tester clean)
+  - [x] T0.1 — `shared/taboo-decks-data.js`: classic-script IIFE (pattern of `shared/feature-flags.js`) setting `globalThis.OpenClassTabooDecks` to a deep-frozen list: `starter-general` (the 6 starter cards) and `classic-mix` (the 100 `DEFAULT_CARDS`), shape `{ id, name, language: 'en', cards: [{ word, forbidden }] }`, cards copied verbatim
+  - [x] T0.2 — `shared/taboo-decks.js` (ES module): side-effect import of the data file; `TABOO_DECKS`, `getTabooDeck(id)`, `validateTabooDeck` (unique id, ≥1 card, non-empty word, ≥3 non-empty forbidden words, bounded lengths), `listTabooDeckMetadata()` → `{ id, name, cardCount, language }` (no cards)
+  - [x] T0.3 — `taboo.html`: `<script src="shared/taboo-decks-data.js">` after `platform-client.js` and before `taboo.js`
+  - [x] T0.4 — `taboo.js`: keep top-level `STATIC_DECKS` and `DEFAULT_CARDS`, now derived from `globalThis.OpenClassTabooDecks` (`{ name, content: cards }`; `DEFAULT_CARDS` = `classic-mix` cards, mutable copies); delete the inline card arrays; selection behaviour unchanged (last deck default, apply on populate and on change)
+  - [x] T0.5 — tests: every deck validates; metadata has no cards; the data file's global equals the module export; `taboo.html` loads the data script before `taboo.js`; `taboo.js` no longer inlines the card list
+  - [x] T0.6 — check `dist-static/shared/taboo-decks-data.js` exists after the build (the `shared/` dir is already copied whole — no whitelist change expected) and `/taboo` still plays with both decks in a browser
 
 - **T1 — Taboo protocol** (files: `shared/taboo-protocol.js`, `tests/taboo-protocol.test.js`)
   - [ ] başladı
