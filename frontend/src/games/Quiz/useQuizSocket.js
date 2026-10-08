@@ -19,19 +19,24 @@ const INITIAL = Object.freeze({
  * @param {string | null} options.code  room code; null = no connection
  * @param {() => object} options.buildAuthMessage  read on every (re)connect
  * @param {(message: object) => void} [options.onJoined]  e.g. to save a new player token
+ * @param {(location: { protocol: string, host: string }, code: string) => string} [options.buildSocketUrl]
+ *   socket URL for a room; defaults to the quiz route (`socketUrl`). Read when a
+ *   connection is created, so changing it alone does not reconnect.
  * @returns {{ status, snapshot, clockOffset, notice, terminal, readyEpoch, send, restart, clearNotice, showNotice }}
  *   `notice`: last non-fatal error code (server or local); `terminal`: why the connection ended for good.
  */
-export function useQuizSocket({ code, buildAuthMessage, onJoined }) {
+export function useQuizSocket({ code, buildAuthMessage, onJoined, buildSocketUrl = socketUrl }) {
   const [state, setState] = useState(INITIAL);
   const [generation, setGeneration] = useState(0);
   const connectionRef = useRef(null);
   // Latest callbacks without reconnecting when the caller re-renders.
   const authRef = useRef(buildAuthMessage);
   const joinedRef = useRef(onJoined);
+  const urlRef = useRef(buildSocketUrl);
   useEffect(() => {
     authRef.current = buildAuthMessage;
     joinedRef.current = onJoined;
+    urlRef.current = buildSocketUrl;
   });
 
   useEffect(() => {
@@ -41,7 +46,7 @@ export function useQuizSocket({ code, buildAuthMessage, onJoined }) {
     setState(previous => ({ ...INITIAL, readyEpoch: previous.readyEpoch }));
 
     const connection = createQuizConnection({
-      url: socketUrl(window.location, code),
+      url: urlRef.current(window.location, code),
       buildAuthMessage: () => authRef.current(),
       onStatus: status => setState(previous => ({
         ...previous,

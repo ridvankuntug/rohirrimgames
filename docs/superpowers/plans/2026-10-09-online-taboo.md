@@ -77,11 +77,11 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
   - [ ] T5.5 — `wrangler dev` smoke: create a room, 4 sockets, one full turn
 
 - **T6 — Taboo frontend client layer** (files: `frontend/src/games/TabooOnline/tabooClient.js`, `frontend/src/games/Quiz/useQuizSocket.js`, `tests/taboo-client.test.js`)
-  - [ ] başladı
-  - [ ] bitti
-  - [ ] T6.1 — `tabooClient.js`: path `/taboo-online`, `#join=` parsing, join link, socket URL `/rt/taboo/rooms/:code/ws`, `createTabooRoom({ turnstileToken, teamMode })`, `fetchTabooDecks()`, session load/save/clear under its own `localStorage` key with the 12 h max age, timer helpers (running deadline vs. paused `remainingMs`), error-key mapping
-  - [ ] T6.2 — `useQuizSocket`: optional socket-URL builder parameter, default = today's quiz URL (quiz behaviour unchanged)
-  - [ ] T6.3 — tests for the pure helpers (hash parsing, session expiry, timer display, URL building)
+  - [x] başladı — 2026-10-09 01:01
+  - [x] bitti — 2026-10-09 01:18 — taboo client layer, 22+4 tests (review 2 rounds clean)
+  - [x] T6.1 — `tabooClient.js`: path `/taboo-online`, `#join=` parsing, join link, socket URL `/rt/taboo/rooms/:code/ws`, `createTabooRoom({ turnstileToken, teamMode })`, `fetchTabooDecks()`, session load/save/clear under its own `localStorage` key with the 12 h max age, timer helpers (running deadline vs. paused `remainingMs`), error-key mapping
+  - [x] T6.2 — `useQuizSocket`: optional socket-URL builder parameter, default = today's quiz URL (quiz behaviour unchanged)
+  - [x] T6.3 — tests for the pure helpers (hash parsing, session expiry, timer display, URL building)
 
 - **T7 — Taboo page, hub card, build entry, contract test** (files: `frontend/src/games/TabooOnline/*.jsx`, `frontend/src/games/TabooOnline/TabooOnline.module.css`, `frontend/src/games/TabooOnline/tabooI18n.js`, `frontend/src/App.jsx`, `frontend/src/components/Hub/GameHub.jsx`, `scripts/build-pages-site.mjs`, `tests/taboo-online-frontend-contract.test.js`, `tests/hub-categories.test.js` if needed)
   - [ ] başladı
