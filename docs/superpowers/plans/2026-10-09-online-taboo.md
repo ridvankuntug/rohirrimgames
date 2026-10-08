@@ -29,12 +29,12 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
   - [x] T0.6 — check `dist-static/shared/taboo-decks-data.js` exists after the build (the `shared/` dir is already copied whole — no whitelist change expected) and `/taboo` still plays with both decks in a browser
 
 - **T1 — Taboo protocol** (files: `shared/taboo-protocol.js`, `tests/taboo-protocol.test.js`)
-  - [ ] başladı
-  - [ ] bitti
-  - [ ] T1.1 — reuse from `quiz-protocol.js` (import, do not copy): version, max message bytes, name normalisation/key, token helpers, room-code generate/parse, `build{State,Joined,Error}Message`
-  - [ ] T1.2 — `parseTabooClientMessage(raw, { role })`: `join`, `choose_team`, `configure`, `start`, `start_turn`, `correct`, `skip`, `taboo`, `taboo_confirm`, `pause`, `resume`, `pass_observer`, `next`, `end_game`, `kick { targetId }`; exact field sets, types and ranges (`team` 0|1, `card` integer ≥0 bounded, settings ints, `confirm` boolean); role pre-filter: `join` only role-less, everything else only `player`; no `host_auth`
-  - [ ] T1.3 — `TABOO_PROTOCOL_ERRORS` and `TEAM_MODES` (`auto`, `choose`) exported; module must stay frontend-safe (no engine/deck import)
-  - [ ] T1.4 — tests incl. hostile inputs (oversize, wrong version, extra fields, wrong types, `host_auth` rejected)
+  - [x] başladı — 2026-10-09 00:49
+  - [x] bitti — 2026-10-09 01:01 — taboo protocol + tests (review clean, tester +5 tests)
+  - [x] T1.1 — reuse from `quiz-protocol.js` (import, do not copy): version, max message bytes, name normalisation/key, token helpers, room-code generate/parse, `build{State,Joined,Error}Message`
+  - [x] T1.2 — `parseTabooClientMessage(raw, { role })`: `join`, `choose_team`, `configure`, `start`, `start_turn`, `correct`, `skip`, `taboo`, `taboo_confirm`, `pause`, `resume`, `pass_observer`, `next`, `end_game`, `kick { targetId }`; exact field sets, types and ranges (`team` 0|1, `card` integer ≥0 bounded, settings ints, `confirm` boolean); role pre-filter: `join` only role-less, everything else only `player`; no `host_auth`
+  - [x] T1.3 — `TABOO_PROTOCOL_ERRORS` and `TEAM_MODES` (`auto`, `choose`) exported; module must stay frontend-safe (no engine/deck import)
+  - [x] T1.4 — tests incl. hostile inputs (oversize, wrong version, extra fields, wrong types, `host_auth` rejected)
 
 - **T2 — Taboo engine: lobby, teams, turns, cards, scoring, snapshots** (files: `shared/taboo-engine.js`, `tests/taboo-engine.test.js`)
   - [ ] başladı
