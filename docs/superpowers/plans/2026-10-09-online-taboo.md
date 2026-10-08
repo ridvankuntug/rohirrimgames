@@ -37,15 +37,15 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
   - [x] T1.4 — tests incl. hostile inputs (oversize, wrong version, extra fields, wrong types, `host_auth` rejected)
 
 - **T2 — Taboo engine: lobby, teams, turns, cards, scoring, snapshots** (files: `shared/taboo-engine.js`, `tests/taboo-engine.test.js`)
-  - [ ] başladı
-  - [ ] bitti
-  - [ ] T2.1 — contract header like `quiz-engine.js`; `createInitialState({ code, creatorTokenHash, teamMode }, ctx)`; `reduce` skeleton (structuredClone, same-object-when-unchanged, `collectEffects` with the quiz effect set, `sync` with `host: false`)
-  - [ ] T2.2 — `join`: reconnect by token hash; creator token → manager; name uniqueness; cap 50; join phases `lobby`/`turn_intro`/`turn_summary`; auto mode → smaller team (tie → 0) with `teamSeq`
-  - [ ] T2.3 — `choose_team` (self-select; lobby switch, one-time pick for unassigned between turns, `team_locked` otherwise); `configure` (ranges from spec Interpretation 19, deck id check); `start` (unassigned → smaller team, auto rebalance if diff > 1, ≥2 non-away per team, shuffle deck with `ctx.random`)
-  - [ ] T2.4 — rotation by `teamSeq` with `lastNarratorSeq`/`lastObserverSeq` (wrap-around, connected-only, kick-safe); `turn_intro` setup; `start_turn` draws the first card
-  - [ ] T2.5 — `correct` / `skip` (pass limit) / stale `card` checks; deck draw without repeats, reshuffle on exhaustion (current card never first); turn end applies points; `next` → next intro or `final`; `end_game`; `kick { targetId }` (not self; narrator/observer consequences can be stubbed here and completed in T3)
-  - [ ] T2.6 — `buildPlayerSnapshot` per spec (common fields + `card` only for narrator and opposing team in `playing`); `winner` in `final`
-  - [ ] T2.7 — tests: full 2-round game with 4–6 players, scoring incl. negative turns, pass limit, rotation wrap, card no-repeat over a full deck cycle, late join per team mode, start refused with 3+1 players, privacy test (narrator's teammates' snapshot JSON never contains the card word/forbidden words in any phase)
+  - [x] başladı — 2026-10-09 01:01
+  - [x] bitti — 2026-10-09 01:18 — engine part 1, 50 tests (review 1 round clean, tester +5)
+  - [x] T2.1 — contract header like `quiz-engine.js`; `createInitialState({ code, creatorTokenHash, teamMode }, ctx)`; `reduce` skeleton (structuredClone, same-object-when-unchanged, `collectEffects` with the quiz effect set, `sync` with `host: false`)
+  - [x] T2.2 — `join`: reconnect by token hash; creator token → manager; name uniqueness; cap 50; join phases `lobby`/`turn_intro`/`turn_summary`; auto mode → smaller team (tie → 0) with `teamSeq`
+  - [x] T2.3 — `choose_team` (self-select; lobby switch, one-time pick for unassigned between turns, `team_locked` otherwise); `configure` (ranges from spec Interpretation 19, deck id check); `start` (unassigned → smaller team, auto rebalance if diff > 1, ≥2 non-away per team, shuffle deck with `ctx.random`)
+  - [x] T2.4 — rotation by `teamSeq` with `lastNarratorSeq`/`lastObserverSeq` (wrap-around, connected-only, kick-safe); `turn_intro` setup; `start_turn` draws the first card
+  - [x] T2.5 — `correct` / `skip` (pass limit) / stale `card` checks; deck draw without repeats, reshuffle on exhaustion (current card never first); turn end applies points; `next` → next intro or `final`; `end_game`; `kick { targetId }` (not self; narrator/observer consequences can be stubbed here and completed in T3)
+  - [x] T2.6 — `buildPlayerSnapshot` per spec (common fields + `card` only for narrator and opposing team in `playing`); `winner` in `final`
+  - [x] T2.7 — tests: full 2-round game with 4–6 players, scoring incl. negative turns, pass limit, rotation wrap, card no-repeat over a full deck cycle, late join per team mode, start refused with 3+1 players, privacy test (narrator's teammates' snapshot JSON never contains the card word/forbidden words in any phase)
 
 - **T3 — Taboo engine: timer, pauses, disconnects, manager transfer, alarms** (files: `shared/taboo-engine.js`, `tests/taboo-engine.test.js`)
   - [ ] başladı
