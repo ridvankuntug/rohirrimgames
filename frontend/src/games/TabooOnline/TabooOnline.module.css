@@ -1,0 +1,389 @@
+/* Online Taboo. Mobile first (375 px), wider layouts from 720 px.
+   Layout, forms, generic buttons, dialogs and status tags come from the quiz's
+   Quiz.module.css (imported as `quizStyles`); this file only adds what Taboo needs.
+   Theme: the shared Rohirrim custom properties (--color-*, --glass-*, --font-*).
+   The two team colours are functional identity colours (like the quiz option
+   tones, same hex values): white text on them keeps >= 4.5:1 contrast, and the
+   team name is always written next to them, so colour is never the only cue. */
+
+.homeStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radioGroup {
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.radioOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.radioOption input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  accent-color: var(--color-primary);
+  flex: none;
+}
+
+.radioOption > span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.radioLabel {
+  font-weight: 600;
+}
+
+.bigButton {
+  min-height: 52px;
+  width: 100%;
+  font-size: 1.05rem;
+}
+
+.hugeButton {
+  min-height: 72px;
+  width: 100%;
+  font-size: 1.35rem;
+  font-weight: 800;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.hugeButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.hugeButton:focus-visible {
+  outline: 3px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+.btnCorrect {
+  background: var(--color-secondary);
+  color: #ffffff;
+}
+
+.subLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Teams */
+
+.team_red {
+  --team-color: #b3261e;
+}
+
+.team_blue {
+  --team-color: #1d4ed8;
+}
+
+/* Red / Blue badges: white on the team colour. The "no team" badge keeps the theme text colour. */
+.teamBadge.team_red,
+.teamBadge.team_blue {
+  background: var(--team-color);
+  color: #ffffff;
+}
+
+.teamBadge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: var(--glass-bg);
+  color: var(--color-text);
+  border: 1px solid var(--glass-border);
+  vertical-align: middle;
+}
+
+.teamEdge_red {
+  border-top: 4px solid #b3261e;
+}
+
+.teamEdge_blue {
+  border-top: 4px solid #1d4ed8;
+}
+
+.teamColumns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.teamColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.memberCount {
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+}
+
+.memberList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.memberList li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.memberList li > :first-child {
+  flex: 1 1 8rem;
+}
+
+/* The shared quiz kick button is 40 px high; Taboo is played on phones. */
+.memberList .kickButton {
+  min-height: 44px;
+}
+
+.memberAway {
+  opacity: 0.6;
+}
+
+.managerTag {
+  color: var(--color-primary);
+  font-size: 0.85rem;
+}
+
+.managerBadge {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Game */
+
+.gamePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.gameHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.scoreboard {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.scoreCell {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 12px;
+  background: var(--team-color);
+  color: #ffffff;
+}
+
+.scoreTeam {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.scoreValue {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.roles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.roles dt {
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+}
+
+.roles dd {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.roleText {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.roleButtons,
+.narratorButtons,
+.observerButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.timerWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.timer {
+  font-size: 3.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  padding: 0.4rem 1.1rem;
+  border-radius: 16px;
+  border: 3px solid var(--color-primary);
+  color: var(--color-text);
+}
+
+.timerUrgent {
+  border-color: var(--color-danger);
+}
+
+.timerPaused {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.pausedTag {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.pauseBanner {
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  border: 1px dashed var(--color-accent);
+  background: var(--glass-bg);
+  font-weight: 600;
+}
+
+.card {
+  padding: 1rem;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  border: 2px solid var(--color-primary);
+  text-align: center;
+}
+
+.cardNarrator {
+  box-shadow: 0 6px 18px var(--color-primary-glow);
+}
+
+.cardWord {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  overflow-wrap: anywhere;
+}
+
+.cardForbiddenTitle {
+  margin-top: 0.6rem;
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cardForbidden {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.guessBox {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+}
+
+.guessBox:empty {
+  display: none;
+}
+
+.counts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  color: var(--color-text-dim);
+}
+
+.countsPoints {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.winner {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--color-primary);
+  text-align: center;
+}
+
+.details summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+@media (min-width: 720px) {
+  .teamColumns {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .narratorButtons {
+    flex-direction: row;
+  }
+
+  .narratorButtons > * {
+    flex: 1 1 0;
+  }
+}

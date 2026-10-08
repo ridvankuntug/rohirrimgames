@@ -94,6 +94,21 @@ test('online quiz card is React-hub only and probes /rt/health, never /api/', as
     }
 });
 
+test('online taboo card is React-hub only, an online plain link, titled in both languages', async () => {
+    const [source, legacy] = await Promise.all([
+        read('frontend/src/components/Hub/GameHub.jsx'),
+        read('index.html')
+    ]);
+    const taboo = parseReactHubGames(source).find(game => game.id === 'taboo-online');
+    assert.deepEqual(taboo, { id: 'taboo-online', categories: ['online'], path: '/taboo-online' });
+    const entry = source.slice(source.indexOf("id: 'taboo-online'"));
+    assert.match(entry.slice(0, entry.indexOf('}')), /requiresOnline: true/);
+    assert.doesNotMatch(legacy, /href="\/?taboo-online/, 'fallback hub must not link the online taboo');
+    const trStart = source.indexOf('  tr: {');
+    assert.match(source.slice(0, trStart), /onlineTaboo: '/);
+    assert.match(source.slice(trStart), /onlineTaboo: '/);
+});
+
 test('hub filter matches by category, "all" matches everything', () => {
     const hangman = { categories: ['solo', 'multi'] };
     const quiz = { categories: ['online'] };

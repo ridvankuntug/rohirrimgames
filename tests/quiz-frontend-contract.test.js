@@ -107,7 +107,7 @@ test('the quiz route is lazy-loaded from App.jsx', async () => {
 
 test('the static build emits quiz/index.html next to lingoparty/index.html', async () => {
     const script = await read('scripts/build-pages-site.mjs');
-    assert.match(script, /for \(const route of \['lingoparty', 'quiz'\]\)/);
+    assert.match(script, /for \(const route of \['lingoparty', 'quiz'(?:, '[a-z-]+')*\]\)/);
     assert.match(script, /join\(outDir, route, 'index\.html'\)/);
 });
 

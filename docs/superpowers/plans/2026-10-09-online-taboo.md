@@ -48,7 +48,7 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
   - [x] T2.7 — tests: full 2-round game with 4–6 players, scoring incl. negative turns, pass limit, rotation wrap, card no-repeat over a full deck cycle, late join per team mode, start refused with 3+1 players, privacy test (narrator's teammates' snapshot JSON never contains the card word/forbidden words in any phase)
 
 - **T3 — Taboo engine: timer, pauses, disconnects, manager transfer, alarms** (files: `shared/taboo-engine.js`, `tests/taboo-engine.test.js`)
-  - [ ] başladı
+  - [x] başladı — 2026-10-09 01:18
   - [ ] bitti
   - [ ] T3.1 — single remaining-ms clock with independent pause flags and the run/pause flip helper; deadline → turn end (card discarded)
   - [ ] T3.2 — `taboo` / `taboo_confirm` (pause while open; yes = −1 + next card; no = resume) and `pause` / `resume`, owned by the observer role (survive an observer change); narrator actions refused while paused (`paused`)
@@ -84,14 +84,14 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
   - [x] T6.3 — tests for the pure helpers (hash parsing, session expiry, timer display, URL building)
 
 - **T7 — Taboo page, hub card, build entry, contract test** (files: `frontend/src/games/TabooOnline/*.jsx`, `frontend/src/games/TabooOnline/TabooOnline.module.css`, `frontend/src/games/TabooOnline/tabooI18n.js`, `frontend/src/App.jsx`, `frontend/src/components/Hub/GameHub.jsx`, `scripts/build-pages-site.mjs`, `tests/taboo-online-frontend-contract.test.js`, `tests/hub-categories.test.js` if needed)
-  - [ ] başladı
-  - [ ] bitti
-  - [ ] T7.1 — lazy route `/taboo-online` in `App.jsx`; page shell with home (create: name, team mode, Turnstile; join: code + name) and auto-reconnect from the saved session
-  - [ ] T7.2 — lobby: team columns, choose team (self-select), manager settings + deck + Start + kick (confirmed), QR/link/code (reusing `QuizQr`, `TurnstileWidget`, `useConfirm`)
-  - [ ] T7.3 — turn intro / playing / summary / final views per role (narrator, teammate, opposing, observer, manager) incl. Tabu confirmation dialog, Pause/Resume, Pass role, Start after handover, End game (confirmed), paused and narrator-away indicators
-  - [ ] T7.4 — TR + EN strings; mobile layout (375 px), large touch targets, accessibility pass; theme tokens only
-  - [ ] T7.5 — hub: second Online card (`taboo-online`, `requiresOnline: true`, plain `<a>`), TR/EN title; `build-pages-site.mjs`: add `taboo-online` to the deep-link list
-  - [ ] T7.6 — contract test: TabooOnline sources never import `taboo-engine`, `taboo-decks`, `taboo-decks-data`, `quiz-engine`, `quiz-decks`; only `/rt/` endpoints; build script emits `taboo-online/index.html`; App route exists; quiz contract test still green
+  - [x] başladı — 2026-10-09 01:18
+  - [x] bitti — 2026-10-09 02:48 — /taboo-online page, hub card, deep-link entry, contract test (review 2 rounds, tester +5)
+  - [x] T7.1 — lazy route `/taboo-online` in `App.jsx`; page shell with home (create: name, team mode, Turnstile; join: code + name) and auto-reconnect from the saved session
+  - [x] T7.2 — lobby: team columns, choose team (self-select), manager settings + deck + Start + kick (confirmed), QR/link/code (reusing `QuizQr`, `TurnstileWidget`, `useConfirm`)
+  - [x] T7.3 — turn intro / playing / summary / final views per role (narrator, teammate, opposing, observer, manager) incl. Tabu confirmation dialog, Pause/Resume, Pass role, Start after handover, End game (confirmed), paused and narrator-away indicators
+  - [x] T7.4 — TR + EN strings; mobile layout (375 px), large touch targets, accessibility pass; theme tokens only
+  - [x] T7.5 — hub: second Online card (`taboo-online`, `requiresOnline: true`, plain `<a>`), TR/EN title; `build-pages-site.mjs`: add `taboo-online` to the deep-link list
+  - [x] T7.6 — contract test: TabooOnline sources never import `taboo-engine`, `taboo-decks`, `taboo-decks-data`, `quiz-engine`, `quiz-decks`; only `/rt/` endpoints; build script emits `taboo-online/index.html`; App route exists; quiz contract test still green
 
 - **T8 — Docs and final verification** (files: `AGENTS.md`, `docs/superpowers/specs/2026-10-09-online-taboo-design.md`, this plan)
   - [ ] başladı

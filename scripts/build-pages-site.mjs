@@ -95,7 +95,7 @@ cpSync(frontendDist, outDir, { recursive: true, force: true });
 // Workers Static Assets does not provide SPA history fallback when configured
 // with a real 404 page. Give each React deep-link a concrete entry point
 // instead, without making /api/* look successful to backend probes.
-for (const route of ['lingoparty', 'quiz']) {
+for (const route of ['lingoparty', 'quiz', 'taboo-online']) {
     mkdirSync(join(outDir, route), { recursive: true });
     cpSync(join(frontendDist, 'index.html'), join(outDir, route, 'index.html'));
 }

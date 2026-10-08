@@ -23,11 +23,11 @@ const FILTER_LABEL_KEYS = {
 registerTranslations('hub', {
   en: {
     tagline: 'Offline-ready classroom games for language, discussion, and play.', teacherGuide: 'Teacher Guide', buildActivities: 'Plan a classroom activity', buildActivitiesText: 'Choose a game, match it to your lesson objective, and begin with a built-in deck.', addKey: 'Optional teacher tools', chooseGame: 'Choose a game', chooseGameText: 'Select the activity that best supports your lesson objective and class level.', nameDecks: 'Start with a deck', nameDecksText: 'Every game remains playable with its included starter content.', keyText: 'When a classroom server is available, optional teacher tools can be configured for this browser tab.', changeKey: 'Change teacher settings', addKeyButton: 'Open teacher settings', activeKey: 'Teacher tools ready', disabledKey: 'Teacher tools unavailable', server: 'Mode: {status}',     filterGroup: 'Game categories', filterAll: 'All Games', filterSolo: 'Solo Games', filterMulti: 'Multiplayer', filterOnline: 'Online',
-    onlineQuiz: 'Online Quiz', onlineChecking: 'Checking…', onlineOffline: 'Offline', onlineOfflineHint: 'The online server is unreachable right now.',
+    onlineQuiz: 'Online Quiz', onlineTaboo: 'Online Taboo', onlineChecking: 'Checking…', onlineOffline: 'Offline', onlineOfflineHint: 'The online server is unreachable right now.',
   },
   tr: {
     tagline: 'Dil, tartışma ve oyun için çevrimdışı kullanıma hazır sınıf oyunları.', teacherGuide: 'Öğretmen Rehberi', buildActivities: 'Bir sınıf etkinliği planlayın', buildActivitiesText: 'Bir oyun seçin, ders hedefinizle eşleştirin ve yerleşik bir deste ile başlayın.', addKey: 'İsteğe bağlı öğretmen araçları', chooseGame: 'Bir oyun seçin', chooseGameText: 'Ders hedefinize ve sınıf seviyenize en uygun etkinliği seçin.', nameDecks: 'Bir deste ile başlayın', nameDecksText: 'Her oyun, içindeki başlangıç içeriğiyle oynanabilir.', keyText: 'Bir sınıf sunucusu kullanılabilir olduğunda, isteğe bağlı öğretmen araçları bu tarayıcı sekmesinde yapılandırılabilir.', changeKey: 'Öğretmen ayarlarını değiştir', addKeyButton: 'Öğretmen ayarlarını aç', activeKey: 'Öğretmen araçları hazır', disabledKey: 'Öğretmen araçları kullanılamıyor', server: 'Mod: {status}',     filterGroup: 'Oyun kategorileri', filterAll: 'Tüm Oyunlar', filterSolo: 'Tek Kişilik', filterMulti: 'Çok Oyunculu', filterOnline: 'Çevrimiçi',
-    onlineQuiz: 'Çevrimiçi Quiz', onlineChecking: 'Kontrol ediliyor…', onlineOffline: 'Çevrimdışı', onlineOfflineHint: 'Çevrimiçi sunucuya şu anda ulaşılamıyor.',
+    onlineQuiz: 'Çevrimiçi Quiz', onlineTaboo: 'Çevrimiçi Tabu', onlineChecking: 'Kontrol ediliyor…', onlineOffline: 'Çevrimdışı', onlineOfflineHint: 'Çevrimiçi sunucuya şu anda ulaşılamıyor.',
   },
 });
 
@@ -179,6 +179,15 @@ export default function GameHub() {
       path: '/quiz',
       // Rendered as a plain <a> (full page load), not a router <Link>, so the
       // element type stays stable while the health probe settles.
+      requiresOnline: true
+    },
+    {
+      // Same rules as the quiz card: React hub only, plain <a>, shares the /rt/health probe.
+      id: 'taboo-online',
+      title: t('hub.onlineTaboo'),
+      icon: '🗣️',
+      categories: ['online'],
+      path: '/taboo-online',
       requiresOnline: true
     }
   ];
