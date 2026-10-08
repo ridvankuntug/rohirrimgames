@@ -49,15 +49,15 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
 
 - **T3 — Taboo engine: timer, pauses, disconnects, manager transfer, alarms** (files: `shared/taboo-engine.js`, `tests/taboo-engine.test.js`)
   - [x] başladı — 2026-10-09 01:18
-  - [ ] bitti
-  - [ ] T3.1 — single remaining-ms clock with independent pause flags and the run/pause flip helper; deadline → turn end (card discarded)
-  - [ ] T3.2 — `taboo` / `taboo_confirm` (pause while open; yes = −1 + next card; no = resume) and `pause` / `resume`, owned by the observer role (survive an observer change); narrator actions refused while paused (`paused`)
-  - [ ] T3.3 — liveness copied from the quiz (connected/pending/away, 20 s grace, 30 s silence, fresh-return rule, observations before timers); keep `quiz-engine.js` untouched
-  - [ ] T3.4 — observer: `pass_observer`, immediate move when the observer leaves `connected` or is kicked, `null` observer filled when an opposing member connects
-  - [ ] T3.5 — narrator grace 15 s (intro and playing), resume on return, handover with preserved time + `handover` pause + `start_turn` to continue, turn end when no replacement, no repeating alarm while no replacement exists; kicked narrator = immediate handover
-  - [ ] T3.6 — manager transfer on `away` to the earliest-joined connected player, no automatic return
-  - [ ] T3.7 — alarm = earliest of deadline / grace end / away times / deletion (idle 2 h, final + 30 min); multi-timer catch-up after a sleep
-  - [ ] T3.8 — tests for every pause combination (Tabu confirm during observer pause, narrator away during confirmation, observer change while paused), time preserved to the ms across pause/handover, alarm values, expiry → `delete_room`
+  - [x] bitti — 2026-10-09 02:53 — engine part 2, 81 engine tests (review 2 rounds + 1 targeted round clean, tester clean)
+  - [x] T3.1 — single remaining-ms clock with independent pause flags and the run/pause flip helper; deadline → turn end (card discarded)
+  - [x] T3.2 — `taboo` / `taboo_confirm` (pause while open; yes = −1 + next card; no = resume) and `pause` / `resume`, owned by the observer role (survive an observer change); narrator actions refused while paused (`paused`)
+  - [x] T3.3 — liveness copied from the quiz (connected/pending/away, 20 s grace, 30 s silence, fresh-return rule, observations before timers); keep `quiz-engine.js` untouched
+  - [x] T3.4 — observer: `pass_observer`, immediate move when the observer leaves `connected` or is kicked, `null` observer filled when an opposing member connects
+  - [x] T3.5 — narrator grace 15 s (intro and playing), resume on return, handover with preserved time + `handover` pause + `start_turn` to continue, turn end when no replacement, no repeating alarm while no replacement exists; kicked narrator = immediate handover
+  - [x] T3.6 — manager transfer on `away` to the earliest-joined connected player, no automatic return
+  - [x] T3.7 — alarm = earliest of deadline / grace end / away times / deletion (idle 2 h, final + 30 min); multi-timer catch-up after a sleep
+  - [x] T3.8 — tests for every pause combination (Tabu confirm during observer pause, narrator away during confirmation, observer change while paused), time preserved to the ms across pause/handover, alarm values, expiry → `delete_room`
 
 - **T4 — Controller generalization (quiz unchanged)** (files: `worker/room-controller.js`, `worker/quiz-game.js`, `worker/quiz-room.js`, `tests/quiz-room.test.js` (construction only), `tests/room-controller-game.test.js`)
   - [x] başladı — 2026-10-09 00:49

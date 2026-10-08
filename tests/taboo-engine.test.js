@@ -1,6 +1,6 @@
-// shared/taboo-engine.js — T2: lobby, teams, turns, cards, scoring, snapshots.
-// T3 (timer pauses, liveness, observer/narrator/manager handover, alarms) adds
-// its tests to this file.
+// shared/taboo-engine.js — T2: lobby, teams, turns, cards, scoring, snapshots;
+// T3: timer pauses, Tabu confirmation, liveness, observer/narrator/manager
+// handover, alarms.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,8 +9,10 @@ import { getTabooDeck } from '../shared/taboo-decks.js';
 import { TABOO_PROTOCOL_ERRORS, TEAM_MODES } from '../shared/taboo-protocol.js';
 import { ENGINE_ERRORS as QUIZ_ENGINE_ERRORS } from '../shared/quiz-engine.js';
 import {
+    CREATOR_JOIN_GRACE_MS,
     DEFAULT_TABOO_DECK_ID,
     ENDED_REASONS,
+    MANAGER_LOST_STATUS,
     MIN_PLAYERS_PER_TEAM_TO_START,
     PHASES,
     PLAYER_STATUS,
@@ -116,6 +118,22 @@ class Room {
         return this.act(this.turn.narratorId, 'start_turn');
     }
 
+    // Observer action; `card` defaults to the current card for taboo / taboo_confirm.
+    observe(type, extra = {}) {
+        const card = type === 'taboo' || type === 'taboo_confirm' ? { card: this.turn.cardSeq } : {};
+        return this.act(this.turn.observerId, type, { ...card, ...extra });
+    }
+
+    lose(playerId) {
+        return this.send({ type: 'connection_lost', playerId });
+    }
+
+    // Live remaining time as the snapshot computes it.
+    remaining() {
+        const { turn } = this;
+        return turn.deadlineAt === null ? turn.remainingMs : turn.deadlineAt - this.now;
+    }
+
     // Lets the running turn time out.
     expire() {
         this.now = this.turn.deadlineAt;
@@ -192,7 +210,7 @@ test('reduce: never mutates its (frozen) input; same object when nothing changed
     assert.equal(JSON.stringify(before), text);
 });
 
-test('reduce: unknown event types answer bad_message; T3 events are not handled yet', () => {
+test('reduce: unknown event types answer bad_message', () => {
     const { room, ids } = lobby();
     assert.equal(errorOf(room.send({ type: 'toString', connectionId: 'x' })), E.BAD_MESSAGE);
     assert.equal(room.act(ids[0], 'teleport'), E.BAD_MESSAGE);
@@ -516,16 +534,36 @@ test('kick: observer in intro -> next observer; narrator in intro -> next narrat
     assert.equal(room.turn.narratorId, ids[5], 'Fay');
 });
 
-test('kick: narrator mid-turn leaves the turn without a narrator until T3 handover (stub)', () => {
+test('kick: narrator mid-turn = immediate handover with the remaining time; nobody left -> turn ends', () => {
     const { room, ids } = startedGame(['Ann', 'Bob', 'Cid', 'Dan', 'Eve', 'Fay']);
     room.startTurn();
     room.expire();
-    room.manage('next'); // blue: narrator Bob
+    room.manage('next'); // blue: narrator Bob (then Dan, Fay)
     room.startTurn();
+    room.narrate();
+    const seq = room.turn.cardSeq;
+    room.tick(12_345);
     room.manage('kick', { targetId: ids[1] });
-    assert.equal(room.turn.narratorId, null);
-    room.expire();
-    assert.equal(room.state.phase, PHASES.TURN_SUMMARY);
+    assert.equal(room.state.phase, PHASES.PLAYING);
+    assert.equal(room.turn.narratorId, ids[3], 'Dan, no 15 s grace');
+    assert.equal(room.turn.pause.handover, true);
+    assert.equal(room.turn.pause.narratorAwaySince, null);
+    assert.equal(room.turn.deadlineAt, null);
+    assert.equal(room.turn.remainingMs, 60_000 - 12_345);
+    assert.equal(room.turn.cardSeq, seq, 'the unscored card is kept');
+
+    // A team with nobody else connected: the turn ends with the points so far.
+    const solo = startedGame(['Ann', 'Bob', 'Cid', 'Dan']);
+    solo.room.manage('kick', { targetId: solo.ids[2] }); // red: Ann (manager) alone
+    solo.room.startTurn();
+    solo.room.expire();
+    solo.room.manage('next'); // blue: narrator Bob, teammate Dan
+    solo.room.startTurn();
+    solo.room.narrate();
+    solo.room.send({ type: 'connection_lost', playerId: solo.ids[3] });
+    solo.room.manage('kick', { targetId: solo.ids[1] });
+    assert.equal(solo.room.state.phase, PHASES.TURN_SUMMARY);
+    assert.deepEqual(solo.room.state.lastTurn, { team: 1, correct: 1, taboo: 0, passesUsed: 0, points: 1 });
 });
 
 // ---------------------------------------------------------------------------
@@ -593,13 +631,15 @@ test('turn end: deadline discards the card, applies points, shows the summary', 
     assert.equal(room.state.alarmAt, room.state.lastActivityAt + L.roomIdleMs);
 });
 
-test('scoring: a negative turn lowers the team score (taboo count set directly until T3 adds Tabu!)', () => {
+test('scoring: a negative turn lowers the team score (observer Tabu! + confirm)', () => {
     const { room } = startedGame();
     room.startTurn();
     room.narrate();
-    // T3 replaces this with the observer's taboo + taboo_confirm.
-    room.state = structuredClone(room.state);
-    room.state.turn.taboo = 3;
+    for (let i = 0; i < 3; i += 1) {
+        assert.equal(room.observe('taboo'), 'ok');
+        assert.equal(room.observe('taboo_confirm', { confirm: true }), 'ok');
+    }
+    assert.equal(room.turn.taboo, 3);
     assert.equal(room.snapshot(room.turn.narratorId).turn.points, -2);
     room.expire();
     assert.equal(room.state.teams[0].score, -2);
@@ -708,7 +748,7 @@ test('kick: manager only, not self, unknown target; closes the sockets', () => {
     assert.equal(room.snapshot(ids[2]), null);
 });
 
-// UNCONFIRMED rule (c), spec Interpretation 13.
+// Rule (c), spec Interpretation 13 (confirmed by the owner 2026-10-09).
 test('rule (c): no lobby lock — a kicked player rejoins with the same token as a NEW player', () => {
     const { room, ids } = lobby();
     room.manage('kick', { targetId: ids[1] });
@@ -718,7 +758,7 @@ test('rule (c): no lobby lock — a kicked player rejoins with the same token as
     assert.equal(room.player(again).tokenHash, 'hash-Bob');
 });
 
-// UNCONFIRMED rule (b), spec Interpretation 9.
+// Rule (b), spec Interpretation 9 (confirmed by the owner 2026-10-09).
 test('rule (b): no team minimum after the start; an empty team makes the intro wait', () => {
     const { room, ids } = startedGame();
     // red: Ann Cid, blue: Bob Dan. Shrink blue to one, then to zero.
@@ -878,6 +918,590 @@ test('snapshot: common fields, roles, live timer; unknown player -> null', () =>
 });
 
 // ---------------------------------------------------------------------------
+// T3: clock, pauses, Tabu confirmation
+// ---------------------------------------------------------------------------
+
+const SIX = ['Ann', 'Bob', 'Cid', 'Dan', 'Eve', 'Fay']; // red: Ann Cid Eve, blue: Bob Dan Fay
+
+test('clock: observer pause stores the remaining time to the ms; resume restarts the deadline', () => {
+    const { room, ids } = startedGame(SIX);
+    room.startTurn();
+    room.tick(10_001);
+    assert.equal(room.observe('pause'), 'ok');
+    assert.equal(room.turn.deadlineAt, null);
+    assert.equal(room.turn.remainingMs, 49_999);
+    let snap = room.snapshot(ids[2]);
+    assert.equal(snap.turn.running, false);
+    assert.equal(snap.turn.deadlineAt, null);
+    assert.equal(snap.turn.remainingMs, 49_999);
+    assert.deepEqual(snap.turn.paused, { observer: true, tabooConfirm: false, narratorAway: false, handover: false });
+    assert.equal(room.state.alarmAt, room.state.lastActivityAt + L.roomIdleMs, 'no turn_end alarm while paused');
+
+    room.tick(600_000);
+    room.alarm();
+    assert.equal(room.state.phase, PHASES.PLAYING, 'a paused turn never times out');
+    assert.equal(room.observe('pause'), 'ok', 'pause while paused is a no-op');
+    assert.equal(room.turn.remainingMs, 49_999);
+    const effects = room.send({ type: 'resume', connectionId: 'c', role: 'player', playerId: room.turn.observerId });
+    assert.equal(room.turn.deadlineAt, room.now + 49_999);
+    assert.deepEqual(effects.find(effect => effect.type === 'set_alarm'), { type: 'set_alarm', at: room.now + 49_999 });
+    snap = room.snapshot(ids[2]);
+    assert.equal(snap.turn.running, true);
+    assert.equal(snap.turn.remainingMs, 49_999);
+    const before = room.state;
+    assert.equal(room.observe('resume'), 'ok', 'resume while running is a no-op');
+    assert.equal(room.state, before);
+    room.tick(49_998).alarm();
+    assert.equal(room.state.phase, PHASES.PLAYING);
+    room.tick(1).alarm();
+    assert.equal(room.state.phase, PHASES.TURN_SUMMARY);
+});
+
+test('observer actions: observer only (not_observer), playing only; narrator refused with paused', () => {
+    const { room, ids } = startedGame(SIX);
+    const [ann, bob, cid, dan] = ids;
+    assert.equal(room.act(bob, 'pause'), E.BAD_PHASE, 'intro');
+    assert.equal(room.act(bob, 'taboo', { card: 0 }), E.BAD_PHASE, 'intro');
+    room.startTurn();
+    const card = room.turn.cardSeq;
+    for (const id of [ann, cid, dan]) {
+        for (const type of ['pause', 'resume']) assert.equal(room.act(id, type), E.NOT_OBSERVER, `${id} ${type}`);
+        assert.equal(room.act(id, 'taboo', { card }), E.NOT_OBSERVER);
+        assert.equal(room.act(id, 'taboo_confirm', { card, confirm: true }), E.NOT_OBSERVER);
+        assert.equal(room.act(id, 'pass_observer'), E.NOT_OBSERVER);
+    }
+    assert.equal(room.act(bob, 'taboo', { card: card + 1 }), E.STALE_CARD);
+    assert.equal(room.act(bob, 'taboo_confirm', { card, confirm: true }), E.BAD_PHASE, 'no confirmation open');
+    assert.equal(room.observe('pause'), 'ok');
+    assert.equal(room.narrate(), E.PAUSED);
+    assert.equal(room.narrate('skip'), E.PAUSED);
+    assert.equal(room.act(ann, 'correct', { card: card + 5 }), E.PAUSED, 'paused is checked before the card');
+    room.observe('resume');
+    assert.equal(room.narrate(), 'ok');
+    room.expire();
+    assert.equal(room.act(bob, 'resume'), E.BAD_PHASE, 'summary');
+});
+
+test('Tabu!: confirmation pauses; yes = -1 and next card; no = same card; time kept to the ms', () => {
+    const { room, ids } = startedGame(SIX);
+    room.startTurn();
+    room.tick(5_000);
+    const first = room.turn.cardSeq;
+    assert.equal(room.observe('taboo'), 'ok');
+    assert.equal(room.turn.pause.tabooConfirm, true);
+    assert.equal(room.turn.remainingMs, 55_000);
+    assert.equal(room.snapshot(ids[0]).turn.paused.tabooConfirm, true);
+    assert.equal(room.narrate(), E.PAUSED);
+    const open = room.state;
+    assert.equal(room.observe('taboo'), 'ok', 'double tap is a no-op');
+    assert.equal(room.state, open);
+
+    room.tick(30_000);
+    assert.equal(room.observe('taboo_confirm', { confirm: false }), 'ok');
+    assert.equal(room.turn.taboo, 0);
+    assert.equal(room.turn.cardSeq, first, 'No keeps the card');
+    assert.equal(room.turn.deadlineAt, room.now + 55_000);
+
+    room.tick(2_500);
+    room.observe('taboo');
+    room.tick(7_000);
+    assert.equal(room.act(ids[1], 'taboo_confirm', { card: first - 1, confirm: true }), E.STALE_CARD);
+    assert.equal(room.observe('taboo_confirm', { confirm: true }), 'ok');
+    assert.equal(room.turn.taboo, 1);
+    assert.equal(room.turn.cardSeq, first + 1, 'Yes draws the next card');
+    assert.equal(room.turn.pause.tabooConfirm, false);
+    assert.equal(room.remaining(), 52_500);
+    assert.equal(room.snapshot(ids[0]).turn.points, -1);
+});
+
+test('pause combinations: Tabu! during an observer pause; resume needs both closed', () => {
+    const { room } = startedGame(SIX);
+    room.startTurn();
+    room.tick(1_000);
+    room.observe('pause');
+    room.tick(4_000);
+    assert.equal(room.observe('taboo'), 'ok', 'Tabu! is allowed during a pause');
+    room.tick(4_000);
+    room.observe('taboo_confirm', { confirm: true });
+    assert.equal(room.turn.deadlineAt, null, 'still paused by the observer');
+    assert.equal(room.turn.remainingMs, 59_000);
+    assert.equal(room.narrate(), E.PAUSED);
+    room.observe('resume');
+    assert.equal(room.turn.deadlineAt, room.now + 59_000);
+
+    // The other order: the confirmation open, then Pause, then confirm -> still paused.
+    room.tick(1_000);
+    room.observe('taboo');
+    room.observe('pause');
+    room.observe('taboo_confirm', { confirm: false });
+    assert.equal(room.turn.deadlineAt, null);
+    assert.equal(room.turn.remainingMs, 58_000);
+    room.observe('resume');
+    assert.equal(room.remaining(), 58_000);
+});
+
+test('pause combinations: narrator drops during the confirmation; the clock waits for both', () => {
+    const { room, ids } = startedGame(SIX);
+    const [ann] = ids;
+    room.startTurn();
+    room.tick(3_000);
+    room.observe('taboo');
+    room.tick(2_000);
+    room.lose(ann);
+    assert.equal(room.turn.pause.narratorAwaySince, room.now);
+    room.tick(2_000);
+    room.observe('taboo_confirm', { confirm: true });
+    assert.equal(room.turn.deadlineAt, null, 'narrator still away');
+    room.tick(5_000);
+    room.join('Ann', CREATOR);
+    assert.equal(room.turn.pause.narratorAwaySince, null);
+    assert.equal(room.turn.narratorId, ann);
+    assert.equal(room.remaining(), 57_000);
+    assert.equal(room.turn.deadlineAt, room.now + 57_000);
+    assert.equal(room.narrate(), 'ok');
+});
+
+test('observer role owns the pause and the confirmation: a new observer resumes / confirms', () => {
+    const { room, ids } = startedGame(SIX);
+    const [, bob, , dan, , fay] = ids;
+    room.startTurn();
+    room.observe('pause');
+    assert.equal(room.act(bob, 'pass_observer'), 'ok');
+    assert.equal(room.turn.observerId, dan);
+    assert.equal(room.turn.pause.observer, true, 'the pause survives the change');
+    assert.equal(room.act(bob, 'resume'), E.NOT_OBSERVER, 'the old observer lost the authority');
+    assert.equal(room.act(dan, 'resume'), 'ok');
+
+    room.observe('taboo');
+    room.lose(dan);
+    assert.equal(room.turn.observerId, fay, 'disconnect = pass');
+    assert.equal(room.turn.pause.tabooConfirm, true, 'the confirmation stays open');
+    assert.equal(room.act(fay, 'taboo_confirm', { card: room.turn.cardSeq, confirm: true }), 'ok');
+    assert.equal(room.turn.taboo, 1);
+});
+
+// ---------------------------------------------------------------------------
+// T3: observer rotation within a turn
+// ---------------------------------------------------------------------------
+
+test('pass_observer: next of the opposing team, wraps to the start; alone = keeps the role', () => {
+    const { room, ids } = startedGame(SIX);
+    const [, bob, , dan, , fay] = ids;
+    assert.equal(room.turn.observerId, bob);
+    assert.equal(room.act(bob, 'pass_observer'), 'ok', 'allowed in the intro');
+    assert.equal(room.turn.observerId, dan);
+    room.startTurn();
+    room.act(dan, 'pass_observer');
+    assert.equal(room.turn.observerId, fay);
+    room.act(fay, 'pass_observer');
+    assert.equal(room.turn.observerId, bob, 'everyone passed -> back to the start');
+    assert.equal(room.state.teams[1].lastObserverSeq, room.player(bob).teamSeq);
+
+    room.lose(dan);
+    room.lose(fay);
+    const before = room.state;
+    assert.equal(room.act(bob, 'pass_observer'), 'ok');
+    assert.equal(room.state, before, 'the only connected opponent keeps the role');
+    room.expire();
+    assert.equal(room.act(bob, 'pass_observer'), E.BAD_PHASE);
+});
+
+test('observer disconnect: role moves at once, the timer keeps running; refilled when someone connects', () => {
+    const { room, ids } = startedGame(['Ann', 'Bob', 'Cid', 'Dan']);
+    const [, bob, , dan] = ids;
+    room.startTurn();
+    const deadline = room.turn.deadlineAt;
+    room.tick(1_000);
+    room.lose(bob);
+    assert.equal(room.turn.observerId, dan);
+    assert.equal(room.turn.deadlineAt, deadline, 'observer disconnect does not stop the timer');
+    room.lose(dan);
+    assert.equal(room.turn.observerId, null, 'nobody connected in the opposing team');
+    assert.equal(room.turn.deadlineAt, deadline);
+    assert.equal(room.act(dan, 'pause'), E.NOT_OBSERVER);
+    room.tick(1_000);
+    room.join('Bob');
+    assert.equal(room.turn.observerId, bob, 'filled as soon as an opponent connects');
+    assert.deepEqual(room.snapshot(bob).you, { isNarrator: false, isObserver: true });
+});
+
+test('observer pause survives a vacant role (choice C6); the next observer resumes', () => {
+    const { room, ids } = startedGame(['Ann', 'Bob', 'Cid', 'Dan']);
+    const [, bob, , dan] = ids;
+    room.startTurn();
+    room.observe('pause');
+    room.lose(bob);
+    room.lose(dan);
+    assert.equal(room.turn.observerId, null);
+    assert.equal(room.turn.pause.observer, true);
+    assert.equal(room.turn.deadlineAt, null);
+    room.join('Dan');
+    assert.equal(room.act(dan, 'resume'), 'ok');
+    assert.notEqual(room.turn.deadlineAt, null);
+});
+
+// ---------------------------------------------------------------------------
+// T3: narrator grace and handover
+// ---------------------------------------------------------------------------
+
+test('narrator grace: 15 s pause; back in time = same narrator, time kept to the ms', () => {
+    const { room, ids } = startedGame(SIX);
+    const [ann] = ids;
+    room.startTurn();
+    room.tick(20_123);
+    room.lose(ann);
+    assert.deepEqual(room.snapshot(ids[2]).turn.paused, { observer: false, tabooConfirm: false, narratorAway: true, handover: false });
+    assert.equal(room.turn.remainingMs, 39_877);
+    assert.equal(room.state.alarmAt, room.now + L.narratorGraceMs, 'grace end is the next alarm');
+    room.tick(L.narratorGraceMs - 1).alarm();
+    assert.equal(room.turn.narratorId, ann);
+    room.join('Ann', CREATOR);
+    assert.equal(room.turn.narratorId, ann);
+    assert.equal(room.turn.deadlineAt, room.now + 39_877);
+});
+
+test('narrator grace: after 15 s the next teammate takes over (handover), presses Start, time kept', () => {
+    const { room, ids } = startedGame(SIX);
+    const [ann, , cid] = ids;
+    room.startTurn();
+    room.narrate();
+    const seq = room.turn.cardSeq;
+    room.tick(7_777);
+    room.lose(ann);
+    room.tick(L.narratorGraceMs).alarm();
+    assert.equal(room.state.phase, PHASES.PLAYING);
+    assert.equal(room.turn.narratorId, cid);
+    assert.equal(room.state.teams[0].lastNarratorSeq, room.player(cid).teamSeq);
+    assert.deepEqual(room.snapshot(cid).turn.paused, { observer: false, tabooConfirm: false, narratorAway: false, handover: true });
+    assert.equal(room.turn.cardSeq, seq, 'the unscored card is kept');
+    assert.deepEqual(room.snapshot(cid).card, { word: room.card().word, forbidden: [...room.card().forbidden] });
+    assert.equal(room.act(cid, 'correct', { card: seq }), E.PAUSED, 'Start first');
+
+    room.join('Ann', CREATOR);
+    assert.equal(room.turn.narratorId, cid, 'no return for the old narrator');
+    assert.equal(room.act(ann, 'start_turn'), E.NOT_NARRATOR);
+    room.tick(9_000);
+    assert.equal(room.act(cid, 'start_turn'), 'ok');
+    assert.equal(room.turn.pause.handover, false);
+    assert.equal(room.turn.deadlineAt, room.now + 60_000 - 7_777);
+    assert.equal(room.act(cid, 'start_turn'), E.BAD_PHASE, 'only during a handover');
+    assert.equal(room.act(cid, 'correct', { card: seq }), 'ok');
+    assert.equal(room.turn.correct, 2);
+});
+
+test('narrator grace in playing without a replacement ends the turn with the points so far', () => {
+    const { room, ids } = startedGame(['Ann', 'Bob', 'Cid', 'Dan']);
+    room.startTurn();
+    room.narrate();
+    room.lose(ids[2]);
+    room.lose(ids[0]);
+    const since = room.now;
+    room.tick(L.narratorGraceMs).alarm();
+    assert.equal(room.state.phase, PHASES.TURN_SUMMARY);
+    assert.deepEqual(room.state.lastTurn, { team: 0, correct: 1, taboo: 0, passesUsed: 0, points: 1 });
+    assert.equal(room.state.teams[0].score, 1);
+    assert.ok(since + L.narratorGraceMs <= room.now);
+});
+
+test('narrator grace in the intro: handover after 15 s; without a replacement it waits (no repeating alarm)', () => {
+    const { room, ids } = startedGame(SIX);
+    const [ann, , cid, , eve] = ids;
+    room.lose(ann);
+    assert.equal(room.turn.pause.narratorAwaySince, room.now);
+    assert.equal(room.state.alarmAt, room.now + L.narratorGraceMs);
+    room.tick(L.narratorGraceMs).alarm();
+    assert.equal(room.state.phase, PHASES.TURN_INTRO);
+    assert.equal(room.turn.narratorId, cid);
+    assert.equal(room.turn.pause.handover, false, 'an intro has no handover pause');
+    assert.equal(room.turn.pause.narratorAwaySince, null);
+
+    // Now Cid drops and nobody else of red is connected: the intro waits.
+    room.lose(eve);
+    room.lose(cid);
+    const graceEnd = room.now + L.narratorGraceMs;
+    assert.ok(room.state.alarmAt !== graceEnd, 'no grace alarm without a replacement');
+    room.tick(L.narratorGraceMs + 60_000).alarm();
+    assert.equal(room.turn.narratorId, cid, 'still waiting');
+    room.join('Eve');
+    assert.equal(room.turn.narratorId, eve, 'handover at the first event that finds a replacement');
+    assert.equal(room.act(eve, 'start_turn'), 'ok');
+});
+
+test('narrator-less intro is filled when a teammate connects; start_turn then works', () => {
+    const { room, ids } = startedGame(['Ann', 'Bob', 'Cid', 'Dan']);
+    room.startTurn();
+    room.expire();
+    room.lose(ids[1]);
+    room.lose(ids[3]);
+    room.manage('next'); // blue turn, nobody connected
+    assert.equal(room.turn.narratorId, null);
+    room.join('Dan');
+    assert.equal(room.turn.narratorId, ids[3]);
+    assert.equal(room.startTurn(), 'ok');
+});
+
+// ---------------------------------------------------------------------------
+// T3: liveness (quiz model)
+// ---------------------------------------------------------------------------
+
+test('liveness: 30 s silence -> pending, 20 s later -> away by the alarm; a fresh ping revives', () => {
+    const { room, ids } = lobby();
+    const [, bob] = ids;
+    const seenAt = room.now;
+    room.tick(L.silentAfterMs);
+    room.send({ type: 'liveness', players: [{ playerId: bob, lastSeenAt: seenAt }] });
+    assert.equal(room.player(bob).status, PLAYER_STATUS.CONNECTED, 'exactly 30 s is not yet silent');
+    room.tick(1);
+    const effects = room.send({ type: 'liveness', players: [{ playerId: bob, lastSeenAt: seenAt }] });
+    assert.equal(room.player(bob).status, PLAYER_STATUS.PENDING);
+    assert.ok(hasEffect(effects, 'broadcast'));
+    assert.equal(room.state.alarmAt, room.now + L.pendingGraceMs);
+
+    room.tick(L.pendingGraceMs);
+    room.alarm();
+    assert.equal(room.player(bob).status, PLAYER_STATUS.AWAY);
+    assert.equal(room.player(bob).statusSince, room.now);
+
+    // A stale ping (older than the status change) does not revive; a fresh one does.
+    room.tick(1_000);
+    room.send({ type: 'liveness', players: [{ playerId: bob, lastSeenAt: room.now - 5_000 }] });
+    assert.equal(room.player(bob).status, PLAYER_STATUS.AWAY);
+    room.send({ type: 'liveness', players: [{ playerId: bob, lastSeenAt: room.now - 10 }] });
+    assert.equal(room.player(bob).status, PLAYER_STATUS.CONNECTED);
+    assert.equal(room.player(bob).statusSince, room.now - 10);
+});
+
+test('liveness: a fresh ping in the alarm event wins over the grace timer at the boundary', () => {
+    const { room, ids } = lobby();
+    const [, bob] = ids;
+    room.lose(bob);
+    room.tick(L.pendingGraceMs);
+    room.send({ type: 'alarm', players: [{ playerId: bob, lastSeenAt: room.now - 1 }] });
+    assert.equal(room.player(bob).status, PLAYER_STATUS.CONNECTED);
+});
+
+// ---------------------------------------------------------------------------
+// T3: manager transfer (rule (a), confirmed by the owner 2026-10-09)
+// ---------------------------------------------------------------------------
+
+test('rule (a): manager away after the 20 s grace -> earliest-joined connected player; no automatic return', () => {
+    assert.equal(MANAGER_LOST_STATUS, PLAYER_STATUS.AWAY);
+    const { room, ids } = lobby(['Ann', 'Bob', 'Cid', 'Dan']);
+    const [ann, bob, cid] = ids;
+    room.lose(bob);
+    room.lose(ann);
+    room.tick(L.pendingGraceMs - 1).alarm();
+    assert.equal(room.manager, ann, 'pending is not enough');
+    room.tick(1).alarm();
+    assert.equal(room.player(ann).status, PLAYER_STATUS.AWAY);
+    assert.equal(room.manager, cid, 'Bob (lower joinSeq) is not connected');
+    assert.equal(room.snapshot(cid).me.isManager, true);
+    room.join('Ann', CREATOR);
+    assert.equal(room.manager, cid, 'no automatic return');
+    assert.equal(room.act(ann, 'start'), E.NOT_MANAGER);
+});
+
+test('rule (a): with nobody connected the flag stays; the first player to connect gets it', () => {
+    const { room, ids } = lobby(['Ann', 'Bob']);
+    const [ann, bob] = ids;
+    room.lose(bob);
+    room.lose(ann);
+    room.tick(L.pendingGraceMs).alarm();
+    assert.equal(room.manager, ann, 'nobody to transfer to');
+    room.tick(5_000);
+    room.join('Bob');
+    assert.equal(room.manager, bob);
+});
+
+test('choice C9: a never-joined creator leaves the seat empty for 20 s, then the earliest connected player manages', () => {
+    const room = new Room();
+    const bob = room.join('Bob');
+    assert.equal(room.manager, null);
+    assert.equal(room.state.alarmAt, T0 + CREATOR_JOIN_GRACE_MS);
+    const cid = room.join('Cid');
+    room.tick(CREATOR_JOIN_GRACE_MS - 1).alarm();
+    assert.equal(room.manager, null);
+    room.tick(1).alarm();
+    assert.equal(room.manager, bob);
+    assert.equal(room.state.creatorTokenHash, null);
+    const ann = room.join('Ann', CREATOR);
+    assert.equal(room.manager, bob, 'the late creator is a plain player');
+    assert.notEqual(ann, cid);
+
+    // The creator in time keeps the normal flow (and no extra alarm afterwards).
+    const quick = new Room();
+    quick.join('Bob');
+    quick.tick(CREATOR_JOIN_GRACE_MS - 1);
+    const creator = quick.join('Ann', CREATOR);
+    assert.equal(quick.manager, creator);
+    assert.equal(quick.state.alarmAt, quick.now + L.roomIdleMs);
+});
+
+// ---------------------------------------------------------------------------
+// T3: alarms and catch-up
+// ---------------------------------------------------------------------------
+
+test('alarm: earliest of deadline / grace end / away / deletion', () => {
+    const { room, ids } = startedGame(SIX);
+    room.startTurn();
+    assert.equal(room.state.alarmAt, room.turn.deadlineAt);
+    room.tick(1_000);
+    room.lose(ids[3]); // Dan (blue, not the observer): away in 20 s, before the deadline (59 s)
+    const awayAt = room.now + L.pendingGraceMs;
+    assert.equal(room.state.alarmAt, awayAt);
+    room.tick(2_000);
+    room.lose(ids[0]); // narrator: grace end in 15 s, before Dan's away
+    assert.equal(room.state.alarmAt, room.now + L.narratorGraceMs);
+    room.join('Ann', CREATOR);
+    assert.equal(room.state.alarmAt, awayAt);
+    room.join('Dan');
+    assert.equal(room.state.alarmAt, room.turn.deadlineAt);
+    room.observe('pause');
+    assert.equal(room.state.alarmAt, room.state.lastActivityAt + L.roomIdleMs, 'paused: only the deletion is left');
+});
+
+test('alarm: multi-timer catch-up after a sleep applies each timer at its own time', () => {
+    const { room, ids } = startedGame(SIX);
+    const [ann, , cid] = ids;
+    room.startTurn();
+    room.tick(10_000);
+    room.lose(ann); // grace at +15 s, Ann away at +20 s, manager moves then
+    const lostAt = room.now;
+    room.tick(300_000);
+    room.alarm();
+    assert.equal(room.state.phase, PHASES.PLAYING, 'the paused turn did not time out');
+    assert.equal(room.turn.narratorId, cid);
+    assert.equal(room.turn.pause.handover, true);
+    assert.equal(room.turn.remainingMs, 50_000);
+    assert.equal(room.player(ann).status, PLAYER_STATUS.AWAY);
+    assert.equal(room.player(ann).statusSince, lostAt + L.pendingGraceMs);
+    assert.equal(room.manager, ids[1], 'Bob: lowest joinSeq among the connected');
+    room.act(cid, 'start_turn');
+    room.tick(50_000).alarm();
+    assert.equal(room.state.phase, PHASES.TURN_SUMMARY);
+});
+
+test('alarm: an observation stamped at now does not act at an older caught-up timer', () => {
+    const { room, ids } = startedGame(SIX);
+    const [ann, , , dan] = ids;
+    room.startTurn();
+    room.lose(dan); // Dan away at +20 s
+    room.tick(35_000);
+    // The narrator is seen as silent only now (last ping 31 s ago).
+    room.send({ type: 'alarm', players: [{ playerId: ann, lastSeenAt: room.now - L.silentAfterMs - 1 }] });
+    assert.equal(room.player(dan).status, PLAYER_STATUS.AWAY);
+    assert.equal(room.turn.pause.narratorAwaySince, room.now, 'the grace starts now, not at the away timer');
+    assert.equal(room.turn.remainingMs, 25_000);
+});
+
+// Review round 1 (P1): during a late catch-up, candidates and incumbents are judged
+// by their status AT the timer step, not by observations stamped `now`.
+test('catch-up: a teammate connected at the grace end takes over even if seen silent only later', () => {
+    const { room, ids } = startedGame(['Ann', 'Bob', 'Cid', 'Dan']);
+    const [ann, , cid] = ids;
+    room.startTurn();
+    room.lose(ann); // grace end at +15 s; Cid connected then
+    const lostAt = room.now;
+    room.tick(31_000);
+    // Cid's socket is found silent only now (no ping at all) -> pending at now.
+    room.send({ type: 'alarm', players: [{ playerId: cid, lastSeenAt: null }] });
+    assert.equal(room.state.phase, PHASES.PLAYING, 'the turn must not end: Cid was there at +15 s');
+    assert.equal(room.turn.narratorId, cid);
+    assert.equal(room.turn.pause.handover, true);
+    assert.equal(room.turn.remainingMs, 60_000);
+    assert.equal(room.player(ann).statusSince, lostAt + L.pendingGraceMs);
+    assert.equal(room.turn.pause.narratorAwaySince, room.now, 'Cid now gets his own grace');
+});
+
+test('catch-up: a narrator seen back only after the grace end is still replaced; time kept', () => {
+    const { room, ids } = startedGame(['Ann', 'Bob', 'Cid', 'Dan']);
+    const [ann, , cid] = ids;
+    room.startTurn();
+    room.tick(4_000);
+    room.lose(ann);
+    room.tick(31_000);
+    room.send({ type: 'alarm', players: [{ playerId: ann, lastSeenAt: room.now - 1_000 }] });
+    assert.equal(room.player(ann).status, PLAYER_STATUS.CONNECTED, 'revived by the fresh ping');
+    assert.equal(room.turn.narratorId, cid, 'Ann came back 30 s after leaving: too late');
+    assert.equal(room.turn.pause.handover, true);
+    assert.equal(room.turn.remainingMs, 56_000);
+});
+
+test('catch-up rule (a): the manager seat goes to a player connected at the away time', () => {
+    const { room, ids } = lobby(['Ann', 'Bob']);
+    const [ann, bob] = ids;
+    room.lose(ann);
+    room.tick(40_000);
+    room.send({ type: 'alarm', players: [{ playerId: bob, lastSeenAt: null }] });
+    assert.equal(room.player(bob).status, PLAYER_STATUS.PENDING);
+    assert.equal(room.manager, bob, 'Bob was connected when Ann went away (+20 s)');
+});
+
+test('catch-up: intro grace end waits until a teammate is actually connected (no early null narrator)', () => {
+    const { room, ids } = startedGame(SIX);
+    const [ann, , cid, , eve] = ids;
+    room.lose(eve);
+    room.lose(cid);
+    room.lose(ann);
+    const lostAt = room.now;
+    room.tick(L.pendingGraceMs + 1_000).alarm(); // everyone of red is away now; intro waits
+    assert.equal(room.turn.narratorId, ann);
+    room.tick(10_000);
+    const seen = room.now - 500;
+    room.send({ type: 'alarm', players: [{ playerId: cid, lastSeenAt: seen }] });
+    assert.equal(room.turn.narratorId, cid);
+    assert.equal(room.turn.pause.narratorAwaySince, null);
+    assert.ok(seen > lostAt + L.narratorGraceMs);
+});
+
+// Final round (P1): the wake-up time counts a candidate connected at the grace end
+// even when it is found silent only in the late alarm itself.
+test('catch-up: intro grace end hands over to a teammate connected then, even if the narrator returned later', () => {
+    const { room, ids } = startedGame(['Ann', 'Bob', 'Cid', 'Dan']);
+    const [ann, , cid] = ids;
+    room.lose(ann); // intro; grace end at +15 s, Cid connected then
+    const lostAt = room.now;
+    room.tick(31_000);
+    // Late alarm: Ann pinged at +17 s (after the grace end), Cid is found silent now.
+    room.send({
+        type: 'alarm',
+        players: [
+            { playerId: ann, lastSeenAt: lostAt + 17_000 },
+            { playerId: cid, lastSeenAt: null },
+        ],
+    });
+    assert.equal(room.state.phase, PHASES.TURN_INTRO);
+    assert.equal(room.player(ann).status, PLAYER_STATUS.CONNECTED);
+    assert.equal(room.player(cid).status, PLAYER_STATUS.PENDING);
+    assert.equal(room.turn.narratorId, cid, 'Ann was back only after the grace end: Cid took over at +15 s');
+    assert.equal(room.turn.pause.narratorAwaySince, room.now, 'Cid now gets his own grace');
+    assert.ok(room.state.alarmAt > room.now, 'no alarm left in the past');
+});
+
+test('catch-up choice C9: the empty creator seat goes to a player connected at the grace end', () => {
+    const room = new Room();
+    const bob = room.join('Bob');
+    room.tick(CREATOR_JOIN_GRACE_MS + L.silentAfterMs);
+    // Late alarm: Bob is found silent only now, but he was connected at T0 + 20 s.
+    room.send({ type: 'alarm', players: [{ playerId: bob, lastSeenAt: null }] });
+    assert.equal(room.player(bob).status, PLAYER_STATUS.PENDING);
+    assert.equal(room.manager, bob);
+    assert.equal(room.state.creatorTokenHash, null);
+    assert.ok(room.state.alarmAt > room.now, 'no alarm left in the past');
+});
+
+test('alarm: an idle paused room is deleted after 2 h', () => {
+    const { room } = startedGame(SIX);
+    room.startTurn();
+    room.observe('pause');
+    assert.equal(room.state.alarmAt, room.now + L.roomIdleMs);
+    room.tick(L.roomIdleMs);
+    const effects = room.alarm();
+    assert.equal(effects.at(-1).type, 'delete_room');
+    assert.equal(room.state.phase, PHASES.DELETED);
+});
+
+// ---------------------------------------------------------------------------
 // Alarm, module hygiene, error codes
 // ---------------------------------------------------------------------------
 
@@ -978,4 +1602,31 @@ test('error codes: shared strings equal the protocol\'s and the quiz\'s; every e
     assert.ok(Object.isFrozen(E));
     const listed = new Set(Object.values(E));
     for (const code of seenErrors) assert.ok(listed.has(code), `emitted code ${code} is not in TABOO_ENGINE_ERRORS`);
+});
+
+test('T3 gap: observer disconnect wraps around the rotation and keeps the timer running', () => {
+    const { room, ids } = startedGame(SIX);
+    const [, bob, , dan, , fay] = ids;
+    room.startTurn();
+    room.act(bob, 'pass_observer');
+    room.act(dan, 'pass_observer');
+    assert.equal(room.turn.observerId, fay);
+    room.tick(2_000);
+    const deadline = room.turn.deadlineAt;
+    room.lose(fay);
+    assert.equal(room.turn.observerId, bob, 'last in order disconnects -> wraps to the first');
+    assert.equal(room.turn.deadlineAt, deadline, 'timer keeps running');
+    assert.equal(room.remaining(), 58_000);
+});
+
+test('T3 gap: manager transfer skips an earlier-joined player who is only pending/away', () => {
+    const { room, ids } = lobby(['Ann', 'Bob', 'Cid', 'Dan']);
+    const [ann, bob, cid, dan] = ids;
+    room.lose(ann);
+    room.lose(bob);
+    room.tick(L.pendingGraceMs).alarm();
+    assert.equal(room.manager, cid, 'earliest-joined CONNECTED player, not the next joinSeq');
+    room.join('Bob');
+    assert.equal(room.manager, cid, 'a returning earlier player does not take it back');
+    assert.notEqual(room.manager, dan);
 });

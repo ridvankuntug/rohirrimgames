@@ -39,15 +39,22 @@
 //   choose_team     { team: 0 | 1 }                 self-select mode
 //   configure       { settings: { turnSec?, rounds?, passLimit?, deckId? } }  manager, lobby
 //   start           {}                              manager, lobby
-//   start_turn      {}                              narrator, turn_intro
-//   correct | skip  { card }                        narrator, playing
+//   start_turn      {}                              narrator, turn_intro; or playing
+//                                                   during a handover (continues the turn)
+//   correct | skip  { card }                        narrator, playing, not paused
+//   taboo           { card }                        observer, playing (opens the confirmation)
+//   taboo_confirm   { card, confirm: boolean }      observer, confirmation open
+//   pause | resume  {}                              observer, playing
+//   pass_observer   {}                              observer, turn_intro or playing
 //   next            {}                              manager, turn_summary
 //   end_game        {}                              manager, any phase but final
 //   kick            { targetId }                    manager, any phase but final
 //   connection_lost { playerId }  socket close/error (DO, last socket of the player)
-//   liveness | alarm { players? }  DO liveness pass / DO alarm
-//   T3 adds: taboo, taboo_confirm, pause, resume, pass_observer, `start_turn`
-//   after a handover, and the liveness observations / away timers.
+//                   -> `pending` at once.
+//   liveness | alarm { players?: [{ playerId, lastSeenAt|null }] }  DO liveness
+//                   pass / DO alarm. Observations are applied BEFORE due timers run
+//                   (quiz rule A7/A8: 30 s silence -> pending, 20 s later -> away,
+//                   a fresh ping revives).
 //
 // Effects: exactly the quiz set, so `worker/room-controller.js` runs them unchanged:
 //   { type: 'joined', connectionId, playerId, reconnected }
@@ -59,33 +66,33 @@
 //   { type: 'delete_room' }                     last effect; state is then `deleted`
 //
 // ---------------------------------------------------------------------------
-// T2 / T3 split (plan docs/superpowers/plans/2026-10-09-online-taboo.md)
+// Timer and roles (plan T3)
 // ---------------------------------------------------------------------------
-// This file implements T2: lobby, teams, turns, cards, scoring, snapshots.
-// T3 slots in at the places marked `T3:` below:
-//   - Timer: T2 uses a NON-PAUSING deadline. `turn.remainingMs` is the
-//     authoritative time before Start; Start sets `deadlineAt = now + remainingMs`.
-//     The `turn.pause` flags exist (always clear in T2); T3 adds the run/pause
-//     flip helper that moves time between `remainingMs` and `deadlineAt`.
-//     A paused turn has `deadlineAt === null`, so the `turn_end` timer below
-//     already disappears while paused.
-//   - Liveness: T2 only has `connection_lost` (-> pending) and the join
-//     reconnect (-> connected). T3 adds observations, the 20 s pending -> away
-//     timer and the role consequences, via `settleRoles` (called after every event).
-//   - Kick consequences that need the pause machinery (narrator mid-turn ->
-//     handover) are stubbed in `onPlayerRemoved`.
+// One remaining-ms clock. The timer RUNS iff phase `playing`, `turn.started` and
+// no pause flag is set (`observer`, `tabooConfirm`, `narratorAwaySince`,
+// `handover`). `syncClock` (end of every `settleRoles`) moves the time: running
+// -> paused stores `remainingMs = deadlineAt - at` and clears `deadlineAt`;
+// paused -> running sets `deadlineAt = at + remainingMs`. While running,
+// `remainingMs` is stale (the snapshot computes the live value).
+//
+// `settleRoles(state, at)` runs after every event and after every timer (at the
+// timer's own time): manager (rule (a)), observer, narrator grace, clock.
+// A status change stamped AFTER `at` (an observation applied at `now` before an
+// older timer is caught up) is ignored by that earlier step (`isGoneAt`) and
+// handled by the final settle at `now`.
 //
 // ---------------------------------------------------------------------------
-// Rules whose spec interpretation is NOT yet confirmed by the owner
+// Isolated rules (confirmed by the owner 2026-10-09)
 // ---------------------------------------------------------------------------
 // Each is one isolated constant or one commented branch with its own test, so it
-// can change without touching anything else. Search for "UNCONFIRMED".
-//   (a) Interpretation 3: manager handover after the 20 s grace, no automatic
-//       return. T3 scope; hook in `settleRoles`.
+// can change without touching anything else. Search for "Rule (a)/(b)/(c)".
+//   (a) Interpretation 3: manager transfer when the manager reaches `away`, to the
+//       connected player with the lowest joinSeq; no automatic return.
+//       `MANAGER_LOST_STATUS` / `settleManager`.
 //   (b) Interpretation 9: no team minimum after the start. The 2-per-team rule is
 //       `MIN_PLAYERS_PER_TEAM_TO_START`, checked only by `start`.
-//   (c) Interpretation 13: no lobby lock / no kick ban. `kick` forgets the player
-//       (and so the token); see the branch in `kick`.
+//   (c) Interpretation 13: no lobby lock / no kick ban ("for now"). `kick`
+//       forgets the player (and so the token); see the branch in `kick`.
 //
 // ---------------------------------------------------------------------------
 // Choices made here where the spec leaves room (listed in the T2 report)
@@ -101,13 +108,27 @@
 //    turn_summary/final); the summary data is `lastTurn`.
 // C5 `choose_team` in auto mode, or by an assigned player after the lobby, is
 //    `team_locked`. Choosing the team one already has is a no-op.
+// C6 Observer pause / open Tabu confirmation stay set while `observerId` is null
+//    (nobody of the opposing team connected): the flags belong to the role, and
+//    the next observer resolves them. The manager can still End game.
+// C7 Repeated observer actions are no-ops (no error): `taboo` while the
+//    confirmation is open, `pause` while paused, `resume` while running,
+//    `pass_observer` with nobody else connected. `taboo_confirm` with no
+//    confirmation open is `bad_phase`.
+// C8 A non-connected player is never revived by the engine on an action; the
+//    DO's liveness pass (which also counts message times) does that.
+// C9 Never-joined creator (extension of the confirmed manager rule): `managerId`
+//    stays null for `CREATOR_JOIN_GRACE_MS` after room creation (the same 20 s
+//    grace), then the connected player with the lowest joinSeq gets the flag and
+//    the creator token stops granting it (no automatic return). With nobody
+//    connected the seat stays empty and the creator token keeps working.
 
 import { TEAM_MODES } from './taboo-protocol.js';
 import { getTabooDeck } from './taboo-decks.js';
 
 export const TABOO_ENGINE_LIMITS = Object.freeze({
     maxPlayers: 50,
-    // Liveness constants of the quiz (used from T3 on).
+    // Liveness constants of the quiz.
     pendingGraceMs: 20_000,
     silentAfterMs: 30_000,
     narratorGraceMs: 15_000,
@@ -125,9 +146,17 @@ export const TABOO_SETTINGS_RANGES = Object.freeze({
 /** The local game's default selection (its last deck). */
 export const DEFAULT_TABOO_DECK_ID = 'classic-mix';
 
-// UNCONFIRMED (b), Interpretation 9: this minimum applies to `start` ONLY. After
-// the start no team minimum is enforced; `start_turn` only needs a narrator.
+// Rule (b), Interpretation 9 (confirmed by the owner 2026-10-09): this minimum
+// applies to `start` ONLY. After the start no team minimum is enforced;
+// `start_turn` only needs a narrator.
 export const MIN_PLAYERS_PER_TEAM_TO_START = 2;
+
+// Rule (a), Interpretation 3 (confirmed by the owner 2026-10-09): when the
+// manager's status reaches `away` (20 s after leaving `connected`), management
+// moves to the connected player with the lowest joinSeq. No automatic return.
+// Choice C9: how long a never-joined creator keeps the manager seat empty.
+export const MANAGER_LOST_STATUS = 'away';
+export const CREATOR_JOIN_GRACE_MS = 20_000;
 
 export const PHASES = Object.freeze({
     LOBBY: 'lobby',
@@ -155,9 +184,9 @@ export const TABOO_ENGINE_ERRORS = Object.freeze({
     NOT_PLAYER: 'not_player',
     NOT_MANAGER: 'not_manager',
     NOT_NARRATOR: 'not_narrator',
-    NOT_OBSERVER: 'not_observer', // T3 (observer actions)
+    NOT_OBSERVER: 'not_observer',
     BAD_PHASE: 'bad_phase',
-    PAUSED: 'paused', // T3 (narrator actions while paused)
+    PAUSED: 'paused',
     STALE_CARD: 'stale_card',
     NO_PASSES_LEFT: 'no_passes_left',
     TEAMS_TOO_SMALL: 'teams_too_small',
@@ -299,28 +328,71 @@ const rebalance = room => {
     }
 };
 
+const isConnected = player => player.status === CONNECTED;
+
 /**
- * Next player in a team's rotation: the first CONNECTED member (teamSeq order)
- * after `lastSeq`, wrapping to the start. Storing a teamSeq (not an index or id)
- * keeps the order right after kicks and late joins. Null when nobody is connected.
+ * Was the player `connected` at time `at` (<= now)? Reconstructed from the
+ * status and its `statusSince` (header "Timer and roles"): during a timer
+ * catch-up, observations stamped `now` were already applied, so the current
+ * status may be newer than `at`. The transitions make one step back exact:
+ *   connected  since s: connected at `at` iff s <= at (before s: a join or a
+ *              revival from pending/away, i.e. not connected)
+ *   pending    since s: only entered from connected, so connected iff at < s
+ *   away       since s: entered from pending exactly `pendingGraceMs` earlier,
+ *              so connected iff at < s - pendingGraceMs
+ * At `at === now` this equals `status === 'connected'` (every statusSince <= now).
  */
-const pickNext = (state, team, lastSeq) => {
-    const eligible = teamMembers(state, team).filter(player => player.status === CONNECTED);
+const connectedAt = (player, at) => {
+    if (player.status === CONNECTED) return player.statusSince <= at;
+    if (player.status === PENDING) return at < player.statusSince;
+    return at < player.statusSince - L.pendingGraceMs;
+};
+
+// An incumbent (narrator / observer) is gone at `at` when removed or not connected then.
+const isGoneAt = (player, at) => !player || !connectedAt(player, at);
+
+/**
+ * Next player in a team's rotation: the first member connected at `at` (teamSeq
+ * order) after `lastSeq`, wrapping to the start. Storing a teamSeq (not an index
+ * or id) keeps the order right after kicks and late joins. Null when nobody is
+ * connected.
+ */
+const pickNext = (state, team, lastSeq, at) => {
+    const eligible = teamMembers(state, team).filter(player => connectedAt(player, at));
     if (eligible.length === 0) return null;
     return eligible.find(player => lastSeq === null || player.teamSeq > lastSeq) ?? eligible[0];
 };
 
-const assignNarrator = (state, turn) => {
-    const narrator = pickNext(state, turn.team, state.teams[turn.team].lastNarratorSeq);
+const assignNarrator = (state, turn, at) => {
+    const narrator = pickNext(state, turn.team, state.teams[turn.team].lastNarratorSeq, at);
     turn.narratorId = narrator?.id ?? null;
     if (narrator) state.teams[turn.team].lastNarratorSeq = narrator.teamSeq;
 };
 
-const assignObserver = (state, turn) => {
+const assignObserver = (state, turn, at) => {
     const other = 1 - turn.team;
-    const observer = pickNext(state, other, state.teams[other].lastObserverSeq);
+    const observer = pickNext(state, other, state.teams[other].lastObserverSeq, at);
     turn.observerId = observer?.id ?? null;
     if (observer) state.teams[other].lastObserverSeq = observer.teamSeq;
+};
+
+// Who would take over the narration at `at`: the next connected member of the
+// turn's team. Called only when the current narrator is gone, so it never returns
+// the current narrator.
+const narratorReplacement = (state, turn, at) =>
+    pickNext(state, turn.team, state.teams[turn.team].lastNarratorSeq, at);
+
+// Earliest time >= `from` at which one of `players` is connected for sure; null
+// when none is. Per player: `from` itself when connected then (judged like the
+// step will judge it, so a player seen silent only later still counts during a
+// catch-up), else the start of a current connection. Wake-up timers use it so the
+// step that runs at that time finds a candidate (no due timer without progress).
+const firstConnectedTime = (players, from) => {
+    const times = players.flatMap(player => {
+        if (connectedAt(player, from)) return [from];
+        return isConnected(player) ? [player.statusSince] : [];
+    });
+    return times.length === 0 ? null : Math.min(...times);
 };
 
 // ---------------------------------------------------------------------------
@@ -375,13 +447,40 @@ const drawCard = (state, turn, random) => {
 // ---------------------------------------------------------------------------
 
 // Every timed transition, in priority order for equal times.
-// T3: add `away` (pending + 20 s) and the narrator grace end here.
 const listTimers = state => {
     if (state.phase === DELETED) return [];
     const timers = [];
+    const { turn } = state;
 
-    if (state.phase === PLAYING && state.turn?.deadlineAt != null) {
-        timers.push({ kind: 'turn_end', at: state.turn.deadlineAt });
+    if (state.phase === PLAYING && turn?.deadlineAt != null) {
+        timers.push({ kind: 'turn_end', at: turn.deadlineAt });
+    }
+
+    // Narrator grace end. In `playing` always (no replacement ends the turn). In
+    // `turn_intro` only while someone of the team is connected, and not before
+    // they are; else the intro waits and `settleNarrator` hands over at the first
+    // event that finds a replacement (no repeating alarm).
+    if (turn && turn.pause.narratorAwaySince !== null) {
+        const graceEnd = turn.pause.narratorAwaySince + L.narratorGraceMs;
+        if (state.phase === PLAYING) {
+            timers.push({ kind: 'narrator_grace', at: graceEnd });
+        } else if (state.phase === TURN_INTRO) {
+            const at = firstConnectedTime(teamMembers(state, turn.team), graceEnd);
+            if (at !== null) timers.push({ kind: 'narrator_grace', at });
+        }
+    }
+
+    for (const player of state.players) {
+        if (player.status === PENDING) {
+            timers.push({ kind: 'away', at: player.statusSince + L.pendingGraceMs, playerId: player.id });
+        }
+    }
+
+    // Choice C9: wake up when a never-joined creator's seat can be filled (grace
+    // over and someone connected).
+    if (state.managerId === null && state.creatorTokenHash !== null) {
+        const at = firstConnectedTime(state.players, state.createdAt + CREATOR_JOIN_GRACE_MS);
+        if (at !== null) timers.push({ kind: 'creator_grace', at });
     }
 
     let deleteAt = state.lastActivityAt + L.roomIdleMs;
@@ -419,7 +518,7 @@ const touch = (state, now) => {
 const turnPoints = turn => turn.correct - turn.taboo;
 
 // Turn intro for `state.turnIndex`: team, narrator, observer, full time.
-const beginTurnIntro = (state, out) => {
+const beginTurnIntro = (state, now, out) => {
     const turn = {
         team: state.turnIndex % 2,
         narratorId: null,
@@ -434,8 +533,8 @@ const beginTurnIntro = (state, out) => {
         correct: 0,
         taboo: 0,
     };
-    assignNarrator(state, turn);
-    assignObserver(state, turn);
+    assignNarrator(state, turn, now);
+    assignObserver(state, turn, now);
     state.turn = turn;
     state.phase = TURN_INTRO;
     out.broadcast = true;
@@ -461,42 +560,164 @@ const finishGame = (state, at, reason, out) => {
     out.broadcast = true;
 };
 
-/**
- * Role upkeep after every event and timer. T2: nothing to settle (roles are only
- * picked at the turn intro and by `onPlayerRemoved`).
- * T3 hooks (in this order):
- *   - UNCONFIRMED (a), Interpretation 3: manager status `away` -> management moves
- *     to the connected player with the lowest joinSeq; no automatic return.
- *   - observer not connected -> next observer; null observer filled when an
- *     opposing member connects; null narrator in turn_intro filled likewise.
- *   - narrator not connected -> narrator grace (`pause.narratorAwaySince`).
- */
-const settleRoles = () => {};
+// ---------------------------------------------------------------------------
+// Clock and role upkeep
+// ---------------------------------------------------------------------------
+
+const isPaused = pause =>
+    pause.observer || pause.tabooConfirm || pause.narratorAwaySince !== null || pause.handover;
 
 /**
- * Consequences of a player leaving the room (kick). Rotation-only consequences
- * are done here; the narrator mid-turn needs the T3 handover.
+ * The run/pause flip of the single remaining-ms clock (header "Timer and roles").
+ * Idempotent; called at the end of every settle with the time of that step.
  */
-const onPlayerRemoved = (state, player) => {
+const syncClock = (state, at) => {
+    const { turn } = state;
+    if (state.phase !== PLAYING || !turn?.started) return;
+    const shouldRun = !isPaused(turn.pause);
+    if (!shouldRun && turn.deadlineAt !== null) {
+        turn.remainingMs = Math.max(0, turn.deadlineAt - at);
+        turn.deadlineAt = null;
+    } else if (shouldRun && turn.deadlineAt === null) {
+        turn.deadlineAt = at + turn.remainingMs;
+    }
+};
+
+/**
+ * Manager transfer (Interpretation 3, confirmed by the owner 2026-10-09): the
+ * manager reached `MANAGER_LOST_STATUS` -> the connected player with the lowest
+ * joinSeq. Nobody connected -> the flag stays where it is. No automatic return:
+ * a returning old manager is a plain player. Choice C9 fills a never-joined
+ * creator's seat the same way once `CREATOR_JOIN_GRACE_MS` has passed.
+ */
+const settleManager = (state, at, out) => {
+    if (state.managerId === null) {
+        if (state.creatorTokenHash !== null && at < state.createdAt + CREATOR_JOIN_GRACE_MS) return;
+    } else if (findPlayer(state, state.managerId)?.status !== MANAGER_LOST_STATUS) {
+        // (`away` is only set by its own timer, so it is never newer than `at`.)
+        return;
+    }
+    // Candidates are judged at `at`, not by their (possibly newer) current status.
+    const next = state.players
+        .filter(player => connectedAt(player, at) && player.id !== state.managerId)
+        .sort((a, b) => a.joinSeq - b.joinSeq)[0];
+    if (!next) return;
+    state.managerId = next.id;
+    // After a transfer the creator token never grants the flag (choices C2, C9).
+    state.creatorTokenHash = null;
+    out.broadcast = true;
+};
+
+// Observer gone (not connected / removed) or missing -> next of the opposing team
+// (Interpretations 4 and 8). The pause flags stay: they belong to the role (C6).
+const settleObserver = (state, turn, at, out) => {
+    if (turn.observerId !== null && !isGoneAt(findPlayer(state, turn.observerId), at)) return;
+    const before = turn.observerId;
+    assignObserver(state, turn, at);
+    if (turn.observerId !== before) out.broadcast = true;
+};
+
+/**
+ * The narrator leaves for good (grace over, or kicked): the next connected member
+ * of the team narrates. In `playing` the turn stays paused with its remaining
+ * time (`handover`) until the new narrator presses Start; the unscored card is
+ * kept (Interpretation 5). No replacement: `playing` ends the turn with the points
+ * so far; `turn_intro` is left without a narrator (filled by `settleNarrator`).
+ */
+const handOverNarrator = (state, at, out) => {
+    const { turn } = state;
+    const next = narratorReplacement(state, turn, at);
+    turn.pause.narratorAwaySince = null;
+    out.broadcast = true;
+    if (next) {
+        turn.narratorId = next.id;
+        state.teams[turn.team].lastNarratorSeq = next.teamSeq;
+        if (state.phase === PLAYING) turn.pause.handover = true;
+        return;
+    }
+    turn.narratorId = null;
+    if (state.phase === PLAYING) endTurn(state, out);
+};
+
+// Grace end: a narrator who is connected again keeps the role; else hand over.
+const expireNarratorGrace = (state, at, out) => {
+    const { turn } = state;
+    if (!isGoneAt(findPlayer(state, turn.narratorId), at)) {
+        turn.pause.narratorAwaySince = null;
+        out.broadcast = true;
+        return;
+    }
+    handOverNarrator(state, at, out);
+};
+
+// Narrator grace (Interpretations 4 and 5); `turn_intro` and `playing` only.
+const settleNarrator = (state, turn, at, out) => {
+    if (turn.narratorId === null) {
+        // Only an intro can be narrator-less (a playing turn ends instead).
+        if (state.phase === TURN_INTRO) {
+            assignNarrator(state, turn, at);
+            if (turn.narratorId !== null) out.broadcast = true;
+        }
+        return;
+    }
+    const { pause } = turn;
+    if (!isGoneAt(findPlayer(state, turn.narratorId), at)) {
+        if (pause.narratorAwaySince !== null) {
+            pause.narratorAwaySince = null;
+            out.broadcast = true;
+        }
+        return;
+    }
+    if (pause.narratorAwaySince === null) {
+        pause.narratorAwaySince = at;
+        out.broadcast = true;
+        return;
+    }
+    const expired = at >= pause.narratorAwaySince + L.narratorGraceMs;
+    if (expired && (state.phase === PLAYING || narratorReplacement(state, turn, at))) expireNarratorGrace(state, at, out);
+};
+
+/** Role and clock upkeep after every event and every timer, at that step's time. */
+const settleRoles = (state, at, out) => {
+    settleManager(state, at, out);
+    const { turn } = state;
+    if (turn && (state.phase === TURN_INTRO || state.phase === PLAYING)) {
+        settleObserver(state, turn, at, out);
+        settleNarrator(state, turn, at, out);
+    }
+    syncClock(state, at);
+};
+
+/**
+ * Consequences of a player leaving the room (kick, Interpretation 13): the
+ * observer role moves on; a narrator is replaced at once (no grace) — mid-turn
+ * that is a handover, or the end of the turn when nobody can take over.
+ */
+const onPlayerRemoved = (state, player, at, out) => {
     const { turn } = state;
     if (!turn) return;
-    if (turn.observerId === player.id) assignObserver(state, turn);
-    if (turn.narratorId === player.id) {
-        if (state.phase === TURN_INTRO) {
-            assignNarrator(state, turn);
-        } else {
-            // T3 (Interpretation 13): kicked narrator mid-turn = immediate handover
-            // (new narrator + `handover` pause, remaining time kept). T2 stub: no
-            // narrator; the turn runs out on its deadline.
-            turn.narratorId = null;
-        }
-    }
+    if (turn.observerId === player.id) assignObserver(state, turn, at);
+    if (turn.narratorId === player.id) handOverNarrator(state, at, out);
 };
 
 const applyTimer = (state, timer, out) => {
     switch (timer.kind) {
         case 'turn_end':
             endTurn(state, out);
+            break;
+        case 'narrator_grace':
+            expireNarratorGrace(state, timer.at, out);
+            break;
+        case 'away': {
+            const player = findPlayer(state, timer.playerId);
+            player.status = AWAY;
+            player.statusSince = timer.at;
+            // Statuses are visible to everyone (team lists).
+            out.broadcast = true;
+            break;
+        }
+        case 'creator_grace':
+            // Wake-up only: `settleRoles`, run right after at timer.at, fills the seat.
             break;
         case 'delete':
             state.phase = DELETED;
@@ -519,6 +740,39 @@ const advance = (state, now, out) => {
         settleRoles(state, timer.at, out);
     }
     throw new Error('timer loop did not settle');
+};
+
+// ---------------------------------------------------------------------------
+// Liveness (copied from shared/quiz-engine.js, player part only: A7/A8)
+// ---------------------------------------------------------------------------
+
+// A ping revives a pending/away player only if it is newer than the status change
+// AND still fresh (no older than the silence window); a stale ping must not
+// revive at the next alarm, or the away transition would slip.
+const isFreshReturn = (seen, since, now) => seen !== null && seen > since && now - seen <= L.silentAfterMs;
+
+// Auto-response / message timestamps of open sockets, applied BEFORE due timers
+// so a fresh ping at a grace boundary wins over that timer.
+const applyObservations = (state, event, now, out) => {
+    if (!Array.isArray(event.players)) return;
+    for (const observation of event.players) {
+        const player = findPlayer(state, observation?.playerId);
+        if (!player) continue;
+        const seen = typeof observation.lastSeenAt === 'number' ? observation.lastSeenAt : null;
+        if (player.status === CONNECTED) {
+            const reference = seen === null ? player.statusSince : Math.max(seen, player.statusSince);
+            if (now - reference > L.silentAfterMs) {
+                player.status = PENDING;
+                player.statusSince = now;
+                out.broadcast = true;
+            }
+        } else if (isFreshReturn(seen, player.statusSince, now)) {
+            player.status = CONNECTED;
+            // The silence window counts from the ping itself, not from when we saw it.
+            player.statusSince = Math.min(seen, now);
+            out.broadcast = true;
+        }
+    }
 };
 
 // ---------------------------------------------------------------------------
@@ -561,9 +815,26 @@ const requireNarratorCard = (state, event, out) => {
         fail(out, event, E.NOT_NARRATOR);
         return null;
     }
-    // T3: refuse with `paused` while any pause flag is set (Interpretation 14).
+    // Interpretation 14: no Correct/Pass while ANY pause is active.
+    if (isPaused(turn.pause)) {
+        fail(out, event, E.PAUSED);
+        return null;
+    }
     if (event.card !== turn.cardSeq) {
         fail(out, event, E.STALE_CARD);
+        return null;
+    }
+    return turn;
+};
+
+// Shared checks of the observer's actions in `playing`; returns the turn or null.
+// Authority belongs to whoever holds the observer role NOW (Interpretation 14).
+const requireObserver = (state, event, out) => {
+    const player = requirePlayer(state, event, out);
+    if (!player || !requirePhase(state, event, out, [PLAYING])) return null;
+    const { turn } = state;
+    if (turn.observerId !== player.id) {
+        fail(out, event, E.NOT_OBSERVER);
         return null;
     }
     return turn;
@@ -588,7 +859,7 @@ const handlers = {
             return;
         }
 
-        // UNCONFIRMED (c), Interpretation 13: there is no lobby lock and no kick ban.
+        // Rule (c), Interpretation 13 (confirmed 2026-10-09, "for now"): no lobby lock, no kick ban.
         // A kicked player was removed together with their token hash, so the same
         // device lands here and joins as a NEW player while joins are open.
         // (A ban would keep kicked token hashes in `kick` and refuse them here.)
@@ -631,7 +902,7 @@ const handlers = {
         out.broadcast = true;
     },
 
-    // T3: observations are applied in `reduce` before the timers run.
+    // Observations were applied and due timers ran in `reduce` before any handler.
     liveness() {},
     alarm() {},
 
@@ -685,23 +956,33 @@ const handlers = {
         state.deck = { order: shuffledIndexes(deck.cards.length, ctx.random), pos: 0, drawn: 0 };
         state.turnIndex = 0;
         touch(state, now);
-        beginTurnIntro(state, out);
+        beginTurnIntro(state, now, out);
     },
 
     start_turn(state, event, now, ctx, out) {
         const player = requirePlayer(state, event, out);
-        // T3: also allowed in `playing` while `turn.pause.handover` is set
-        // (the new narrator continues; clears `handover`, timer resumes).
-        if (!player || !requirePhase(state, event, out, [TURN_INTRO])) return;
+        if (!player || !requirePhase(state, event, out, [TURN_INTRO, PLAYING])) return;
         const { turn } = state;
         if (turn.narratorId !== player.id) return fail(out, event, E.NOT_NARRATOR);
+
+        if (state.phase === PLAYING) {
+            // Interpretation 5: the new narrator continues after a handover with the
+            // kept card and the preserved time. Otherwise the turn already runs.
+            if (!turn.pause.handover) return fail(out, event, E.BAD_PHASE);
+            turn.pause.handover = false;
+            syncClock(state, now);
+            touch(state, now);
+            out.broadcast = true;
+            return;
+        }
 
         // Interpretation 10: nobody stays unassigned once a turn runs.
         assignUnassigned(state);
         turn.started = true;
-        turn.deadlineAt = now + turn.remainingMs;
         drawCard(state, turn, ctx.random);
         state.phase = PLAYING;
+        // deadlineAt = now + remainingMs (unless a pause flag is already set).
+        syncClock(state, now);
         touch(state, now);
         out.broadcast = true;
     },
@@ -725,16 +1006,75 @@ const handlers = {
         out.broadcast = true;
     },
 
+    // Tabu! opens the confirmation; the clock is paused while it is open (choice C7:
+    // a second press while open is a no-op). Allowed during any other pause.
+    taboo(state, event, now, ctx, out) {
+        const turn = requireObserver(state, event, out);
+        if (!turn) return;
+        if (event.card !== turn.cardSeq) return fail(out, event, E.STALE_CARD);
+        if (turn.pause.tabooConfirm) return;
+        turn.pause.tabooConfirm = true;
+        touch(state, now);
+        out.broadcast = true;
+    },
+
+    // Yes: -1 for the turn and the next card. Both answers close the confirmation
+    // (the clock resumes unless another pause is still set).
+    taboo_confirm(state, event, now, ctx, out) {
+        const turn = requireObserver(state, event, out);
+        if (!turn) return;
+        if (!turn.pause.tabooConfirm) return fail(out, event, E.BAD_PHASE);
+        if (typeof event.confirm !== 'boolean') return fail(out, event, E.BAD_MESSAGE);
+        if (event.card !== turn.cardSeq) return fail(out, event, E.STALE_CARD);
+        turn.pause.tabooConfirm = false;
+        if (event.confirm) {
+            turn.taboo += 1;
+            drawCard(state, turn, ctx.random);
+        }
+        touch(state, now);
+        out.broadcast = true;
+    },
+
+    pause(state, event, now, ctx, out) {
+        const turn = requireObserver(state, event, out);
+        if (!turn || turn.pause.observer) return;
+        turn.pause.observer = true;
+        touch(state, now);
+        out.broadcast = true;
+    },
+
+    // Any current observer may resume, also a pause made by a previous one.
+    resume(state, event, now, ctx, out) {
+        const turn = requireObserver(state, event, out);
+        if (!turn || !turn.pause.observer) return;
+        turn.pause.observer = false;
+        touch(state, now);
+        out.broadcast = true;
+    },
+
+    // Next member of the opposing team, wrapping to the start; with nobody else
+    // connected the role stays (never observer-less while someone is connected).
+    pass_observer(state, event, now, ctx, out) {
+        const player = requirePlayer(state, event, out);
+        if (!player || !requirePhase(state, event, out, [TURN_INTRO, PLAYING])) return;
+        const { turn } = state;
+        if (turn.observerId !== player.id) return fail(out, event, E.NOT_OBSERVER);
+        assignObserver(state, turn, now);
+        if (turn.observerId === player.id) return;
+        touch(state, now);
+        out.broadcast = true;
+    },
+
     next(state, event, now, ctx, out) {
         if (!requireManager(state, event, out) || !requirePhase(state, event, out, [TURN_SUMMARY])) return;
         touch(state, now);
-        // UNCONFIRMED (b): no team-size check here (Interpretation 9).
+        // Rule (b): no team-size check here (Interpretation 9).
         if (state.turnIndex + 1 >= totalTurns(state)) {
             finishGame(state, now, ENDED_REASONS.COMPLETED, out);
             return;
         }
         state.turnIndex += 1;
-        beginTurnIntro(state, out);
+        beginTurnIntro(state, now, out);
     },
 
     end_game(state, event, now, ctx, out) {
@@ -752,9 +1092,9 @@ const handlers = {
         if (event.targetId === manager.id) return fail(out, event, E.CANNOT_KICK_SELF);
         const index = state.players.findIndex(player => player.id === event.targetId);
         if (index === -1) return fail(out, event, E.UNKNOWN_PLAYER);
-        // UNCONFIRMED (c): removing the player forgets their token hash; no ban list.
+        // Rule (c): removing the player forgets their token hash; no ban list.
         const [player] = state.players.splice(index, 1);
-        onPlayerRemoved(state, player);
+        onPlayerRemoved(state, player, now, out);
         touch(state, now);
         out.closes.push({ type: 'close', playerId: player.id, reason: 'kicked' });
         out.broadcast = true;
@@ -804,8 +1144,9 @@ export const reduce = (state, event, ctx) => {
         return { state, effects: event.connectionId === undefined ? [] : out.replies };
     }
 
-    // T3: apply liveness observations (`liveness`/`alarm` events) here, BEFORE
-    // the timers, as the quiz does.
+    // Fresh auto-response timestamps first: a ping just before a grace boundary
+    // must win over that timer (quiz rule A8).
+    if (event.type === 'liveness' || event.type === 'alarm') applyObservations(draft, event, now, out);
     advance(draft, now, out);
 
     if (draft.phase === DELETED) {
