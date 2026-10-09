@@ -94,9 +94,9 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
   - [x] T7.6 — contract test: TabooOnline sources never import `taboo-engine`, `taboo-decks`, `taboo-decks-data`, `quiz-engine`, `quiz-decks`; only `/rt/` endpoints; build script emits `taboo-online/index.html`; App route exists; quiz contract test still green
 
 - **T8 — Docs and final verification** (files: `AGENTS.md`, `docs/superpowers/specs/2026-10-09-online-taboo-design.md`, this plan)
-  - [ ] başladı
-  - [ ] bitti
-  - [ ] T8.1 — AGENTS.md: Online section covers both games (file map rows for taboo modules, `/rt/taboo/*` routes, `TABOO_ROOMS` + migration `v2`, frontend never imports engines/decks, `taboo-decks-data.js` is the local deck source); keep the `/rt/` and no-deploy-during-events rules
-  - [ ] T8.2 — full `npm test`, `npm --prefix frontend run lint`, `node scripts/build-pages-site.mjs`, `npx wrangler deploy --dry-run`
-  - [ ] T8.3 — manual `wrangler dev` game with 5+ tabs/phones: full 2-round game, narrator drop (resume within 15 s and handover after), observer pass/drop, Tabu confirmation, pause by one observer and resume by the next, manager drop → transfer, late join in both team modes, kick; record rows written in the spec's budget note
-  - [ ] T8.4 — update the spec status line; ask the owner before any push/PR (owner runs one real check on a preview deploy before merging to `main`)
+  - [x] başladı — 2026-10-09 03:08
+  - [x] bitti — 2026-10-09 03:09 — AGENTS.md covers taboo; npm test 507/508 pass (0 fail, 1 old todo), lint 0, build ok, wrangler dry-run lists QUIZ_ROOMS + TABOO_ROOMS; T8.3 left to the owner
+  - [x] T8.1 — AGENTS.md: Online section covers both games (file map rows for taboo modules, `/rt/taboo/*` routes, `TABOO_ROOMS` + migration `v2`, frontend never imports engines/decks, `taboo-decks-data.js` is the local deck source); keep the `/rt/` and no-deploy-during-events rules
+  - [x] T8.2 — full `npm test`, `npm --prefix frontend run lint`, `node scripts/build-pages-site.mjs`, `npx wrangler deploy --dry-run`
+  - [ ] T8.3 — (ertelendi: manual multi-device play needs the owner; scripted wrangler dev smoke in T5.5 covered one full turn with 4 sockets) — manual `wrangler dev` game with 5+ tabs/phones: full 2-round game, narrator drop (resume within 15 s and handover after), observer pass/drop, Tabu confirmation, pause by one observer and resume by the next, manager drop → transfer, late join in both team modes, kick; record rows written in the spec's budget note
+  - [x] T8.4 — update the spec status line; ask the owner before any push/PR (owner runs one real check on a preview deploy before merging to `main`)

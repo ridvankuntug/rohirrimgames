@@ -1,6 +1,6 @@
 # Online Taboo (2 teams, turn-based) — Design
 
-Status: approved decisions (owner, 2026-10-09); not implemented. Branch: `feat/taboo-online`. Plan: `docs/superpowers/plans/2026-10-09-online-taboo.md`.
+Status: approved decisions (owner, 2026-10-09); implemented on branch `feat/taboo-online` (2026-10-09), pending the owner's manual multi-device check. Branch: `feat/taboo-online`. Plan: `docs/superpowers/plans/2026-10-09-online-taboo.md`.
 
 Builds on the online quiz: `docs/superpowers/specs/2026-10-04-online-quiz-design.md`. Everything said there about hosting, `/rt/` routes, same-origin policy, Turnstile, liveness, storage, the free-plan budget and "no deploy while a game is live" applies here unless this document says otherwise.
 
