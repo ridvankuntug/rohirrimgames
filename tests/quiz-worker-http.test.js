@@ -430,7 +430,19 @@ test('unexpected errors become a JSON 500 and the log holds no request data', as
 });
 
 test('worker sources never mention /api/ routes, never log tokens and never name the removed technology', async () => {
-    const files = ['index.js', 'http.js', 'quiz-room.js', 'room-controller.js', 'room-store.js', 'rate-limit.js', 'tokens.js', 'turnstile.js'];
+    const files = [
+        'index.js',
+        'http.js',
+        'quiz-room.js',
+        'quiz-game.js',
+        'taboo-room.js',
+        'taboo-game.js',
+        'room-controller.js',
+        'room-store.js',
+        'rate-limit.js',
+        'tokens.js',
+        'turnstile.js',
+    ];
     for (const file of files) {
         const source = await readFile(new URL(`../worker/${file}`, import.meta.url), 'utf8');
         const code = source

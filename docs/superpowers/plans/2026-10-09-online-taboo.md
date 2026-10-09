@@ -68,13 +68,13 @@ Each task: two boxes (`başladı` / `bitti`); sub-steps `[ ]` → `[/]` → `[x]
   - [x] T4.4 — `tests/room-controller-game.test.js`: a minimal fake host-less game adapter proves the controller never calls host functions and that the actor `playerId` overwrite still holds
 
 - **T5 — TabooRoom Durable Object, routes, wrangler** (files: `worker/taboo-game.js`, `worker/taboo-room.js`, `worker/index.js`, `worker/http.js`, `wrangler.jsonc`, `tests/taboo-room.test.js`, `tests/taboo-worker-http.test.js`)
-  - [ ] başladı
-  - [ ] bitti
-  - [ ] T5.1 — `worker/taboo-game.js` adapter (`parseInit` checks code, 64-hex `creatorTokenHash`, `teamMode`); `worker/taboo-room.js` (same glue as `quiz-room.js`); export from `worker/index.js`
-  - [ ] T5.2 — `http.js`: `GET /rt/taboo/decks`, `POST /rt/taboo/rooms` (body `{ turnstileToken, teamMode }`, Turnstile, `201 { code, playerToken }`), `GET /rt/taboo/rooms/:code/ws` with the same rejection path; generalize `allocateRoom` (namespace + init builder) with the quiz result unchanged; route table comment updated; quiz routes untouched
-  - [ ] T5.3 — `wrangler.jsonc`: `TABOO_ROOMS` → `TabooRoom` binding, migration `v2` (`new_sqlite_classes: ["TabooRoom"]`), v1 unchanged; `npx wrangler deploy --dry-run` lists both bindings
-  - [ ] T5.4 — tests on the existing fakes (`tests/quiz-worker-fakes.js`): creator join → manager, `host_auth` refused, kick closes with 4003, privacy of per-socket snapshots, alarm/expiry purge, routes incl. bad `teamMode`, origin rules, missing secret → 503
-  - [ ] T5.5 — `wrangler dev` smoke: create a room, 4 sockets, one full turn
+  - [x] başladı — 2026-10-09 02:53
+  - [x] bitti — 2026-10-09 03:08 — TabooRoom DO, /rt/taboo/* routes, TABOO_ROOMS + migration v2; dry-run lists both bindings; wrangler dev smoke (4 sockets, full turn) passed (review 1 round clean, tester mutation-checked)
+  - [x] T5.1 — `worker/taboo-game.js` adapter (`parseInit` checks code, 64-hex `creatorTokenHash`, `teamMode`); `worker/taboo-room.js` (same glue as `quiz-room.js`); export from `worker/index.js`
+  - [x] T5.2 — `http.js`: `GET /rt/taboo/decks`, `POST /rt/taboo/rooms` (body `{ turnstileToken, teamMode }`, Turnstile, `201 { code, playerToken }`), `GET /rt/taboo/rooms/:code/ws` with the same rejection path; generalize `allocateRoom` (namespace + init builder) with the quiz result unchanged; route table comment updated; quiz routes untouched
+  - [x] T5.3 — `wrangler.jsonc`: `TABOO_ROOMS` → `TabooRoom` binding, migration `v2` (`new_sqlite_classes: ["TabooRoom"]`), v1 unchanged; `npx wrangler deploy --dry-run` lists both bindings
+  - [x] T5.4 — tests on the existing fakes (`tests/quiz-worker-fakes.js`): creator join → manager, `host_auth` refused, kick closes with 4003, privacy of per-socket snapshots, alarm/expiry purge, routes incl. bad `teamMode`, origin rules, missing secret → 503
+  - [x] T5.5 — `wrangler dev` smoke: create a room, 4 sockets, one full turn
 
 - **T6 — Taboo frontend client layer** (files: `frontend/src/games/TabooOnline/tabooClient.js`, `frontend/src/games/Quiz/useQuizSocket.js`, `tests/taboo-client.test.js`)
   - [x] başladı — 2026-10-09 01:01

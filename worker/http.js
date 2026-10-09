@@ -1,4 +1,4 @@
-// HTTP side of the online quiz Worker: every `/rt/*` route.
+// HTTP side of the online games Worker (quiz, taboo): every `/rt/*` route.
 //
 // Pure module (no `cloudflare:workers` import): `handleRequest(request, env, deps)`
 // gets the Durable Object namespace through `env` and fetch/crypto through `deps`,
@@ -19,8 +19,19 @@
 //                          { t: 'error', code: 'room_gone' | 'room_busy' } and closes
 //                          with 4004 / 4029 (a browser cannot read a failed upgrade).
 //
+// Taboo (own Durable Object namespace TABOO_ROOMS; a code is unique per game only):
+// GET  /rt/taboo/decks     200 { decks: [{ id, name, cardCount, language }] }   (no card content)
+// POST /rt/taboo/rooms     body { turnstileToken: string (1..2048 chars), teamMode: 'auto' | 'choose' }
+//                          (exactly these keys), content-type application/json
+//                          201 { code, playerToken }  (the creator's player token: 32 hex,
+//                          shown once; the room stores only its SHA-256 as creatorTokenHash
+//                          and the first `join` with it becomes the manager)
+// GET  /rt/taboo/rooms/:code/ws  WebSocket upgrade, forwarded to the TabooRoom object;
+//                          same refusal mechanism (room_gone 4004 / room_busy 4029).
+//
 // Errors: { error: <code> } with
 //   400 bad_request              POST body is not { turnstileToken } JSON
+//                                (taboo: not { turnstileToken, teamMode } with a known teamMode)
 //   400 bad_room_code            :code is not a valid room code
 //   403 forbidden_origin         Origin is not this site (or missing where required)
 //   403 turnstile_failed         Turnstile rejected the token
@@ -43,14 +54,16 @@
 //   - Dev extra: a loopback Origin (localhost / 127.x / [::1]) is accepted for a
 //     loopback request host on any port, e.g. a Vite dev server proxying to
 //     `wrangler dev`. A production request host is never loopback.
-//   - Missing Origin: allowed for GET /rt/health and GET /rt/decks (browsers omit
-//     Origin on same-origin GETs, and curl/monitoring have none; both are public,
-//     read-only and side-effect free). REQUIRED for POST /rt/rooms and the
-//     WebSocket upgrade: browsers always send Origin there, so a missing one means
+//   - Missing Origin: allowed for GET /rt/health, GET /rt/decks and GET /rt/taboo/decks
+//     (browsers omit Origin on same-origin GETs, and curl/monitoring have none; all are
+//     public, read-only and side-effect free). REQUIRED for POST /rt/rooms,
+//     POST /rt/taboo/rooms and both WebSocket upgrades: browsers always send Origin there, so a missing one means
 //     a non-browser client.
 
 import { listDeckMetadata } from '../shared/quiz-decks.js';
 import { PROTOCOL_VERSION, generateRoomCode, parseRoomCode } from '../shared/quiz-protocol.js';
+import { listTabooDeckMetadata } from '../shared/taboo-decks.js';
+import { TEAM_MODES } from '../shared/taboo-protocol.js';
 import { SOCKET_REJECTIONS } from './room-controller.js';
 import { newToken, randomInt, sha256Hex } from './tokens.js';
 import { MAX_TURNSTILE_TOKEN_LENGTH, verifyTurnstile } from './turnstile.js';
@@ -128,11 +141,11 @@ export const readBodyCapped = async (request, limit) => {
 };
 
 /**
- * Reads and validates the POST /rt/rooms body.
+ * Reads a capped JSON POST body (content type, size, JSON syntax).
  *
- * @returns {Promise<{ ok: true, turnstileToken: string } | { ok: false, status: number, code: string }>}
+ * @returns {Promise<{ ok: true, body: unknown } | { ok: false, status: number, code: string }>}
  */
-export const readCreateRoomBody = async request => {
+const readJsonBody = async request => {
     const type = request.headers.get('content-type') ?? '';
     if (!/^application\/json\s*(?:;|$)/i.test(type)) return { ok: false, status: 415, code: 'unsupported_media_type' };
 
@@ -143,46 +156,116 @@ export const readCreateRoomBody = async request => {
     const raw = await readBodyCapped(request, MAX_CREATE_BODY_BYTES);
     if (raw === null) return { ok: false, status: 413, code: 'payload_too_large' };
 
-    let body;
     try {
-        body = JSON.parse(new TextDecoder().decode(raw));
+        return { ok: true, body: JSON.parse(new TextDecoder().decode(raw)) };
     } catch {
         return { ok: false, status: 400, code: 'bad_request' };
     }
-    const valid =
-        body !== null &&
-        typeof body === 'object' &&
-        !Array.isArray(body) &&
-        Object.keys(body).length === 1 &&
-        typeof body.turnstileToken === 'string' &&
-        body.turnstileToken.length > 0 &&
-        body.turnstileToken.length <= MAX_TURNSTILE_TOKEN_LENGTH;
-    return valid ? { ok: true, turnstileToken: body.turnstileToken } : { ok: false, status: 400, code: 'bad_request' };
+};
+
+const BAD_REQUEST = Object.freeze({ ok: false, status: 400, code: 'bad_request' });
+
+// A plain object with exactly `keys` (any order) and a usable Turnstile token.
+const hasExactKeysAndToken = (body, keys) =>
+    body !== null &&
+    typeof body === 'object' &&
+    !Array.isArray(body) &&
+    Object.keys(body).length === keys.length &&
+    keys.every(key => Object.hasOwn(body, key)) &&
+    typeof body.turnstileToken === 'string' &&
+    body.turnstileToken.length > 0 &&
+    body.turnstileToken.length <= MAX_TURNSTILE_TOKEN_LENGTH;
+
+/**
+ * Reads and validates the POST /rt/rooms body.
+ *
+ * @returns {Promise<{ ok: true, turnstileToken: string } | { ok: false, status: number, code: string }>}
+ */
+export const readCreateRoomBody = async request => {
+    const read = await readJsonBody(request);
+    if (!read.ok) return read;
+    const { body } = read;
+    return hasExactKeysAndToken(body, ['turnstileToken']) ? { ok: true, turnstileToken: body.turnstileToken } : BAD_REQUEST;
 };
 
 /**
- * Picks a free room code and initialises its Durable Object.
- * The object refuses a second initialisation, so a collision just means "try another code".
+ * Reads and validates the POST /rt/taboo/rooms body: exactly
+ * `{ turnstileToken, teamMode }` with a known team mode.
  *
- * @returns {Promise<{ code: string, hostToken: string } | null>} null after ROOM_CODE_ATTEMPTS collisions
+ * @returns {Promise<{ ok: true, turnstileToken: string, teamMode: string } | { ok: false, status: number, code: string }>}
  */
-export const allocateRoom = async (namespace, { cryptoImpl = globalThis.crypto, attempts = ROOM_CODE_ATTEMPTS } = {}) => {
-    const hostToken = newToken(cryptoImpl);
-    const hostTokenHash = await sha256Hex(hostToken, cryptoImpl);
+export const readCreateTabooRoomBody = async request => {
+    const read = await readJsonBody(request);
+    if (!read.ok) return read;
+    const { body } = read;
+    if (!hasExactKeysAndToken(body, ['turnstileToken', 'teamMode']) || !TEAM_MODES.includes(body.teamMode)) return BAD_REQUEST;
+    return { ok: true, turnstileToken: body.turnstileToken, teamMode: body.teamMode };
+};
+
+/**
+ * Picks a free room code in `namespace` and initialises its Durable Object with
+ * `buildInit(code, tokenHash)`. One fresh token is issued per call; only its
+ * SHA-256 hash reaches the room. The object refuses a second initialisation, so
+ * a collision just means "try another code".
+ *
+ * @returns {Promise<{ code: string, token: string } | null>} null after `attempts` collisions
+ */
+export const allocateRoomWith = async (namespace, buildInit, { cryptoImpl = globalThis.crypto, attempts = ROOM_CODE_ATTEMPTS } = {}) => {
+    const token = newToken(cryptoImpl);
+    const tokenHash = await sha256Hex(token, cryptoImpl);
     for (let attempt = 0; attempt < attempts; attempt += 1) {
         const code = generateRoomCode(max => randomInt(max, cryptoImpl));
         const stub = namespace.get(namespace.idFromName(code));
-        const result = await stub.initRoom({ code, hostTokenHash });
-        if (result?.ok) return { code, hostToken };
+        const result = await stub.initRoom(buildInit(code, tokenHash));
+        if (result?.ok) return { code, token };
     }
     return null;
 };
 
+/**
+ * Quiz room: `initRoom({ code, hostTokenHash })`.
+ *
+ * @returns {Promise<{ code: string, hostToken: string } | null>} null after ROOM_CODE_ATTEMPTS collisions
+ */
+export const allocateRoom = async (namespace, options) => {
+    const room = await allocateRoomWith(namespace, (code, hostTokenHash) => ({ code, hostTokenHash }), options);
+    return room && { code: room.code, hostToken: room.token };
+};
+
+/**
+ * Taboo room: `initRoom({ code, creatorTokenHash, teamMode })`. The token is the
+ * creator's player token (the first join with it becomes the manager).
+ *
+ * @returns {Promise<{ code: string, playerToken: string } | null>} null after ROOM_CODE_ATTEMPTS collisions
+ */
+export const allocateTabooRoom = async (namespace, teamMode, options) => {
+    const room = await allocateRoomWith(namespace, (code, creatorTokenHash) => ({ code, creatorTokenHash, teamMode }), options);
+    return room && { code: room.code, playerToken: room.token };
+};
+
+// Per-game parts of the room routes; `namespace` picks the binding from `env`.
+const GAMES = Object.freeze({
+    quiz: Object.freeze({
+        namespace: env => env.QUIZ_ROOMS,
+        readBody: readCreateRoomBody,
+        allocate: (namespace, _body, options) => allocateRoom(namespace, options),
+    }),
+    taboo: Object.freeze({
+        namespace: env => env.TABOO_ROOMS,
+        readBody: readCreateTabooRoomBody,
+        allocate: (namespace, body, options) => allocateTabooRoom(namespace, body.teamMode, options),
+    }),
+});
+
+// `readOnly`: public, side-effect free GET (Origin may be missing).
 const ROUTES = {
-    health: { methods: ['GET', 'HEAD'] },
-    decks: { methods: ['GET', 'HEAD'] },
-    rooms: { methods: ['POST'] },
-    socket: { methods: ['GET'] },
+    health: { methods: ['GET', 'HEAD'], readOnly: true },
+    decks: { methods: ['GET', 'HEAD'], readOnly: true },
+    rooms: { methods: ['POST'], readOnly: false },
+    socket: { methods: ['GET'], readOnly: false },
+    tabooDecks: { methods: ['GET', 'HEAD'], readOnly: true },
+    tabooRooms: { methods: ['POST'], readOnly: false },
+    tabooSocket: { methods: ['GET'], readOnly: false },
 };
 
 const matchRoute = pathname => {
@@ -191,11 +274,15 @@ const matchRoute = pathname => {
     if (pathname === '/rt/rooms') return { name: 'rooms' };
     const socket = pathname.match(/^\/rt\/rooms\/([^/]+)\/ws$/);
     if (socket) return { name: 'socket', rawCode: socket[1] };
+    if (pathname === '/rt/taboo/decks') return { name: 'tabooDecks' };
+    if (pathname === '/rt/taboo/rooms') return { name: 'tabooRooms' };
+    const tabooSocket = pathname.match(/^\/rt\/taboo\/rooms\/([^/]+)\/ws$/);
+    if (tabooSocket) return { name: 'tabooSocket', rawCode: tabooSocket[1] };
     return null;
 };
 
-const createRoom = async (request, env, deps) => {
-    const body = await readCreateRoomBody(request);
+const createRoom = async (request, env, deps, game) => {
+    const body = await game.readBody(request);
     if (!body.ok) return errorResponse(body.code, body.status);
 
     const secret = env.TURNSTILE_SECRET_KEY;
@@ -213,18 +300,19 @@ const createRoom = async (request, env, deps) => {
             : errorResponse('turnstile_unavailable', 502);
     }
 
-    const room = await allocateRoom(env.QUIZ_ROOMS, { cryptoImpl: deps.cryptoImpl });
+    const room = await game.allocate(game.namespace(env), body, { cryptoImpl: deps.cryptoImpl });
     if (!room) return errorResponse('room_alloc_failed', 503);
     return json(room, 201);
 };
 
-const openSocket = async (request, env, rawCode, deps) => {
+const openSocket = async (request, env, rawCode, deps, game) => {
     const code = parseRoomCode(rawCode);
     if (!code) return errorResponse('bad_room_code', 400);
     if ((request.headers.get('upgrade') ?? '').toLowerCase() !== 'websocket') {
         return errorResponse('expected_websocket', 426);
     }
-    const stub = env.QUIZ_ROOMS.get(env.QUIZ_ROOMS.idFromName(code));
+    const namespace = game.namespace(env);
+    const stub = namespace.get(namespace.idFromName(code));
     const response = await stub.fetch(request);
     if (response.status === 101) return response;
 
@@ -247,7 +335,7 @@ const openSocket = async (request, env, rawCode, deps) => {
  * Handles one `/rt/*` request.
  *
  * @param {Request} request
- * @param {{ QUIZ_ROOMS: object, TURNSTILE_SECRET_KEY?: string }} env
+ * @param {{ QUIZ_ROOMS: object, TABOO_ROOMS: object, TURNSTILE_SECRET_KEY?: string }} env
  * @param {{ fetchImpl?: typeof fetch, cryptoImpl?: Crypto, log?: (message: string) => void,
  *           rejectSocket?: (code: string, closeCode: number) => Response }} [deps]
  *   `rejectSocket` builds the 101 + error + close answer for a refused upgrade
@@ -265,12 +353,11 @@ export const handleRequest = async (request, env, deps = {}) => {
         const route = matchRoute(pathname);
         if (!route) return errorResponse('not_found', 404);
 
-        const { methods } = ROUTES[route.name];
+        const { methods, readOnly } = ROUTES[route.name];
         if (!methods.includes(request.method)) {
             return errorResponse('method_not_allowed', 405, { allow: methods.join(', ') });
         }
 
-        const readOnly = route.name === 'health' || route.name === 'decks';
         const originError = checkOrigin(request, { required: !readOnly });
         if (originError) return errorResponse(originError, 403);
 
@@ -280,9 +367,15 @@ export const handleRequest = async (request, env, deps = {}) => {
             case 'decks':
                 return json({ decks: listDeckMetadata() });
             case 'rooms':
-                return await createRoom(request, env, resolved);
+                return await createRoom(request, env, resolved, GAMES.quiz);
+            case 'socket':
+                return await openSocket(request, env, route.rawCode, resolved, GAMES.quiz);
+            case 'tabooDecks':
+                return json({ decks: listTabooDeckMetadata() });
+            case 'tabooRooms':
+                return await createRoom(request, env, resolved, GAMES.taboo);
             default:
-                return await openSocket(request, env, route.rawCode, resolved);
+                return await openSocket(request, env, route.rawCode, resolved, GAMES.taboo);
         }
     } catch (error) {
         // Fixed text plus the error name only: messages could echo request data.

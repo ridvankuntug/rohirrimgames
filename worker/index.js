@@ -1,4 +1,4 @@
-// Worker entry for the online quiz.
+// Worker entry for the online games (quiz, taboo).
 // Only /rt/* reaches this code (assets.run_worker_first); everything else,
 // including /api/*, is served by the static assets layer and its 404 page.
 // Routes and the same-origin policy are documented in ./http.js.
@@ -7,6 +7,7 @@ import { buildErrorMessage } from '../shared/quiz-protocol.js';
 import { handleRequest } from './http.js';
 
 export { QuizRoom } from './quiz-room.js';
+export { TabooRoom } from './taboo-room.js';
 
 // A refused WebSocket upgrade (unknown room, socket cap) still completes the
 // handshake so the browser can read why: one `error` message, then a close
