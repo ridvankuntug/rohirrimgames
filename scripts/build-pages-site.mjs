@@ -31,8 +31,7 @@ const rootFiles = [
     'lingoparty-decks.json',
     'prompts.json',
     'list.txt',
-    'favicon.svg',
-    'game-svgrepo-com.svg'
+    'favicon.svg'
 ];
 
 const rootDirs = ['shared'];
