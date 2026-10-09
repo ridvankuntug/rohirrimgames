@@ -37,6 +37,33 @@
             ]
         },
         {
+            id: 'middle-earth-tr',
+            name: 'Orta Dünya',
+            language: 'tr',
+            cards: [
+                { word: 'Gandalf', forbidden: ['Büyücü', 'Gri', 'Beyaz', 'Asa', 'Balrog'] },
+                { word: 'Frodo', forbidden: ['Yüzük', 'Hobbit', 'Sam', 'Mordor', 'Bilbo'] },
+                { word: 'Sauron', forbidden: ['Göz', 'Karanlık', 'Mordor', 'Yüzük', 'Lord'] },
+                { word: 'Aragorn', forbidden: ['Kral', 'Gondor', 'Yolgezer', 'Arwen', 'Kılıç'] },
+                { word: 'Legolas', forbidden: ['Elf', 'Ok', 'Yay', 'Gimli', 'Kuyutorman'] },
+                { word: 'Gimli', forbidden: ['Cüce', 'Balta', 'Legolas', 'Sakal', 'Moria'] },
+                { word: 'Gollum', forbidden: ['Sméagol', 'Kıymetlim', 'Yüzük', 'Mağara', 'Balık'] },
+                { word: 'Sam', forbidden: ['Frodo', 'Bahçıvan', 'Dost', 'Hobbit', 'Rosie'] },
+                { word: 'Mordor', forbidden: ['Sauron', 'Kıyamet', 'Karanlık', 'Ork', 'Ülke'] },
+                { word: 'Kıyamet Dağı', forbidden: ['Yanardağ', 'Yüzük', 'Mordor', 'Ateş', 'Frodo'] },
+                { word: 'Tek Yüzük', forbidden: ['Sauron', 'Frodo', 'Altın', 'Görünmez', 'Kıyamet'] },
+                { word: 'Hobbit', forbidden: ['Küçük', 'Ayak', 'Shire', 'Frodo', 'Bilbo'] },
+                { word: 'Ayrıkvadi', forbidden: ['Elrond', 'Elf', 'Vadi', 'Konsey', 'Arwen'] },
+                { word: 'Balrog', forbidden: ['Ateş', 'Kamçı', 'Moria', 'Gandalf', 'Köprü'] },
+                { word: 'Ent', forbidden: ['Ağaç', 'Ağaçsakal', 'Orman', 'Yürümek', 'Isengard'] },
+                { word: 'Nazgûl', forbidden: ['Kara Süvari', 'Dokuz', 'Yüzük', 'Cadı Kral', 'Sauron'] },
+                { word: 'Saruman', forbidden: ['Büyücü', 'Beyaz', 'Isengard', 'Ork', 'Hain'] },
+                { word: 'Gondor', forbidden: ['Minas Tirith', 'Kral', 'Aragorn', 'Boromir', 'İnsan'] },
+                { word: 'Mithril', forbidden: ['Zırh', 'Gümüş', 'Cüce', 'Moria', 'Hafif'] },
+                { word: 'Smaug', forbidden: ['Ejderha', 'Altın', 'Yalnız Dağ', 'Bilbo', 'Hazine'] }
+            ]
+        },
+        {
             id: 'classic-mix',
             name: 'Classic Mix',
             language: 'en',

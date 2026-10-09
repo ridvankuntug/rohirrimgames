@@ -45,6 +45,7 @@ test('shared decks keep the local game ids, order, names and card counts', () =>
         TABOO_DECKS.map(deck => [deck.id, deck.name, deck.language, deck.cards.length]),
         [
             ['starter-general', 'Starter — General', 'en', 6],
+            ['middle-earth-tr', 'Orta Dünya', 'tr', 20],
             ['classic-mix', 'Classic Mix', 'en', 100],
         ],
     );
@@ -71,7 +72,8 @@ test('the data script global is the module export, deep-frozen', () => {
 });
 
 test('getTabooDeck finds decks by id and rejects anything else', () => {
-    assert.equal(getTabooDeck('classic-mix'), TABOO_DECKS[1]);
+    assert.equal(getTabooDeck('classic-mix'), TABOO_DECKS[2]);
+    assert.equal(getTabooDeck('middle-earth-tr'), TABOO_DECKS[1]);
     assert.equal(getTabooDeck('starter-general'), TABOO_DECKS[0]);
     for (const id of ['missing', '', null, undefined, 1, {}, 'constructor', '__proto__']) {
         assert.equal(getTabooDeck(id), null, String(id));
@@ -82,6 +84,7 @@ test('deck metadata carries no card content', () => {
     const metadata = listTabooDeckMetadata();
     assert.deepEqual(metadata, [
         { id: 'starter-general', name: 'Starter — General', cardCount: 6, language: 'en' },
+        { id: 'middle-earth-tr', name: 'Orta Dünya', cardCount: 20, language: 'tr' },
         { id: 'classic-mix', name: 'Classic Mix', cardCount: 100, language: 'en' },
     ]);
     const json = JSON.stringify(metadata);
