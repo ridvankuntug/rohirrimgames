@@ -119,7 +119,7 @@ node scripts/build-pages-site.mjs     # builds frontend + dist-static/
 npx wrangler dev                      # serves assets + /rt/* + the Durable Object locally (also runs the build command)
 ```
 
-Open the URL `wrangler dev` prints and go to `/quiz`. On non-production hostnames the frontend uses Cloudflare's test site key, which pairs with the test secret in `.dev.vars`. On Windows, `node scripts/build-pages-site.mjs` (or `wrangler deploy --dry-run`) fails with `EBUSY` while `wrangler dev` is serving `dist-static/` — stop `wrangler dev` first. `npm start` (Express) does not serve the quiz.
+Open the URL `wrangler dev` prints and go to `/quiz`. On non-production hostnames the frontend uses Cloudflare's test site key, which pairs with the test secret in `.dev.vars`. On Windows, `node scripts/build-pages-site.mjs` (or `wrangler deploy --dry-run`) fails with `EBUSY` while `wrangler dev` is serving `dist-static/` — stop `wrangler dev` first. `npm start` (Express) does not serve the quiz. For frontend HMR, run `npm --prefix frontend run dev` alongside `npx wrangler dev`: Vite proxies `/rt/*` (including WebSockets) to `http://localhost:8787`.
 
 ## Configuration
 
