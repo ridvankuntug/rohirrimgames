@@ -202,6 +202,14 @@
         });
     }
 
+    // Same default as platform-client.js: without shared/feature-flags.js the
+    // AI workflow counts as enabled. With the flag off there is no AI UI and no
+    // reason to probe the Express backend at all.
+    function isAiGenerationEnabled() {
+        const flags = root.OpenClassFeatureFlags;
+        return !flags || flags.enableAiGeneration !== false;
+    }
+
     async function isBackendAvailable() {
         try {
             const res = await root.fetch('/api/health');
@@ -213,6 +221,7 @@
 
     async function autoInit() {
         if (!root.document) return;
+        if (!isAiGenerationEnabled()) return;
         if (!(await isBackendAvailable())) return;
 
         renderAllBadges();

@@ -68,7 +68,9 @@ class FakeElement {
 
 async function loadAiKeyPrompt({
     hasTeacherKey = false,
-    wantsAiFeatures = false
+    wantsAiFeatures = false,
+    featureFlags = null,
+    backendOnline = true
 } = {}) {
     const source = await readFile(
         new URL('../shared/ai-key-prompt.js', import.meta.url),
@@ -120,9 +122,15 @@ async function loadAiKeyPrompt({
         saveTeacherSettings: () => {},
         declineAiFeatures: () => {}
     };
+    const fetchCalls = [];
     const sandbox = {
         document,
         OpenClassPlatform: platform,
+        ...(featureFlags ? { OpenClassFeatureFlags: Object.freeze({ ...featureFlags }) } : {}),
+        fetch: async url => {
+            fetchCalls.push(url);
+            return { ok: backendOnline };
+        },
         setTimeout: callback => callback()
     };
     sandbox.window = sandbox;
@@ -134,7 +142,8 @@ async function loadAiKeyPrompt({
         overlay,
         badge,
         startDeckButton,
-        generateButton
+        generateButton,
+        fetchCalls
     };
 }
 
@@ -156,10 +165,35 @@ test('AI status keeps AI generation controls enabled via server pool', async () 
         generateButton
     } = await loadAiKeyPrompt({ hasTeacherKey: true });
 
-    prompt.autoInit();
+    generateButton.disabled = true;
+    await prompt.autoInit();
 
     assert.equal(startDeckButton.disabled, false);
     assert.equal(generateButton.disabled, false);
+    assert.equal(generateButton.title, 'Generate deck using server AI pool');
+});
+
+test('autoInit neither probes the backend nor renders AI UI when AI generation is off', async () => {
+    const { prompt, badge, generateButton, fetchCalls } = await loadAiKeyPrompt({
+        featureFlags: { enableAiGeneration: false, enableRegisteredDecks: false }
+    });
+
+    await prompt.autoInit();
+
+    assert.deepEqual(fetchCalls, []);
+    assert.equal(badge.children.length, 0);
+    assert.equal(generateButton.title, '');
+});
+
+test('autoInit probes /api/health when AI generation is on', async () => {
+    const { prompt, badge, fetchCalls } = await loadAiKeyPrompt({
+        featureFlags: { enableAiGeneration: true, enableRegisteredDecks: true }
+    });
+
+    await prompt.autoInit();
+
+    assert.deepEqual(fetchCalls, ['/api/health']);
+    assert.ok(badge.children.length > 0);
 });
 
 test('API information control appears left of status and toggles its explanation', async () => {
@@ -174,4 +208,14 @@ test('API information control appears left of status and toggles its explanation
     badge.children[0].onclick();
 
     assert.equal(badge.children[1].hidden, false);
+});
+
+test('every page that loads the AI key prompt loads the feature flags first', async () => {
+    for (const page of ['who.html', 'taboo.html', 'hangman.html', 'millionaire.html', 'kelime.html', 'flashcards.html', 'hats.html']) {
+        const html = await readFile(new URL(`../${page}`, import.meta.url), 'utf8');
+        const flags = html.indexOf('shared/feature-flags.js');
+        const prompt = html.indexOf('shared/ai-key-prompt.js');
+        assert.ok(prompt >= 0, `${page} loads ai-key-prompt.js`);
+        assert.ok(flags >= 0 && flags < prompt, `${page} must load feature-flags.js before ai-key-prompt.js`);
+    }
 });
