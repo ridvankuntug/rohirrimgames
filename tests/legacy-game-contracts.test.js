@@ -104,3 +104,15 @@ test('shipped legacy pages use the Rohirrim palette, not the old purple/slate on
         assert.doesNotMatch(source, OLD_PALETTE, file);
     }
 });
+
+test('shipped legacy pages share the hub branding and promise no AI content', async () => {
+    const { rootFiles } = await import('../scripts/static-site-manifest.mjs');
+    for (const page of rootFiles.filter(file => file.endsWith('.html'))) {
+        const html = await readFile(new URL(`../${page}`, import.meta.url), 'utf8');
+        assert.match(html, /<title>[^<]+ – Rohirrim Game Hub<\/title>/, `${page} title`);
+        assert.match(html, /<meta name="theme-color" content="#173b28" \/>/, `${page} theme-color`);
+        for (const [, content] of html.matchAll(/<meta (?:name|property)="(?:description|og:description|twitter:description)" content="([^"]*)"/g)) {
+            assert.doesNotMatch(content, /\bAI\b/, `${page} description`);
+        }
+    }
+});

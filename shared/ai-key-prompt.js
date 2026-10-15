@@ -28,7 +28,7 @@
             '    <h2>🔑 Enable AI Content Generation</h2>',
             '  </div>',
             '  <p class="ai-key-prompt__description">',
-            '    OpenClassTools uses your own Google Gemini API key to generate game content.',
+            '    Rohirrim Game Hub uses your own Google Gemini API key to generate game content.',
             '    Your key stays in this browser tab and is never stored by the server.',
             '    You can skip this and use only pre-made decks.',
             '  </p>',
