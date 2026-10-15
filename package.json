@@ -5,10 +5,12 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "prestart": "npm run build",
+    "predev": "npm run build",
     "test": "node --test",
     "seed:decks": "node server/scripts/seed-system-decks.js",
-    "build": "npm --prefix frontend install && npm --prefix frontend run build",
-    "postinstall": "npm --prefix frontend install && npm --prefix frontend run build",
+    "build": "npm --prefix frontend run build",
+    "postinstall": "npm --prefix frontend ci",
     "pages:build": "node scripts/build-pages-site.mjs"
   },
   "dependencies": {

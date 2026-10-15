@@ -28,7 +28,7 @@ jobs:
             package-lock.json
             frontend/package-lock.json
 
-      # The root postinstall also installs the frontend dependencies and builds the frontend.
+      # The root postinstall runs `npm --prefix frontend ci`; nothing is built here.
       - run: npm ci
 
       - run: npm test
