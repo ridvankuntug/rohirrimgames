@@ -9,7 +9,8 @@ let names = [];
 let spinning = false;
 let currentAngle = 0;
 let lastWinnerIndex = -1;
-let playSessionId = null;
+// Pending session-recording request (a Promise of the session or null).
+let playSession = null;
 const FULL_TURN = Math.PI * 2;
 const MIN_WHEEL_SPIN_TURNS = 6.5;
 const MAX_WHEEL_EXTRA_TURNS = 2.5;
@@ -151,17 +152,18 @@ function drawWheel() {
 }
 
 // ---- Spin ----
-btnSpin.addEventListener('click', async () => {
+btnSpin.addEventListener('click', () => {
     if (spinning || names.length < 2) return;
-    const session = await window.OpenClassPlatform.startSessionSafely({
+    // Session recording is optional telemetry: it runs in the background and
+    // never delays or interrupts the spin.
+    playSession = window.OpenClassPlatform.startSessionSafely({
         gameType: 'wheel',
         participantNames: [...names],
         deckId: null,
         deckVersionId: null
     }, error => {
-        alert(`The wheel will still spin, but this session could not be recorded: ${error.message}`);
-    });
-    playSessionId = session?.id || null;
+        console.warn(`Wheel: session could not be recorded: ${error.message}`);
+    }).catch(() => null);
     spinning = true;
     btnSpin.disabled = true;
     winnerDisplay.textContent = '';
@@ -215,11 +217,12 @@ btnSpin.addEventListener('click', async () => {
             winnerName.textContent = names[winnerIndex];
             winnerDisplay.append(winnerEmoji, winnerName);
             btnRemoveWinner.style.display = '';
-            window.OpenClassPlatform.completeSession(playSessionId, {
-                spinCount: 1,
-                selectedName: names[winnerIndex]
-            }).catch(() => null);
-            playSessionId = null;
+            const result = { spinCount: 1, selectedName: names[winnerIndex] };
+            const pending = playSession;
+            playSession = null;
+            pending?.then(session => (session?.id
+                ? window.OpenClassPlatform.completeSession(session.id, result)
+                : null)).catch(() => null);
         }
     }
 

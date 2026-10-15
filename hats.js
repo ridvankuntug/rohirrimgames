@@ -129,14 +129,18 @@ btnGenerate.addEventListener('click', async () => {
     loadingArea.style.display = 'flex';
 
     if (deckLibrary) {
-        const session = await window.OpenClassPlatform.startSessionSafely({
+        // Session recording is optional telemetry: run it in the background
+        // so play starts immediately and never alerts on failure.
+        playSessionId = null;
+        window.OpenClassPlatform.startSessionSafely({
             gameType: 'hats',
             participantNames: [],
             ...selectedDeckRef
         }, error => {
-            alert(`The activity will still start, but it could not be recorded: ${error.message}`);
+            console.warn(`Hats: session could not be recorded: ${error.message}`);
+        }).then(session => {
+            playSessionId = session?.id || null;
         });
-        playSessionId = session?.id || null;
     }
 
     try {

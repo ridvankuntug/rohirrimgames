@@ -180,7 +180,16 @@
             return body.deck;
         }
 
+        // Session recording is stored by the same backend as registered decks.
+        // When that backend is switched off (the static site), report "no
+        // session" without a network request, so games never wait on or warn
+        // about a request that is bound to 404.
+        function sessionRecordingEnabled() {
+            return Boolean(FEATURE_FLAGS.enableRegisteredDecks);
+        }
+
         async function startSession(input) {
+            if (!sessionRecordingEnabled()) return null;
             const context = requireTeacherContext();
             const body = await request('/api/sessions', {
                 method: 'POST',
@@ -193,7 +202,7 @@
                         : []
                 })
             });
-            return body.session;
+            return body.session ?? null;
         }
 
         async function startSessionSafely(input, onWarning) {
@@ -206,7 +215,7 @@
         }
 
         async function completeSession(id, result) {
-            if (!id) return null;
+            if (!id || !sessionRecordingEnabled()) return null;
             const body = await request(
                 `/api/sessions/${encodeURIComponent(id)}/complete`,
                 {
@@ -393,6 +402,7 @@
                 return FEATURE_FLAGS.enableAiGeneration && session.getItem('oct_ai_declined') !== 'true';
             },
             featureFlags: FEATURE_FLAGS,
+            sessionRecordingEnabled,
             verifyTeacherKey,
             listDecks,
             generateDeck,

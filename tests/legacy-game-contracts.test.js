@@ -53,6 +53,21 @@ test('deckless Bottle and Wheel still record play without deck references', asyn
     }
 });
 
+test('session recording never alerts and never delays play', async () => {
+    const scripts = [...CONTENT_GAMES.map(([, script]) => script), 'bottle.js', 'wheel.js'];
+    for (const script of scripts) {
+        const source = await readFile(new URL(`../${script}`, import.meta.url), 'utf8');
+        assert.doesNotMatch(
+            source,
+            /await\s+(?:window\.)?OpenClassPlatform\.startSessionSafely/,
+            `${script} must not wait for session recording before play starts`
+        );
+        const call = source.indexOf('OpenClassPlatform.startSessionSafely(');
+        const warning = source.slice(call, source.indexOf('});', call));
+        assert.doesNotMatch(warning, /\balert\(/, `${script} must not alert about telemetry failures`);
+    }
+});
+
 test('Six Thinking Hats marks deck launch as independent from AI generation', async () => {
     const html = await readFile(new URL('../hats.html', import.meta.url), 'utf8');
 

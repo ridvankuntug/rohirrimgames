@@ -9,7 +9,8 @@ let players = [];           // active list on the circle (may include zebra dupl
 let zebraEnabled = false;
 let spinning = false;
 let currentRotation = 0;
-let playSessionId = null;
+// Pending session-recording request (a Promise of the session or null).
+let playSession = null;
 const MIN_BOTTLE_SPIN_TURNS = 6.5;
 const MAX_BOTTLE_EXTRA_TURNS = 2.5;
 
@@ -101,20 +102,29 @@ zebraToggleGame.addEventListener('change', () => {
 });
 
 // ---- Start Game ----
-async function startBottleSession() {
-    const session = await window.OpenClassPlatform.startSessionSafely({
+// Session recording is optional telemetry: it runs in the background and
+// never delays or interrupts play.
+function startBottleSession() {
+    playSession = window.OpenClassPlatform.startSessionSafely({
         gameType: 'bottle',
         participantNames: [...basePlayers],
         deckId: null,
         deckVersionId: null
     }, error => {
-        alert(`Play will continue, but this session could not be recorded: ${error.message}`);
-    });
-    playSessionId = session?.id || null;
+        console.warn(`Bottle: session could not be recorded: ${error.message}`);
+    }).catch(() => null);
 }
 
-btnStart.addEventListener('click', async () => {
-    await startBottleSession();
+function completeBottleSession(result) {
+    const pending = playSession;
+    playSession = null;
+    pending?.then(session => (session?.id
+        ? window.OpenClassPlatform.completeSession(session.id, result)
+        : null)).catch(() => null);
+}
+
+btnStart.addEventListener('click', () => {
+    startBottleSession();
     buildActivePlayers();
     drawCircle();
     promptDisplay.textContent = '';
@@ -212,16 +222,9 @@ function drawCircle() {
 }
 
 // ---- Spin ----
-btnSpin.addEventListener('click', async () => {
+btnSpin.addEventListener('click', () => {
     if (spinning || players.length < 3) return;
-    if (!playSessionId) {
-        try {
-            await startBottleSession();
-        } catch (error) {
-            alert(error.message);
-            return;
-        }
-    }
+    if (!playSession) startBottleSession();
     spinning = true;
     btnSpin.disabled = true;
     btnShuffle.disabled = true;
@@ -268,13 +271,12 @@ btnSpin.addEventListener('click', async () => {
         }
 
         promptDisplay.textContent = `${askerName} asks ${answererName}`;
-        window.OpenClassPlatform.completeSession(playSessionId, {
+        completeBottleSession({
             spinCount: 1,
             askerName,
             answererName,
             zebraEnabled
-        }).catch(() => null);
-        playSessionId = null;
+        });
 
         spinning = false;
         btnSpin.disabled = false;

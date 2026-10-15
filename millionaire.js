@@ -391,15 +391,18 @@ async function startSelectedDeck() {
         showNotification('Choose or generate a registered deck first.', 'error');
         return;
     }
-    const session = await window.OpenClassPlatform.startSessionSafely({
+    // Session recording is optional telemetry: run it in the background
+    // so play starts immediately and never alerts on failure.
+    playSessionId = null;
+    window.OpenClassPlatform.startSessionSafely({
         gameType: 'millionaire',
         participantNames: [],
         ...selectedDeckRef
     }, error => {
-        showNotification(error.message, 'error');
-        alert(`The quiz will still start, but it could not be recorded: ${error.message}`);
+        console.warn(`Millionaire: session could not be recorded: ${error.message}`);
+    }).then(session => {
+        playSessionId = session?.id || null;
     });
-    playSessionId = session?.id || null;
     startGame(selectedDeck.currentVersion.content);
 }
 

@@ -605,15 +605,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         if (deckLibrary) {
-            const session = await window.OpenClassPlatform.startSessionSafely({
+            // Session recording is optional telemetry: run it in the background
+            // so play starts immediately and never alerts on failure.
+            playSessionId = null;
+            window.OpenClassPlatform.startSessionSafely({
                 gameType: 'kelime',
                 participantNames: [],
                 ...selectedDeckRef
             }, error => {
-                setStatusMessage(error.message, '#ef4444');
-                alert(`The game will still start, but it could not be recorded: ${error.message}`);
+                console.warn(`Kelime: session could not be recorded: ${error.message}`);
+            }).then(session => {
+                playSessionId = session?.id || null;
             });
-            playSessionId = session?.id || null;
         }
         gameState.currentScore = 0;
         if (scoreDisplay) scoreDisplay.textContent = '0';

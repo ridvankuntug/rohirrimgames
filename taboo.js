@@ -272,16 +272,18 @@ els.btnStart.addEventListener('click', async () => {
         theme: els.cardTheme.value.trim() || generationContext.theme,
     });
     if (deckLibrary) {
-        const session = await window.OpenClassPlatform.startSessionSafely({
+        // Session recording is optional telemetry: run it in the background
+        // so play starts immediately and never alerts on failure.
+        playSessionId = null;
+        window.OpenClassPlatform.startSessionSafely({
             gameType: 'taboo',
             participantNames: [...state.teams],
             ...selectedDeckRef
         }, error => {
-            els.generateStatus.textContent = error.message;
-            els.generateStatus.className = 'generate-status error';
-            alert(`The game will still start, but it could not be recorded: ${error.message}`);
+            console.warn(`Taboo: session could not be recorded: ${error.message}`);
+        }).then(session => {
+            playSessionId = session?.id || null;
         });
-        playSessionId = session?.id || null;
     }
     shuffleDeck();
     startTurnIntro();

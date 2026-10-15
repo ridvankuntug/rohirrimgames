@@ -12,10 +12,11 @@ function memoryStorage() {
     };
 }
 
-async function loadFactory() {
+async function loadFactory(featureFlags) {
     const source = await readFile(new URL('../platform-client.js', import.meta.url), 'utf8');
     const sandbox = {
         console,
+        ...(featureFlags ? { OpenClassFeatureFlags: Object.freeze({ ...featureFlags }) } : {}),
         URLSearchParams,
         localStorage: memoryStorage(),
         sessionStorage: memoryStorage()
@@ -210,6 +211,51 @@ test('session logging failures warn without blocking an already loaded game', as
 
     assert.equal(session, null);
     assert.deepEqual(warnings, ['Unable to reach the game server']);
+});
+
+test('session recording is skipped without a request when registered decks are disabled', async () => {
+    const createPlatformClient = await loadFactory({
+        enableAiGeneration: false,
+        enableRegisteredDecks: false
+    });
+    const warnings = [];
+    const client = createPlatformClient({
+        localStorage: memoryStorage(),
+        sessionStorage: memoryStorage(),
+        fetch: async () => assert.fail('session recording must not call fetch when disabled')
+    });
+
+    assert.equal(client.sessionRecordingEnabled(), false);
+    const input = { gameType: 'bottle', participantNames: ['Ada'], deckId: null, deckVersionId: null };
+    assert.equal(await client.startSession(input), null);
+    assert.equal(await client.startSessionSafely(input, error => warnings.push(error)), null);
+    assert.equal(await client.completeSession('session-1', { spinCount: 1 }), null);
+    assert.deepEqual(warnings, []);
+});
+
+test('session recording still calls the API when registered decks are enabled', async () => {
+    const createPlatformClient = await loadFactory({
+        enableAiGeneration: false,
+        enableRegisteredDecks: true
+    });
+    const calls = [];
+    const client = createPlatformClient({
+        localStorage: memoryStorage(),
+        sessionStorage: memoryStorage(),
+        fetch: async (url, options) => {
+            calls.push([url, options.method]);
+            return { ok: true, status: 200, json: async () => ({ session: { id: 'session-1' } }) };
+        }
+    });
+
+    assert.equal(client.sessionRecordingEnabled(), true);
+    const session = await client.startSession({ gameType: 'wheel', participantNames: [] });
+    assert.equal(session.id, 'session-1');
+    await client.completeSession(session.id, { spinCount: 1 });
+    assert.deepEqual(calls, [
+        ['/api/sessions', 'POST'],
+        ['/api/sessions/session-1/complete', 'PATCH']
+    ]);
 });
 
 test('verifyTeacherKey calls /api/ai/verify and returns verification result', async () => {
