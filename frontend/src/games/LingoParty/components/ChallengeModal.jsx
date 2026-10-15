@@ -47,7 +47,7 @@ function parseOrderingLines(rawPrompt) {
   return lines
     .map(line => line
       .replace(/^(put\s+this\s+conversation[^:]*:?)/i, '')
-      .replace(/^([1-9]\d*[\.\)]|step\s*\d+:?|line\s*\d+:?)\s*/i, '')
+      .replace(/^([1-9]\d*[.)]|step\s*\d+:?|line\s*\d+:?)\s*/i, '')
       .trim()
     )
     .filter(Boolean);
@@ -197,7 +197,7 @@ export default function ChallengeModal({ challenge, activeTeam, onResolve, playS
                 {i + 1}
               </span>
               <span style={{ fontSize: '1.1rem', color: '#fff3d3', fontWeight: 600 }}>
-                {step.replace(/^([1-9]\d*[\.\)]|step\s*\d+:?|line\s*\d+:?)\s*/i, '')}
+                {step.replace(/^([1-9]\d*[.)]|step\s*\d+:?|line\s*\d+:?)\s*/i, '')}
               </span>
             </div>
           ))}

@@ -9,7 +9,8 @@ import {
   wantsAiFeatures,
 } from '../../services/platformApi';
 import { isAiGenerationEnabled } from '../../config/featureFlags';
-import { LanguageSelector, registerTranslations, useTranslation } from '../../i18n';
+import { registerTranslations, useTranslation } from '../../i18n';
+import { LanguageSelector } from '../Common/LanguageSelector';
 import { useOnlineHealth } from '../../hooks/useOnlineHealth';
 import { HUB_FILTERS, matchesHubFilter } from './hubCategories';
 

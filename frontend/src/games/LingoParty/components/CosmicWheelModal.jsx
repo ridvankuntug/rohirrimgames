@@ -13,7 +13,7 @@ const WHEEL_SEGMENTS = [
   { type: 'ordering', label: 'Ordering', color: '#f97316', icon: '🔢' }
 ];
 
-export default function CosmicWheelModal({ activeTeam, onSpinResult, onClose, playSound }) {
+export default function CosmicWheelModal({ activeTeam, onSpinResult, playSound }) {
   const { t } = useTranslation();
   const canvasRef = useRef(null);
   const [isSpinning, setIsSpinning] = useState(false);

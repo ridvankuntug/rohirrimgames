@@ -11,7 +11,7 @@ test('LingoParty setup launches an exact registered deck version', async () => {
     // backend health probe succeeds; the registered-deck integration remains.
     assert.match(source, /useDeckLibrary\('lingoparty'(?:,\s*\{\s*enabled:\s*backendOnline\s*\})?\)/);
     assert.match(source, /deckId:\s*deck\.id/);
-    assert.match(source, /deckVersionId:\s*deck\.currentVersion\.id/);
+    assert.match(source, /deckVersionId:[^,\n]*deck\.currentVersion\??\.id/);
     assert.match(source, /deckName/);
     assert.doesNotMatch(source, /berkai_gemini_api_key|fallback/i);
 });

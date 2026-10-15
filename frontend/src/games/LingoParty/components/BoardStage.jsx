@@ -544,7 +544,6 @@ export default function BoardStage({
           teams={gameState.teams}
           tileStyle={tileStyle}
           round={gameState.round}
-          baseColor={gameState.baseColor}
           onTileClick={(tile) => {
             console.log('Tile inspection:', tile);
           }}

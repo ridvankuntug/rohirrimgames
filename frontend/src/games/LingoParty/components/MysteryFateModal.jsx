@@ -52,7 +52,7 @@ export default function MysteryFateModal({ isOpen, activeTeam, onResolve, playSo
 
   const handleClose = () => {
     if (!drawnEvent) {
-      onResolve && onResolve(null);
+      onResolve?.(null);
       return;
     }
     const eventResult = drawnEvent;
@@ -61,7 +61,7 @@ export default function MysteryFateModal({ isOpen, activeTeam, onResolve, playSo
     setCurrentIcon('🎁');
     setCurrentTitle('Click to Reveal Your Fate!');
     setCurrentDesc('Are the space gods in your favor today? Click below to draw your fate card!');
-    onResolve && onResolve(eventResult);
+    onResolve?.(eventResult);
   };
 
   return (

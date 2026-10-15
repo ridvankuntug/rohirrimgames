@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './PawnStandeesLayer.module.css';
-import { getMapCoordinates } from './BoardMap';
+import { getMapCoordinates } from './boardCoordinates';
 
 export default function PawnStandeesLayer({ tiles = [], teams = [] }) {
   if (!teams || teams.length === 0 || !tiles || tiles.length === 0) {

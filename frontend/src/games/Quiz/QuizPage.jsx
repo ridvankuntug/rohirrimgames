@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LanguageSelector, useTranslation } from '../../i18n';
+import { useTranslation } from '../../i18n';
+import { LanguageSelector } from '../../components/Common/LanguageSelector';
 import './quizI18n';
 import {
   clearHostSession,

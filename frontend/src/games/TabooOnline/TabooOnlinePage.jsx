@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { LanguageSelector, registerTranslations, useTranslation } from '../../i18n';
+import { registerTranslations, useTranslation } from '../../i18n';
+import { LanguageSelector } from '../../components/Common/LanguageSelector';
 // The reused quiz components (ConnectionBadge, ConfirmDialog, ...) read `quiz.*` strings.
 import '../Quiz/quizI18n';
 import { TABOO_TRANSLATIONS } from './tabooI18n';

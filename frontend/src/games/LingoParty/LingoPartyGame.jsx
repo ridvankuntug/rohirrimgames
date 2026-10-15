@@ -5,7 +5,8 @@ import {
   completeSession,
   startSessionSafely,
 } from '../../services/platformApi';
-import { LanguageSelector, registerTranslations, useTranslation } from '../../i18n';
+import { registerTranslations, useTranslation } from '../../i18n';
+import { LanguageSelector } from '../../components/Common/LanguageSelector';
 
 registerTranslations('lingoparty', {
   en: {
@@ -35,7 +36,7 @@ registerTranslations('lingoparty', {
 // Sound Synthesizer using Web Audio API
 const audioCtx = typeof window !== 'undefined' && window.AudioContext ? new (window.AudioContext || window.webkitAudioContext)() : null;
 
-export function playSound(type = 'roll') {
+function playSound(type = 'roll') {
   if (!audioCtx) return;
   try {
     const now = audioCtx.currentTime;

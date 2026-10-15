@@ -87,7 +87,9 @@ export default function useDeckLibrary(gameType, { enabled = true } = {}) {
     if (currentDecks.length === 0) {
       try {
         currentDecks = await refresh();
-      } catch (e) {}
+      } catch {
+        // Keep the current (empty) list; the caller handles a missing deck.
+      }
     }
     const target = currentDecks.find((deck) => deck.id === selectedId) || currentDecks[0] || null;
     return target;

@@ -102,7 +102,6 @@ export default function SetupScreen({ onStartGame, playSound }) {
   const [orbitCount, setOrbitCount] = useState(3);
   const [cefr, setCefr] = useState('B1');
   const [topic, setTopic] = useState('General Classroom Vocabulary & Idioms');
-  const [deckName, setDeckName] = useState('');
   const [baseColor, setBaseColor] = useState('#173b28');
   const [customNames, setCustomNames] = useState(['Crew A', 'Crew B', 'Crew C', 'Crew D', 'Crew E', 'Crew F', 'Crew G', 'Crew H']);
   const [customPawns, setCustomPawns] = useState(['🐉', '🚀', '🤖', '🦊', '⚡', '🦉', '🦁', '🐬']);
@@ -122,7 +121,6 @@ export default function SetupScreen({ onStartGame, playSound }) {
   const [isLoadingDecks, setIsLoadingDecks] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [debugLogs, setDebugLogs] = useState([]);
-  const [launching, setLaunching] = useState(false);
   const [launchError, setLaunchError] = useState('');
   const [activeGeneratedDeck, setActiveGeneratedDeck] = useState(null);
   const deckLibrary = useDeckLibrary('lingoparty', { enabled: backendOnline });
@@ -320,58 +318,6 @@ export default function SetupScreen({ onStartGame, playSound }) {
       if (playSound) playSound('wrong');
     } finally {
       setIsGenerating(false);
-    }
-  };
-
-  const launchDeck = async (deck, options = {}) => {
-    if (!deck?.currentVersion?.id) {
-      setLaunchError('Choose or generate a registered deck first.');
-      return;
-    }
-    setLaunching(true);
-    setLaunchError('');
-    try {
-      await onStartGame({
-        teams: buildTeams(),
-        boardLength,
-        baseColor,
-        deck: deck.currentVersion.content,
-        mode,
-        orbitCount,
-        deckId: deck.id,
-        deckVersionId: deck.currentVersion.id,
-        isTesterMode: !!options.isTesterMode,
-      });
-      playSound?.('correct');
-    } catch (error) {
-      setLaunchError(error.message);
-      playSound?.('wrong');
-    } finally {
-      setLaunching(false);
-    }
-  };
-
-  const generateAndLaunch = async () => {
-    setLaunching(true);
-    setLaunchError('');
-    try {
-      const cardCount = 5 * teamCount * orbitCount * 8;
-      const deck = await deckLibrary.generate({
-        endpoint: '/api/generate-lingoparty',
-        deckName,
-        theme: topic,
-        cefr,
-        count: cardCount,
-        playerCount: teamCount,
-        orbitCount,
-        mode,
-      });
-      setDeckName('');
-      await launchDeck(deck);
-    } catch (error) {
-      setLaunchError(error.message);
-      playSound?.('wrong');
-      setLaunching(false);
     }
   };
 
@@ -668,7 +614,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
           <button
             className={`btn-primary ${styles.btnStart}`}
             onClick={(e) => handleLaunchClick(e)}
-            disabled={isGenerating || launching}
+            disabled={isGenerating}
           >
             {activeGeneratedDeck
               ? `🚀 Launch "${activeGeneratedDeck.name || activeGeneratedDeck.title}"`

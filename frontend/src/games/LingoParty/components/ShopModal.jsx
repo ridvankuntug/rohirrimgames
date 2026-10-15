@@ -21,7 +21,7 @@ export default function ShopModal({ isOpen, activeTeam, onBuyItem, onClose, play
   const handlePurchase = (item) => {
     if (activeTeam.trophies < item.cost) return;
     if (playSound) playSound('trophy');
-    onBuyItem && onBuyItem(item);
+    onBuyItem?.(item);
   };
 
   const isAttackItem = (item) =>
