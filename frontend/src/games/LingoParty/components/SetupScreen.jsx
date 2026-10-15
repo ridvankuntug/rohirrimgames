@@ -103,7 +103,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
   const [cefr, setCefr] = useState('B1');
   const [topic, setTopic] = useState('General Classroom Vocabulary & Idioms');
   const [deckName, setDeckName] = useState('');
-  const [baseColor, setBaseColor] = useState('#0f2752');
+  const [baseColor, setBaseColor] = useState('#173b28');
   const [customNames, setCustomNames] = useState(['Crew A', 'Crew B', 'Crew C', 'Crew D', 'Crew E', 'Crew F', 'Crew G', 'Crew H']);
   const [customPawns, setCustomPawns] = useState(['🐉', '🚀', '🤖', '🦊', '⚡', '🦉', '🦁', '🐬']);
   const [customColors, setCustomColors] = useState(TEAM_COLORS);
@@ -474,7 +474,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
                 style={{ flex: 1, fontFamily: 'monospace', textTransform: 'uppercase' }}
                 value={baseColor}
                 onChange={(event) => setBaseColor(event.target.value)}
-                placeholder="#0F2752"
+                placeholder="#173B28"
               />
             </div>
           </div>

@@ -30,9 +30,9 @@
   gap: 1.4rem;
   animation: stationDock 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   background: rgba(22, 36, 23, 0.92) !important;
-  border-color: rgba(59, 130, 246, 0.3) !important;
+  border-color: rgba(229, 184, 84, 0.3) !important;
   box-shadow:
-    0 0 60px rgba(59, 130, 246, 0.12),
+    0 0 60px rgba(229, 184, 84, 0.12),
     inset 0 0 40px rgba(0, 0, 0, 0.5) !important;
 }
 
@@ -54,7 +54,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  border-bottom: 1px solid rgba(229, 184, 84, 0.2);
   padding-bottom: 0.8rem;
 }
 
@@ -95,7 +95,7 @@
 
 .itemCard {
   background: rgba(31, 49, 29, 0.7);
-  border: 1px solid rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(229, 184, 84, 0.15);
   border-radius: 16px;
   padding: 1.2rem;
   display: flex;
@@ -117,14 +117,14 @@
   right: -1px;
   bottom: -1px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), transparent 50%, rgba(200, 162, 74, 0.1));
+  background: linear-gradient(135deg, rgba(95, 143, 85, 0.15), transparent 50%, rgba(200, 162, 74, 0.1));
   z-index: -1;
 }
 
 .itemCard:hover {
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: rgba(229, 184, 84, 0.4);
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 8px 20px rgba(229, 184, 84, 0.15);
 }
 
 .itemIcon {
