@@ -321,3 +321,68 @@ test('initRoom: a failing setAlarm removes the new row (no room without an expir
     assert.deepEqual(await room.initRoom({ code: CODE, hostTokenHash: 'a'.repeat(64) }), { ok: true });
     assert.ok(ctx.storage.alarm !== null);
 });
+
+// ---------------------------------------------------------------------------
+// Message order per socket
+// ---------------------------------------------------------------------------
+
+// WebCrypto whose digest waits until `release()`: a join's token hashing then
+// takes "long" (real digests are async non-storage work in the runtime too).
+const gatedCrypto = () => {
+    let release;
+    const gate = new Promise(resolve => {
+        release = resolve;
+    });
+    const cryptoImpl = {
+        getRandomValues: array => globalThis.crypto.getRandomValues(array),
+        randomUUID: () => globalThis.crypto.randomUUID(),
+        subtle: {
+            digest: async (...args) => {
+                await gate;
+                return globalThis.crypto.subtle.digest(...args);
+            },
+        },
+    };
+    return { cryptoImpl, release };
+};
+
+test('messages of one socket are handled in order even when the first awaits hashing', async () => {
+    const ctx = createFakeCtx();
+    const clock = createClock();
+    const room = new RoomController({ ctx, game: QUIZ_GAME, now: clock.fn, log: () => {} });
+    await room.initRoom({ code: CODE, hostTokenHash: 'a'.repeat(64) });
+    const { cryptoImpl, release } = gatedCrypto();
+    room.crypto = cryptoImpl;
+    const ws = new FakeSocket();
+    room.openSocket(ws);
+
+    const join = room.webSocketMessage(ws, JSON.stringify({ v: 1, t: 'join', name: 'Ada' }));
+    const answer = room.webSocketMessage(ws, JSON.stringify({ v: 1, t: 'answer', q: 0, choice: 1 }));
+    await new Promise(resolve => setTimeout(resolve, 5));
+    assert.deepEqual(ws.sent, [], 'the answer waits for the join');
+    release();
+    await Promise.all([join, answer]);
+
+    assert.equal(ws.sent[0].t, 'joined', 'join handled first');
+    const codes = ws.of('error').map(message => message.code);
+    assert.ok(!codes.includes('not_player'), `the answer saw the role set by the join (got ${codes})`);
+    assert.equal(room.messageChains.size, 0, 'chains are cleaned up');
+});
+
+test('one socket waiting on hashing does not block another socket', async () => {
+    const ctx = createFakeCtx();
+    const room = new RoomController({ ctx, game: QUIZ_GAME, now: createClock().fn, log: () => {} });
+    await room.initRoom({ code: CODE, hostTokenHash: 'a'.repeat(64) });
+    const { cryptoImpl, release } = gatedCrypto();
+    room.crypto = cryptoImpl;
+    const slow = new FakeSocket();
+    room.openSocket(slow);
+    const other = new FakeSocket();
+    room.openSocket(other);
+    const pending = room.webSocketMessage(slow, JSON.stringify({ v: 1, t: 'join', name: 'Ada' }));
+    await room.webSocketMessage(other, 'not json');
+    assert.deepEqual(other.of('error').map(message => message.code), ['bad_message']);
+    release();
+    await pending;
+    assert.equal(slow.sent[0].t, 'joined');
+});

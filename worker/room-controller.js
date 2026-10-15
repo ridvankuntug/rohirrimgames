@@ -176,6 +176,8 @@ export class RoomController {
         this.lastLivenessAt = -Infinity;
         // Handler failures since the last successful engine step (in-memory only).
         this.consecutiveFailures = 0;
+        // Per-socket message chains (see webSocketMessage), keyed by connectionId.
+        this.messageChains = new Map();
     }
 
     /**
@@ -495,7 +497,27 @@ export class RoomController {
     // message), the socket is closed with 1011 and counted; a room that keeps
     // failing is deleted (see MAX_CONSECUTIVE_FAILURES).
 
-    async webSocketMessage(ws, message) {
+    /**
+     * Messages of one socket are handled one after another, in arrival order.
+     * The runtime may deliver the next message while a handler awaits non-storage
+     * work (a `join` hashes its token with crypto.subtle), so without this chain
+     * a later message could overtake an earlier one (e.g. act before its join
+     * bound the role). The chain is in-memory: a hibernation wake starts empty,
+     * which is fine (nothing is in flight then). Different sockets still
+     * interleave as before.
+     */
+    webSocketMessage(ws, message) {
+        const key = attachmentOf(ws).connectionId ?? ws;
+        const previous = this.messageChains.get(key) ?? Promise.resolve();
+        const current = previous.then(() => this.processMessage(ws, message));
+        this.messageChains.set(key, current);
+        return current.finally(() => {
+            if (this.messageChains.get(key) === current) this.messageChains.delete(key);
+        });
+    }
+
+    // Never rejects (the chain above relies on it).
+    async processMessage(ws, message) {
         try {
             await this.purgeIfUnusable();
             await this.handleMessage(ws, message);
