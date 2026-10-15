@@ -16,6 +16,12 @@
       { "name": "TABOO_ROOMS", "class_name": "TabooRoom" }
     ]
   },
+  // Per-IP limits for /rt/* (see worker/http.js "Per-IP rate limits").
+  // namespace_id: any account-unique integer string; period: 10 or 60 seconds.
+  "ratelimits": [
+    { "name": "RT_CREATE_LIMITER", "namespace_id": "4201", "simple": { "limit": 20, "period": 60 } },
+    { "name": "RT_SOCKET_LIMITER", "namespace_id": "4202", "simple": { "limit": 600, "period": 60 } }
+  ],
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["QuizRoom"] },
     { "tag": "v2", "new_sqlite_classes": ["TabooRoom"] }

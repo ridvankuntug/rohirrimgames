@@ -40,6 +40,8 @@
 //   413 payload_too_large        POST body over 4 KB
 //   415 unsupported_media_type   POST without application/json
 //   426 expected_websocket       /ws without `Upgrade: websocket`
+//   429 rate_limited             too many room creations / WebSocket upgrades from this
+//                                IP (see "Per-IP rate limits" below; `retry-after` header)
 //   502 turnstile_unavailable    siteverify unreachable or answered nonsense
 //   503 turnstile_not_configured TURNSTILE_SECRET_KEY is missing (fail closed)
 //   503 room_alloc_failed        every room-code attempt collided (practically never)
@@ -59,6 +61,19 @@
 //     public, read-only and side-effect free). REQUIRED for POST /rt/rooms,
 //     POST /rt/taboo/rooms and both WebSocket upgrades: browsers always send Origin there, so a missing one means
 //     a non-browser client.
+//
+// Per-IP rate limits (Workers Rate Limiting bindings, declared in wrangler.jsonc):
+//   RT_CREATE_LIMITER  POST /rt/rooms and POST /rt/taboo/rooms   20 per 60 s per IP
+//   RT_SOCKET_LIMITER  both /ws upgrades                           600 per 60 s per IP
+//   Keyed on `cf-connecting-ip`, checked after the origin check and before any
+//   Turnstile call or Durable Object request; the counters are shared by both
+//   games. Generous on purpose: a whole school behind one NAT address (two
+//   classes of ~40 phones each) reconnecting after a deploy must never be
+//   blocked; the limits stop scripted floods that would burn the Durable Object
+//   free-tier requests. A limited request still runs this Worker once.
+//   Fail open: no binding (node --test, an older local setup), no client IP or
+//   a limiter error -> the request is allowed. The limiter is per Cloudflare
+//   location and approximate by design.
 
 import { listDeckMetadata } from '../shared/quiz-decks.js';
 import { PROTOCOL_VERSION, generateRoomCode, parseRoomCode } from '../shared/quiz-protocol.js';
@@ -69,6 +84,12 @@ import { newToken, randomInt, sha256Hex } from './tokens.js';
 import { MAX_TURNSTILE_TOKEN_LENGTH, verifyTurnstile } from './turnstile.js';
 
 export const MAX_CREATE_BODY_BYTES = 4096;
+// Documentation of the wrangler.jsonc `ratelimits` entries (tests keep them equal).
+export const RATE_LIMITS = Object.freeze({
+    RT_CREATE_LIMITER: Object.freeze({ limit: 20, period: 60 }),
+    RT_SOCKET_LIMITER: Object.freeze({ limit: 600, period: 60 }),
+});
+const RATE_LIMITED_RETRY_AFTER_S = '60';
 export const ROOM_CODE_ATTEMPTS = 5;
 
 const BASE_HEADERS = {
@@ -258,14 +279,35 @@ const GAMES = Object.freeze({
 });
 
 // `readOnly`: public, side-effect free GET (Origin may be missing).
+// `limiter`: name of the per-IP rate limit binding in `env` (see the header).
 const ROUTES = {
     health: { methods: ['GET', 'HEAD'], readOnly: true },
     decks: { methods: ['GET', 'HEAD'], readOnly: true },
-    rooms: { methods: ['POST'], readOnly: false },
-    socket: { methods: ['GET'], readOnly: false },
+    rooms: { methods: ['POST'], readOnly: false, limiter: 'RT_CREATE_LIMITER' },
+    socket: { methods: ['GET'], readOnly: false, limiter: 'RT_SOCKET_LIMITER' },
     tabooDecks: { methods: ['GET', 'HEAD'], readOnly: true },
-    tabooRooms: { methods: ['POST'], readOnly: false },
-    tabooSocket: { methods: ['GET'], readOnly: false },
+    tabooRooms: { methods: ['POST'], readOnly: false, limiter: 'RT_CREATE_LIMITER' },
+    tabooSocket: { methods: ['GET'], readOnly: false, limiter: 'RT_SOCKET_LIMITER' },
+};
+
+/**
+ * Asks a Workers Rate Limiting binding whether this client IP may go on.
+ * Fails open: a missing binding, a missing `cf-connecting-ip` or a limiter
+ * error allows the request (the error name only is logged; never the IP).
+ *
+ * @returns {Promise<boolean>}
+ */
+export const withinRateLimit = async (limiter, request, log) => {
+    if (!limiter || typeof limiter.limit !== 'function') return true;
+    const ip = request.headers.get('cf-connecting-ip');
+    if (!ip) return true;
+    try {
+        const outcome = await limiter.limit({ key: ip });
+        return outcome?.success !== false;
+    } catch (error) {
+        log(`rt rate limiter failed: ${error?.name ?? 'Error'}`);
+        return true;
+    }
 };
 
 const matchRoute = pathname => {
@@ -335,7 +377,9 @@ const openSocket = async (request, env, rawCode, deps, game) => {
  * Handles one `/rt/*` request.
  *
  * @param {Request} request
- * @param {{ QUIZ_ROOMS: object, TABOO_ROOMS: object, TURNSTILE_SECRET_KEY?: string }} env
+ * @param {{ QUIZ_ROOMS: object, TABOO_ROOMS: object, TURNSTILE_SECRET_KEY?: string,
+ *           RT_CREATE_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> },
+ *           RT_SOCKET_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> } }} env
  * @param {{ fetchImpl?: typeof fetch, cryptoImpl?: Crypto, log?: (message: string) => void,
  *           rejectSocket?: (code: string, closeCode: number) => Response }} [deps]
  *   `rejectSocket` builds the 101 + error + close answer for a refused upgrade
@@ -353,13 +397,17 @@ export const handleRequest = async (request, env, deps = {}) => {
         const route = matchRoute(pathname);
         if (!route) return errorResponse('not_found', 404);
 
-        const { methods, readOnly } = ROUTES[route.name];
+        const { methods, readOnly, limiter } = ROUTES[route.name];
         if (!methods.includes(request.method)) {
             return errorResponse('method_not_allowed', 405, { allow: methods.join(', ') });
         }
 
         const originError = checkOrigin(request, { required: !readOnly });
         if (originError) return errorResponse(originError, 403);
+
+        if (limiter && !(await withinRateLimit(env?.[limiter], request, resolved.log))) {
+            return errorResponse('rate_limited', 429, { 'retry-after': RATE_LIMITED_RETRY_AFTER_S });
+        }
 
         switch (route.name) {
             case 'health':

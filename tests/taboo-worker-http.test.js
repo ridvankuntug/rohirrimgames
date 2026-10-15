@@ -374,7 +374,7 @@ test('unexpected errors on Taboo routes become a JSON 500 and the log holds no r
 
 const readWranglerConfig = async () => {
     const source = await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8');
-    // The file has no comments today; strip whole-line `//` comments defensively.
+    // Strip whole-line `//` comments (the file documents its rate limits that way).
     return JSON.parse(source.split('\n').filter(line => !/^\s*\/\//.test(line)).join('\n'));
 };
 
