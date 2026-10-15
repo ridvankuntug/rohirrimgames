@@ -36,6 +36,11 @@ export default function QuizHome({ initialCode, initialName, initialError, linkE
 
   const handleToken = useCallback(token => setTurnstileToken(token), []);
   const handleLoadError = useCallback(() => setTurnstileFailed(true), []);
+  // The loader forgets a failed script load, so remounting the widget fetches it again.
+  const retryTurnstile = useCallback(() => {
+    setTurnstileToken(null);
+    setTurnstileFailed(false);
+  }, []);
 
   const handleCreate = async () => {
     if (!turnstileToken || creating) return;
@@ -115,7 +120,10 @@ export default function QuizHome({ initialCode, initialName, initialError, linkE
         <h2 id={`${ids}-create`} className={styles.panelTitle}>{t('quiz.home.createTitle')}</h2>
         <p className={styles.muted}>{t('quiz.home.createText')}</p>
         {turnstileFailed ? (
-          <p className={styles.error} role="alert">{t('quiz.home.turnstileLoadError')}</p>
+          <>
+            <p className={styles.error} role="alert">{t('quiz.home.turnstileLoadError')}</p>
+            <button type="button" className={styles.btnSecondary} onClick={retryTurnstile}>{t('quiz.home.turnstileRetry')}</button>
+          </>
         ) : (
           <TurnstileWidget
             siteKey={turnstileSiteKeyFor(window.location.hostname)}

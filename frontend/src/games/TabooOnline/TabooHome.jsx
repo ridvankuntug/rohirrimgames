@@ -44,6 +44,11 @@ export default function TabooHome({ initialCode, initialName, initialError, link
 
   const handleToken = useCallback(token => setTurnstileToken(token), []);
   const handleLoadError = useCallback(() => setTurnstileFailed(true), []);
+  // The loader forgets a failed script load, so remounting the widget fetches it again.
+  const retryTurnstile = useCallback(() => {
+    setTurnstileToken(null);
+    setTurnstileFailed(false);
+  }, []);
 
   /** The normalised nickname, or null after showing the error on the field. */
   const validName = () => {
@@ -161,7 +166,10 @@ export default function TabooHome({ initialCode, initialName, initialError, link
             })}
           </fieldset>
           {turnstileFailed ? (
-            <p className={quizStyles.error} role="alert">{t('taboo.home.turnstileLoadError')}</p>
+            <>
+              <p className={quizStyles.error} role="alert">{t('taboo.home.turnstileLoadError')}</p>
+              <button type="button" className={quizStyles.btnSecondary} onClick={retryTurnstile}>{t('taboo.home.turnstileRetry')}</button>
+            </>
           ) : (
             <TurnstileWidget
               siteKey={turnstileSiteKeyFor(window.location.hostname)}
