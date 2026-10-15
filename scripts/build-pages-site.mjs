@@ -2,51 +2,12 @@ import { cpSync, mkdirSync, rmSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { rootFiles, sharedFiles, iconFiles } from './static-site-manifest.mjs';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const outDir = join(rootDir, 'dist-static');
 const frontendDir = join(rootDir, 'frontend');
 const frontendDist = join(frontendDir, 'dist');
-
-const rootFiles = [
-    'bottle.html', 'bottle.css', 'bottle.js',
-    'flashcards.html', 'flashcards.css', 'flashcards.js',
-    'hangman.html', 'hangman.css', 'hangman.js',
-    'hats.html', 'hats.css', 'hats.js',
-    'kelime.html', 'kelime.css', 'kelime.js',
-    'lingoparty.html', 'lingoparty.css', 'lingoparty.js',
-    'millionaire.html', 'millionaire.css', 'millionaire.js',
-    'taboo.html', 'taboo.css', 'taboo.js',
-    'wheel.html', 'wheel.css', 'wheel.js',
-    'who.html',
-    'game.js',
-    'i18n.js',
-    'generated-content.js',
-    'particles.js',
-    'platform-client.js',
-    'theme.css', 'theme.js',
-    'style.css',
-    'hub.css',
-    'deck-library.css',
-    'lingoparty-decks.json',
-    'prompts.json',
-    'list.txt',
-    'favicon.svg'
-];
-
-const rootDirs = ['shared'];
-
-const iconFiles = [
-    'apple-touch-icon.png',
-    'favicon-96.png',
-    'favicon.ico',
-    'icon-192.png',
-    'icon-512.png',
-    'icon-maskable-512.png',
-    'icons.svg',
-    'og-image.png',
-    'site.webmanifest'
-];
 
 // The React application is the canonical hub. Build it here instead of relying
 // on a stale checked-in frontend/dist directory; Wrangler invokes this script
@@ -60,31 +21,24 @@ execFileSync(npmCommand, npmArgs, {
     stdio: 'inherit'
 });
 
+// A whitelisted file that does not exist is a broken build, not something to
+// skip silently: fail before anything is assembled.
+const copies = [
+    ...rootFiles.map(file => [join(rootDir, file), join(outDir, file)]),
+    ...sharedFiles.map(file => [join(rootDir, file), join(outDir, file)]),
+    ...iconFiles.map(file => [join(rootDir, 'frontend', 'public', file), join(outDir, file)])
+];
+const missing = copies.filter(([src]) => !existsSync(src)).map(([src]) => src);
+if (missing.length > 0) {
+    throw new Error(`Static build whitelist lists missing files:\n  ${missing.join('\n  ')}`);
+}
+
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 
-for (const file of rootFiles) {
-    const src = join(rootDir, file);
-    if (!existsSync(src)) {
-        console.warn(`skip missing: ${file}`);
-        continue;
-    }
-    cpSync(src, join(outDir, file));
-}
-
-for (const dir of rootDirs) {
-    const src = join(rootDir, dir);
-    if (!existsSync(src)) continue;
-    cpSync(src, join(outDir, dir), { recursive: true });
-}
-
-for (const file of iconFiles) {
-    const src = join(rootDir, 'frontend', 'public', file);
-    if (!existsSync(src)) {
-        console.warn(`skip missing icon: ${file}`);
-        continue;
-    }
-    cpSync(src, join(outDir, file));
+for (const [src, dest] of copies) {
+    mkdirSync(dirname(dest), { recursive: true });
+    cpSync(src, dest);
 }
 
 // Copy the Vite output last, so its index.html is the deployed root while all
