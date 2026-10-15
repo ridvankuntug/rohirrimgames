@@ -1,10 +1,12 @@
 name: CI
 
 # Test gate only. Cloudflare Workers Builds does every deploy (see AGENTS.md, "Static Deployment").
+# Runs on pushes to every branch so a commit can pass the required `test` check
+# on a work branch first and then be pushed to main directly (no PR needed).
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: ['**']
 
 permissions:
   contents: read
