@@ -11,7 +11,8 @@
     "seed:decks": "node server/scripts/seed-system-decks.js",
     "build": "npm --prefix frontend run build",
     "postinstall": "npm --prefix frontend ci",
-    "pages:build": "node scripts/build-pages-site.mjs"
+    "pages:build": "node scripts/build-pages-site.mjs",
+    "check:static": "node scripts/check-static-site.mjs"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
