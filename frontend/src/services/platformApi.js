@@ -74,13 +74,33 @@ export function isBackendAvailable() {
   return backendAvailable === true;
 }
 
-export async function probeBackend() {
+export const BACKEND_PROBE_TIMEOUT_MS = 4000;
+
+// Every feature the Express backend provides is behind a flag. With both flags
+// off (the static Workers build) there is nothing to probe for, and asking would
+// only download the 404 page.
+export const backendFeaturesEnabled = () => isAiGenerationEnabled() || isRegisteredDecksEnabled();
+
+export async function probeBackend({ timeoutMs = BACKEND_PROBE_TIMEOUT_MS } = {}) {
+  if (!backendFeaturesEnabled()) {
+    backendAvailable = false;
+    return backendAvailable;
+  }
+  const controller = new AbortController();
+  // The timer also covers reading the body, because the same signal aborts it.
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch('/api/health');
+    const response = await fetch('/api/health', {
+      signal: controller.signal,
+      cache: 'no-store',
+      headers: { accept: 'application/json' },
+    });
     const body = await response.json();
     backendAvailable = response.ok && body?.status === 'ok';
   } catch {
     backendAvailable = false;
+  } finally {
+    clearTimeout(timer);
   }
   return backendAvailable;
 }
