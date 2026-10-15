@@ -37,6 +37,13 @@
 //   1011 internal    unexpected server error (reconnect normally)
 // 1006 (no close frame) is the normal "network dropped" case: reconnect.
 //
+// Unrecoverable room (engine keeps throwing): after MAX_CONSECUTIVE_FAILURES
+// handler failures in a row (no successful engine step in between), or when the
+// alarm has failed ALARM_RETRY_LIMIT times, the room is deleted and every socket
+// is closed with 4004 room_gone, which the client treats as final (no reconnect
+// loop against a broken room). Only the error name and a short message are
+// logged, never the state, names or tokens.
+//
 // Liveness (T0 decision): close/error events report the player/host gone at
 // once; silent sockets are found by comparing each open socket's last sign of
 // life — max(auto-response timestamp of the last `ping`, last message seen by
@@ -73,6 +80,16 @@ export const LIVENESS_INTERVAL_MS = 5000;
 // evicted when the cap is reached, so idle unauthenticated sockets cannot keep
 // the host and players out. Enforced only at admission time (no extra alarm).
 export const UNAUTHENTICATED_GRACE_MS = 30_000;
+// The runtime retries a failed alarm (a few times, with back-off). The first
+// attempts are left to it (a transient storage error heals); at this retry the
+// room is deleted instead, so a room whose engine throws on every step cannot
+// outlive its idle expiry. `alarmInfo.retryCount` is 0 on the first attempt.
+export const ALARM_RETRY_LIMIT = 2;
+// Handler failures in a row (no successful engine step in between) after which
+// the room is treated as broken and deleted. One bad message type does not get
+// there in a live room: every other player's message or the alarm resets it.
+export const MAX_CONSECUTIVE_FAILURES = 5;
+const MAX_LOGGED_MESSAGE = 120;
 
 const OPEN = 1; // WebSocket.OPEN
 
@@ -116,6 +133,18 @@ const sendableCloseCode = code =>
 
 const attachmentOf = ws => ws.deserializeAttachment() ?? {};
 
+/**
+ * Name plus a short message of an error, for logs. A SyntaxError (JSON.parse of
+ * the stored row or of input) keeps only its name: its message can quote the
+ * parsed text, which may hold player names.
+ */
+export const describeError = error => {
+    const name = typeof error?.name === 'string' && error.name !== '' ? error.name : 'Error';
+    if (name === 'SyntaxError' || typeof error?.message !== 'string' || error.message === '') return name;
+    const message = error.message.replace(/\s+/g, ' ').slice(0, MAX_LOGGED_MESSAGE);
+    return `${name}: ${message}`;
+};
+
 // Exact UTF-8 size check against the protocol limit. UTF-16 length <= UTF-8
 // bytes <= 3 x UTF-16 length, so the encoder only runs in the ambiguous band.
 const utf8TooBig = (text, max) => {
@@ -144,6 +173,8 @@ export class RoomController {
         this.buckets = new Map();
         this.lastMessageAt = new Map();
         this.lastLivenessAt = -Infinity;
+        // Handler failures since the last successful engine step (in-memory only).
+        this.consecutiveFailures = 0;
     }
 
     /**
@@ -402,6 +433,79 @@ export class RoomController {
     }
 
     // -----------------------------------------------------------------------
+    // Runtime entry points (the Durable Object glue calls only these)
+    // -----------------------------------------------------------------------
+    // They never throw for a client event: a failure is logged (name + short
+    // message), the socket is closed with 1011 and counted; a room that keeps
+    // failing is deleted (see MAX_CONSECUTIVE_FAILURES).
+
+    async webSocketMessage(ws, message) {
+        try {
+            await this.handleMessage(ws, message);
+        } catch (error) {
+            await this.handlerFailed('message', error, ws);
+        }
+    }
+
+    async webSocketClose(ws, code) {
+        try {
+            await this.handleClose(ws, code);
+        } catch (error) {
+            await this.handlerFailed('close', error);
+        }
+    }
+
+    async webSocketError(ws) {
+        try {
+            await this.handleClose(ws, 1011);
+        } catch (error) {
+            await this.handlerFailed('error', error);
+        }
+    }
+
+    /**
+     * The Durable Object alarm. A failure is rethrown so the runtime retries it,
+     * until `alarmInfo.retryCount` reaches ALARM_RETRY_LIMIT: then the room is
+     * deleted (else the idle expiry is lost and the row lives forever).
+     *
+     * @param {{ retryCount?: number, isRetry?: boolean }} [alarmInfo]
+     */
+    async alarm(alarmInfo) {
+        try {
+            await this.handleAlarm();
+        } catch (error) {
+            const retryCount = Number.isInteger(alarmInfo?.retryCount) ? alarmInfo.retryCount : 0;
+            if (retryCount < ALARM_RETRY_LIMIT) {
+                this.log(`${this.game.name}: alarm failed (attempt ${retryCount + 1}): ${describeError(error)}`);
+                throw error;
+            }
+            this.log(`${this.game.name}: alarm failed (attempt ${retryCount + 1}): ${describeError(error)}; deleting the room`);
+            await this.purge();
+        }
+    }
+
+    async handlerFailed(where, error, ws) {
+        this.log(`${this.game.name}: ${where} handler failed: ${describeError(error)}`);
+        if (ws) {
+            try {
+                ws.close(CLOSE_CODES.INTERNAL, 'internal');
+            } catch {
+                // already closed
+            }
+        }
+        this.consecutiveFailures += 1;
+        if (this.consecutiveFailures < MAX_CONSECUTIVE_FAILURES) return;
+        this.log(`${this.game.name}: ${this.consecutiveFailures} handler failures in a row; deleting the room`);
+        this.consecutiveFailures = 0;
+        try {
+            await this.purge();
+        } catch (purgeError) {
+            // The alarm (or the next failure) tries again.
+            this.log(`${this.game.name}: purge failed: ${describeError(purgeError)}`);
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // Engine plumbing
     // -----------------------------------------------------------------------
 
@@ -454,6 +558,7 @@ export class RoomController {
 
         const now = this.now();
         const result = this.game.reduce(state, event, { now, random: () => randomUnit(this.crypto) });
+        this.consecutiveFailures = 0;
         const deleting = result.effects.some(effect => effect.type === 'delete_room');
         if (deleting) {
             // Not persisted: the in-memory `deleted` phase makes every path treat the

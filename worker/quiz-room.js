@@ -10,8 +10,6 @@ import { DurableObject } from 'cloudflare:workers';
 import { QUIZ_GAME } from './quiz-game.js';
 import { RoomController, SOCKET_REJECTIONS } from './room-controller.js';
 
-const LOG_PREFIX = QUIZ_GAME.name;
-
 export class QuizRoom extends DurableObject {
     constructor(ctx, env) {
         super(ctx, env);
@@ -47,43 +45,19 @@ export class QuizRoom extends DurableObject {
     }
 
     async webSocketMessage(ws, message) {
-        try {
-            await this.room.handleMessage(ws, message);
-        } catch (error) {
-            this.fail('message', error, ws);
-        }
+        await this.room.webSocketMessage(ws, message);
     }
 
     async webSocketClose(ws, code) {
-        try {
-            await this.room.handleClose(ws, code);
-        } catch (error) {
-            this.fail('close', error);
-        }
+        await this.room.webSocketClose(ws, code);
     }
 
     async webSocketError(ws) {
-        try {
-            await this.room.handleClose(ws, 1011);
-        } catch (error) {
-            this.fail('error', error);
-        }
+        await this.room.webSocketError(ws);
     }
 
-    async alarm() {
-        // Let errors propagate: the runtime retries a failed alarm.
-        await this.room.handleAlarm();
-    }
-
-    // Logs only a fixed context and the error name (messages could carry input).
-    fail(where, error, ws) {
-        console.error(`${LOG_PREFIX}: ${where} handler failed: ${error?.name ?? 'Error'}`);
-        if (ws) {
-            try {
-                ws.close(1011, 'internal');
-            } catch {
-                // already closed
-            }
-        }
+    async alarm(alarmInfo) {
+        // Rethrows (runtime retry) until the retry limit, then deletes the room.
+        await this.room.alarm(alarmInfo);
     }
 }
