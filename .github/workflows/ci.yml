@@ -35,5 +35,14 @@ jobs:
 
       - run: npm --prefix frontend run lint
 
-      - name: Static build assembles
-        run: node scripts/build-pages-site.mjs
+      # `wrangler deploy` runs build.command (node scripts/build-pages-site.mjs)
+      # itself, so this step is also the static build: do not add a separate
+      # build step. --dry-run bundles worker/index.js (with ../shared/) and
+      # checks the Durable Object bindings/exports without credentials.
+      - name: Static build and Worker dry run
+        run: npx wrangler deploy --dry-run --outdir "$RUNNER_TEMP/worker-dry-run"
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+
+      - name: Static site check
+        run: npm run check:static
