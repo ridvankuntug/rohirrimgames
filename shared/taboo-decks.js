@@ -61,10 +61,23 @@ const validateCard = (card, label, errors) => {
             `${label}.forbidden must have ${TABOO_DECK_LIMITS.forbiddenMin}–${TABOO_DECK_LIMITS.forbiddenMax} items`,
         );
     }
+    // Case folding as in the quiz deck validator (locale-independent toLowerCase).
+    // A forbidden word equal to the card word, or listed twice, is a content
+    // mistake: the card would show one rule fewer than it seems to.
+    const wordKey = typeof card.word === 'string' ? card.word.toLowerCase() : null;
+    const seen = new Set();
     // Indexed loop (not forEach) so holes in sparse arrays are checked too.
     for (let index = 0; index < forbidden.length; index += 1) {
-        const error = checkText(forbidden[index], TABOO_DECK_LIMITS.forbiddenWordMax, `${label}.forbidden[${index}]`);
-        if (error) errors.push(error);
+        const itemLabel = `${label}.forbidden[${index}]`;
+        const error = checkText(forbidden[index], TABOO_DECK_LIMITS.forbiddenWordMax, itemLabel);
+        if (error) {
+            errors.push(error);
+            continue;
+        }
+        const key = forbidden[index].toLowerCase();
+        if (key === wordKey) errors.push(`${itemLabel} must differ from the card word`);
+        if (seen.has(key)) errors.push(`${itemLabel} duplicates another forbidden word`);
+        seen.add(key);
     }
 };
 

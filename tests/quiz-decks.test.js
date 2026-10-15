@@ -252,9 +252,8 @@ test('validateDeck never throws on hostile input and reports invalid', () => {
     assert.doesNotThrow(() => validateDeck(circular));
 });
 
-// KNOWN BUG (reported, not fixed): forEach skips holes, so sparse arrays pass validation.
-// Not reachable from JSON.parse input; marked todo so the suite stays green until fixed.
-test('validateDeck rejects sparse questions/options arrays', { todo: 'validator accepts sparse arrays' }, () => {
+// Holes in sparse arrays are checked like `undefined` entries (indexed loops, not forEach).
+test('validateDeck rejects sparse questions/options arrays', () => {
     expectInvalid({ ...validDeck(), questions: new Array(3) }, /./);
     const sparseOptions = validDeck();
     sparseOptions.questions[0].options = ['a', 'b', , ];

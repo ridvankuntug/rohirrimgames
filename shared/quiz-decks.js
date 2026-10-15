@@ -69,18 +69,20 @@ const validateQuestion = (question, label, errors) => {
             );
         }
         const seen = new Set();
-        options.forEach((option, index) => {
+        // Indexed loop (not forEach) so holes in sparse arrays are checked too.
+        for (let index = 0; index < options.length; index += 1) {
+            const option = options[index];
             const optionError = checkText(option, QUIZ_DECK_LIMITS.optionTextMax, `${label}.options[${index}]`);
             if (optionError) {
                 errors.push(optionError);
-                return;
+                continue;
             }
             // Two identical options would make "exactly one correct" ambiguous for players.
             // Locale-independent case folding, so the check behaves the same for every deck language.
             const key = option.toLowerCase();
             if (seen.has(key)) errors.push(`${label}.options[${index}] duplicates another option`);
             seen.add(key);
-        });
+        }
     }
 
     const optionCount = Array.isArray(options) ? options.length : 0;
@@ -127,14 +129,16 @@ export const validateDeck = deck => {
     }
 
     const questionIds = new Set();
-    questions.forEach((question, index) => {
+    // Indexed loop (not forEach) so holes in sparse arrays are checked too.
+    for (let index = 0; index < questions.length; index += 1) {
+        const question = questions[index];
         const label = `deck.questions[${index}]`;
         validateQuestion(question, label, errors);
         if (isPlainObject(question) && typeof question.id === 'string') {
             if (questionIds.has(question.id)) errors.push(`${label}.id "${question.id}" is not unique`);
             questionIds.add(question.id);
         }
-    });
+    }
 
     return { valid: errors.length === 0, errors };
 };

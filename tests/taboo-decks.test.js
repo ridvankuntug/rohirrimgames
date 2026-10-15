@@ -141,6 +141,19 @@ test('validateTabooDeck rejects bad cards', () => {
     expectInvalid({ ...validDeck(), cards: [{ word: 'Pizza', forbidden: ['a', 7, 'c'] }] }, /\.forbidden\[1\] must be a string/);
 });
 
+test('validateTabooDeck rejects duplicate forbidden words and the card word itself (case-folded)', () => {
+    expectInvalid(
+        { ...validDeck(), cards: [{ word: 'Pizza', forbidden: ['Cheese', 'Italian', 'cheese'] }] },
+        /\.forbidden\[2\] duplicates another forbidden word/,
+    );
+    expectInvalid(
+        { ...validDeck(), cards: [{ word: 'Pizza', forbidden: ['Cheese', 'PIZZA', 'Slice'] }] },
+        /\.forbidden\[1\] must differ from the card word/,
+    );
+    // Different words that only share a prefix stay valid.
+    assert.equal(validateTabooDeck({ ...validDeck(), cards: [{ word: 'Pizza', forbidden: ['Pizzeria', 'Cheese', 'Slice'] }] }).valid, true);
+});
+
 test('validateTabooDeck rejects sparse cards/forbidden arrays', () => {
     expectInvalid({ ...validDeck(), cards: new Array(2) }, /deck\.cards\[0\] must be an object/);
     expectInvalid({ ...validDeck(), cards: [{ word: 'Pizza', forbidden: ['a', , 'c'] }] }, /\.forbidden\[1\] must be a string/);
