@@ -1,8 +1,8 @@
-import { cpSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { rootFiles, sharedFiles, iconFiles } from './static-site-manifest.mjs';
+import { rootFiles, sharedFiles, iconFiles, redirects } from './static-site-manifest.mjs';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const outDir = join(rootDir, 'dist-static');
@@ -57,5 +57,13 @@ for (const route of ['lingoparty', 'quiz', 'taboo-online']) {
 // backend-availability probe in the games (fetch('/api/...').ok) thinks the
 // backend is reachable and never falls back to static content.
 cpSync(join(frontendDist, 'index.html'), join(outDir, '404.html'));
+
+// Workers Static Assets reads _redirects from the assets directory (and does
+// not publish the file itself): send old bookmarks of retired legacy pages to
+// their replacements.
+writeFileSync(
+    join(outDir, '_redirects'),
+    redirects.map(([from, to, status]) => `${from} ${to} ${status}`).join('\n') + '\n'
+);
 
 console.log(`Static site assembled in ${outDir}`);

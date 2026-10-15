@@ -4,7 +4,8 @@
 //   - the entry points the Worker relies on exist (404.html is load-bearing,
 //     the React deep links need a concrete index.html each);
 //   - no server-only module (quiz answers, game rules, protocol validators)
-//     was published.
+//     or retired legacy page was published;
+//   - every _redirects target exists.
 // Usage: node scripts/check-static-site.mjs [dir]   (default: dist-static)
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -14,7 +15,9 @@ import { fileURLToPath } from 'node:url';
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const siteDir = resolve(rootDir, process.argv[2] ?? 'dist-static');
 
-const REQUIRED = ['index.html', '404.html', 'quiz/index.html', 'taboo-online/index.html', 'lingoparty/index.html'];
+const REQUIRED = ['index.html', '404.html', 'quiz/index.html', 'taboo-online/index.html', 'lingoparty/index.html', '_redirects'];
+// Server-only data and retired legacy pages that must not be published.
+const RETIRED = ['prompts.json', 'lingoparty-decks.json', 'lingoparty.html', 'lingoparty.js', 'lingoparty.css', 'hub.css'];
 const SERVER_ONLY = /(?:-engine\.js|-protocol\.js|(?:^|\/)quiz-decks\.js|(?:^|\/)taboo-decks\.js)$/;
 // Anything with a scheme (https:, data:, mailto:, ...), protocol-relative
 // URLs and pure fragments are not files in this site.
@@ -42,6 +45,10 @@ for (const file of files) {
     if (SERVER_ONLY.test(file)) problems.push(`server-only module published: ${file}`);
 }
 
+for (const file of RETIRED) {
+    if (files.includes(file)) problems.push(`retired or server-only file published: ${file}`);
+}
+
 const targetExists = path => {
     if (!existsSync(path)) return false;
     return statSync(path).isDirectory() ? existsSync(join(path, 'index.html')) : true;
@@ -67,6 +74,20 @@ for (const page of files.filter(file => file.endsWith('.html'))) {
             problems.push(`${page}: ${raw} points outside the site`);
         } else if (!targetExists(target)) {
             problems.push(`${page}: ${raw} does not exist in the build`);
+        }
+    }
+}
+
+// Every _redirects target must be a page of this site.
+if (files.includes('_redirects')) {
+    const rules = readFileSync(join(siteDir, '_redirects'), 'utf8')
+        .split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#'));
+    for (const rule of rules) {
+        const [from, to] = rule.split(/\s+/);
+        if (!from?.startsWith('/') || !to?.startsWith('/')) {
+            problems.push(`_redirects: malformed rule "${rule}"`);
+        } else if (!targetExists(join(siteDir, to))) {
+            problems.push(`_redirects: ${from} points at ${to}, which does not exist in the build`);
         }
     }
 }
