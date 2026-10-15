@@ -34,3 +34,47 @@ export async function probeOnlineHealth({
     signal?.removeEventListener('abort', abort);
   }
 }
+
+// Pause between failed attempts: 3 attempts in total, then "offline" until the
+// caller asks again (tab visible again, `online` event, user tap).
+export const ONLINE_HEALTH_RETRY_DELAYS_MS = [1000, 3000];
+
+// Resolves after `ms`, or rejects as soon as `signal` aborts.
+export function abortableDelay(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason);
+      return;
+    }
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal.reason);
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener('abort', onAbort, { once: true });
+  });
+}
+
+// `probeOnlineHealth` with backoff: true on the first healthy answer, false once
+// every attempt failed or `signal` aborted.
+export async function probeOnlineHealthWithRetry({
+  probe = probeOnlineHealth,
+  delaysMs = ONLINE_HEALTH_RETRY_DELAYS_MS,
+  wait = abortableDelay,
+  signal,
+  ...probeOptions
+} = {}) {
+  for (let attempt = 0; ; attempt += 1) {
+    if (signal?.aborted) return false;
+    if (await probe({ ...probeOptions, signal })) return true;
+    if (attempt >= delaysMs.length || signal?.aborted) return false;
+    try {
+      await wait(delaysMs[attempt], signal);
+    } catch {
+      return false;
+    }
+  }
+}

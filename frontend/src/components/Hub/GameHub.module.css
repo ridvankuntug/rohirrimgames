@@ -433,6 +433,12 @@
   cursor: not-allowed;
 }
 
+.cardLinkRetry,
+.cardLinkRetry .gameCardDisabled,
+.cardLinkRetry .gameCardDisabled:hover {
+  cursor: pointer;
+}
+
 .cardLinkDisabled:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 4px;

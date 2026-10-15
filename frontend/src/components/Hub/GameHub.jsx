@@ -23,11 +23,11 @@ const FILTER_LABEL_KEYS = {
 registerTranslations('hub', {
   en: {
     tagline: 'Offline-ready classroom games for language, discussion, and play.', teacherGuide: 'Teacher Guide', buildActivities: 'Plan a classroom activity', buildActivitiesText: 'Choose a game, match it to your lesson objective, and begin with a built-in deck.', addKey: 'Optional teacher tools', chooseGame: 'Choose a game', chooseGameText: 'Select the activity that best supports your lesson objective and class level.', nameDecks: 'Start with a deck', nameDecksText: 'Every game remains playable with its included starter content.', keyText: 'When a classroom server is available, optional teacher tools can be configured for this browser tab.', changeKey: 'Change teacher settings', addKeyButton: 'Open teacher settings', activeKey: 'Teacher tools ready', disabledKey: 'Teacher tools unavailable', server: 'Mode: {status}',     filterGroup: 'Game categories', filterAll: 'All Games', filterSolo: 'Solo Games', filterMulti: 'Multiplayer', filterOnline: 'Online',
-    onlineQuiz: 'Online Quiz', onlineTaboo: 'Online Taboo', onlineChecking: 'Checking…', onlineOffline: 'Offline', onlineOfflineHint: 'The online server is unreachable right now.',
+    onlineQuiz: 'Online Quiz', onlineTaboo: 'Online Taboo', onlineChecking: 'Checking…', onlineOffline: 'Offline', onlineOfflineHint: 'The online server is unreachable right now. Tap to try again.', onlineRetry: 'Tap to retry',
   },
   tr: {
     tagline: 'Dil, tartışma ve oyun için çevrimdışı kullanıma hazır sınıf oyunları.', teacherGuide: 'Öğretmen Rehberi', buildActivities: 'Bir sınıf etkinliği planlayın', buildActivitiesText: 'Bir oyun seçin, ders hedefinizle eşleştirin ve yerleşik bir deste ile başlayın.', addKey: 'İsteğe bağlı öğretmen araçları', chooseGame: 'Bir oyun seçin', chooseGameText: 'Ders hedefinize ve sınıf seviyenize en uygun etkinliği seçin.', nameDecks: 'Bir deste ile başlayın', nameDecksText: 'Her oyun, içindeki başlangıç içeriğiyle oynanabilir.', keyText: 'Bir sınıf sunucusu kullanılabilir olduğunda, isteğe bağlı öğretmen araçları bu tarayıcı sekmesinde yapılandırılabilir.', changeKey: 'Öğretmen ayarlarını değiştir', addKeyButton: 'Öğretmen ayarlarını aç', activeKey: 'Öğretmen araçları hazır', disabledKey: 'Öğretmen araçları kullanılamıyor', server: 'Mod: {status}',     filterGroup: 'Oyun kategorileri', filterAll: 'Tüm Oyunlar', filterSolo: 'Tek Kişilik', filterMulti: 'Çok Oyunculu', filterOnline: 'Çevrimiçi',
-    onlineQuiz: 'Çevrimiçi Quiz', onlineTaboo: 'Çevrimiçi Tabu', onlineChecking: 'Kontrol ediliyor…', onlineOffline: 'Çevrimdışı', onlineOfflineHint: 'Çevrimiçi sunucuya şu anda ulaşılamıyor.',
+    onlineQuiz: 'Çevrimiçi Quiz', onlineTaboo: 'Çevrimiçi Tabu', onlineChecking: 'Kontrol ediliyor…', onlineOffline: 'Çevrimdışı', onlineOfflineHint: 'Çevrimiçi sunucuya şu anda ulaşılamıyor. Tekrar denemek için dokunun.', onlineRetry: 'Tekrar dene',
   },
 });
 
@@ -38,7 +38,7 @@ export default function GameHub() {
   const [showKeyPrompt, setShowKeyPrompt] = useState(false);
   const [keyActive, setKeyActive] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
-  const onlineStatus = useOnlineHealth();
+  const { status: onlineStatus, retry: retryOnlineHealth } = useOnlineHealth();
 
   useEffect(() => {
     probeBackend().then(isOnline => {
@@ -288,11 +288,14 @@ export default function GameHub() {
       <section className={styles.gamesGrid}>
         {visibleGames.map(game => {
           const isUnavailable = game.requiresOnline && onlineStatus !== 'online';
+          const canRetry = game.requiresOnline && onlineStatus === 'offline';
           const CardContent = (
             <div className={`glass-card ${styles.gameCard} ${isUnavailable ? styles.gameCardDisabled : ''}`}>
               {isUnavailable && (
                 <span className={styles.cardNote}>
-                  {onlineStatus === 'checking' ? t('hub.onlineChecking') : t('hub.onlineOffline')}
+                  {onlineStatus === 'checking'
+                    ? t('hub.onlineChecking')
+                    : `${t('hub.onlineOffline')} · ${t('hub.onlineRetry')}`}
                 </span>
               )}
               <div className={styles.emojiWrapper}>
@@ -305,7 +308,8 @@ export default function GameHub() {
           if (game.requiresOnline) {
             // Same <a> element in every state, so keyboard focus survives the
             // probe settling. While unavailable it has no href (cannot navigate)
-            // but stays focusable and is announced as a disabled link.
+            // but stays focusable and is announced as a disabled link. While
+            // offline, a tap (or Enter/Space) probes the server again.
             return (
               <a
                 key={game.id}
@@ -314,7 +318,16 @@ export default function GameHub() {
                 href={isUnavailable ? undefined : game.path}
                 aria-disabled={isUnavailable ? 'true' : undefined}
                 title={onlineStatus === 'offline' ? t('hub.onlineOfflineHint') : undefined}
-                className={isUnavailable ? styles.cardLinkDisabled : undefined}
+                className={isUnavailable
+                  ? `${styles.cardLinkDisabled} ${canRetry ? styles.cardLinkRetry : ''}`
+                  : undefined}
+                onClick={canRetry ? retryOnlineHealth : undefined}
+                onKeyDown={canRetry ? event => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    retryOnlineHealth();
+                  }
+                } : undefined}
                 style={{ textDecoration: 'none' }}
               >
                 {CardContent}
