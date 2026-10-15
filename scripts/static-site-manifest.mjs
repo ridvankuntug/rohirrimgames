@@ -30,7 +30,6 @@ export const rootFiles = Object.freeze([
     'theme.css', 'theme.js',
     'style.css',
     'deck-library.css',
-    'list.txt',
     'favicon.svg'
 ]);
 

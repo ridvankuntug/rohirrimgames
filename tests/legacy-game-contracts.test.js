@@ -77,3 +77,18 @@ test('Six Thinking Hats marks deck launch as independent from AI generation', as
         'the registered hats deck launch must remain available without an AI key'
     );
 });
+
+test('static deck pickers apply the selected deck immediately and on change', async () => {
+    // Setting select.value alone only changes the visible option (AGENTS.md).
+    for (const script of ['game.js', 'taboo.js', 'hangman.js', 'millionaire.js', 'kelime.js', 'flashcards.js']) {
+        const source = await readFile(new URL(`../${script}`, import.meta.url), 'utf8');
+        assert.match(source, /addEventListener\('change', applySelectedDeck\);\s*applySelectedDeck\(\);/, script);
+    }
+});
+
+test('Who Am I uses its built-in decks without fetching list.txt', async () => {
+    const source = await readFile(new URL('../game.js', import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /list\.txt|loadCharacters/);
+    assert.match(source, /const DEFAULT_CHARACTERS = \[/);
+    assert.match(source, /let CHARACTERS = \[\.\.\.DEFAULT_CHARACTERS\]/);
+});

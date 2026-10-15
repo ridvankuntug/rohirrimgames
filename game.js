@@ -2,7 +2,7 @@
    WHO AM I? – Game Logic
    ============================================ */
 
-// ---- Characters (loaded dynamically from list.txt with robust fallback) ----
+// ---- Characters (built-in default deck; registered or static decks replace it) ----
 const DEFAULT_CHARACTERS = [
   'Frodo Baggins', 'Samwise Gamgee', 'Gandalf', 'Aragorn', 'Legolas', 'Gimli',
   'Peregrin "Pippin" Took', 'Meriadoc "Merry" Brandybuck', 'Boromir', 'Gollum',
@@ -41,28 +41,6 @@ const STATIC_DECKS = [
 let CHARACTERS = [...DEFAULT_CHARACTERS];
 let deckLibrary = null;
 let playSessionId = null;
-
-async function loadCharacters() {
-  try {
-    const res = await fetch('list.txt');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    const loaded = text
-      .split('\n')
-      .map(line => line.replace(/\r/, '').trim())
-      .filter(line => line && !line.startsWith('---') && !line.startsWith('**'));
-    if (loaded.length > 0) {
-      CHARACTERS = loaded;
-      return;
-    }
-  } catch (err) {
-    console.warn('Could not load list.txt, fallback character deck used:', err);
-  }
-  CHARACTERS = [...DEFAULT_CHARACTERS];
-}
-
-// Load on startup
-loadCharacters();
 
 // ---- DOM refs ----
 const screenStart = document.getElementById('screen-start');
@@ -236,8 +214,10 @@ btnGenerate.addEventListener('click', async () => {
     generateStatus.textContent = `✓ Generated ${data.count} characters!`;
     generateStatus.className = 'generate-status success';
 
-    // Reload the character list from new list.txt
-    await loadCharacters();
+    const generated = Array.isArray(data.characters)
+      ? data.characters.map(character => String(character).trim()).filter(Boolean)
+      : [];
+    if (generated.length > 0) CHARACTERS = generated;
     saveGeneratedCharacters(CHARACTERS, { source: 'ai', theme, count: CHARACTERS.length });
     bag = []; // reset shuffle bag
   } catch (err) {
@@ -267,14 +247,19 @@ function populateStaticDeckSelect() {
   const activeIndex = STATIC_DECKS.findIndex(deck => deck.content === DEFAULT_CHARACTERS);
   select.value = String(activeIndex >= 0 ? activeIndex : 0);
 
-  select.addEventListener('change', () => {
+  function applySelectedDeck() {
     const deck = STATIC_DECKS[Number(select.value)];
     if (!deck) return;
     CHARACTERS = [...deck.content];
     bag = [];
     generateStatus.textContent = `Using deck “${deck.name}”.`;
     generateStatus.className = 'generate-status success';
-  });
+  }
+
+  // Setting select.value only changes the visible option: apply the deck now
+  // and on every change.
+  select.addEventListener('change', applySelectedDeck);
+  applySelectedDeck();
 
   wrap.hidden = false;
 }
@@ -308,7 +293,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   } catch {
     document.getElementById('ai-generate-wrap')?.setAttribute('hidden', '');
-    await loadCharacters();
     populateStaticDeckSelect();
   }
 });
