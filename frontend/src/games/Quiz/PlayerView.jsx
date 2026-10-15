@@ -18,6 +18,7 @@ import {
 } from './QuizShared';
 import { optionLetter, optionToneClass, useFocusOnChange } from './quizUi';
 import { useConfirm } from './useConfirm';
+import { useScreenWakeLock } from '../../hooks/useScreenWakeLock';
 import styles from './Quiz.module.css';
 
 function Leaderboard({ snapshot }) {
@@ -177,6 +178,8 @@ export default function PlayerView({ code, name, token, onSession, onForget, onJ
   }, [code, name, onSession]);
   const { status, snapshot, clockOffset, notice, terminal, readyEpoch, send, restart, clearNotice } = useQuizSocket({ code, buildAuthMessage, onJoined });
   const confirm = useConfirm();
+  // Keep the phone awake while the room is live (not after the final screen or a terminal close).
+  useScreenWakeLock(!terminal && snapshot?.phase !== 'final' && snapshot?.phase !== 'ended');
 
   useEffect(() => {
     if (!terminal) return;

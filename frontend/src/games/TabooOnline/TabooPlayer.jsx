@@ -11,6 +11,7 @@ import {
 import { useQuizSocket } from '../Quiz/useQuizSocket';
 import { ConnectionBadge, InfoDialog, Notice, TerminalScreen } from '../Quiz/QuizShared';
 import { useConfirm } from '../Quiz/useConfirm';
+import { useScreenWakeLock } from '../../hooks/useScreenWakeLock';
 import { JoinInfo, TeamBadge } from './TabooShared';
 import TabooLobby from './TabooLobby';
 import TabooGame from './TabooGame';
@@ -64,6 +65,8 @@ export default function TabooPlayer({ code, name, token, onSession, onForget, on
   }, [terminal, code, name, onForget, onJoinFailed]);
 
   const finished = snapshot?.phase === 'final';
+  // Keep the phone awake while the room is live (not after the final screen or a terminal close).
+  useScreenWakeLock(!terminal && !finished);
   const canShowJoin = Boolean(snapshot) && !finished && snapshot.phase !== 'lobby';
   useEffect(() => {
     if (!canShowJoin || terminal) setJoinOpen(false);
