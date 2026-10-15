@@ -299,3 +299,25 @@ test('a taboo room saved by the previous build (schema 1, mid-turn) is migrated 
     assert.equal(narrator.last('state').snapshot.turn.correct, state.turn.correct + 1);
     assert.equal(JSON.parse(h.ctx.storage.sql.row).schema, 2);
 });
+
+// ---------------------------------------------------------------------------
+// Room creation
+// ---------------------------------------------------------------------------
+
+test('initRoom: a failing setAlarm removes the new row (no room without an expiry)', async () => {
+    const ctx = createFakeCtx();
+    ctx.storage.setAlarm = async () => {
+        throw new Error('storage unavailable');
+    };
+    const room = new RoomController({ ctx, game: QUIZ_GAME, now: createClock().fn, log: () => {} });
+    await assert.rejects(room.initRoom({ code: CODE, hostTokenHash: 'a'.repeat(64) }), /storage unavailable/);
+    assert.equal(ctx.storage.sql.tableExists, false);
+    assert.equal(ctx.storage.sql.row, null);
+    assert.equal(room.admissionError(), 'room_gone');
+    // The code can be used again afterwards.
+    ctx.storage.setAlarm = async at => {
+        ctx.storage.alarm = at;
+    };
+    assert.deepEqual(await room.initRoom({ code: CODE, hostTokenHash: 'a'.repeat(64) }), { ok: true });
+    assert.ok(ctx.storage.alarm !== null);
+});

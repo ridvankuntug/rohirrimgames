@@ -253,7 +253,18 @@ export class RoomController {
         const state = this.game.createInitialState(engineInit, { now: this.now() });
         if (!this.store.create(state)) return { ok: false, reason: 'exists' };
         this.cached = state;
-        if (state.alarmAt !== null) await this.ctx.storage.setAlarm(state.alarmAt);
+        if (state.alarmAt !== null) {
+            try {
+                await this.ctx.storage.setAlarm(state.alarmAt);
+            } catch (error) {
+                // Without its alarm the room would never expire: undo the create
+                // (the Worker then answers 500 and the teacher retries).
+                this.cached = undefined;
+                await this.ctx.storage.deleteAll();
+                this.cached = null;
+                throw error;
+            }
+        }
         return { ok: true };
     }
 
