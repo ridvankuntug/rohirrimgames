@@ -151,7 +151,7 @@ Barındırma **Cloudflare Workers Static Assets** üzerinden yapılır (eskiden 
 
 ### Nasıl çalışır?
 
-- `wrangler.jsonc`, `main`'i `worker/index.js`'e, `assets.run_worker_first`'ü `["/rt/*"]`'e ayarlar ve `QUIZ_ROOMS` Durable Object bağlamasını (`QuizRoom` sınıfı) tanımlar; `/rt/*` dışındaki her istek doğrudan statik dosya katmanından yanıtlanır. Kendi uçlarımız `/rt/` altındadır, **asla** `/api/` altında değil — aşağıdaki gerçek 404 davranışı buna dayanır.
+- `wrangler.jsonc`, `main`'i `worker/index.js`'e, `assets.run_worker_first`'ü `["/rt/*"]`'e ayarlar; `QUIZ_ROOMS` / `TABOO_ROOMS` Durable Object bağlamalarını ve IP başına istek sınırı bağlamalarını (`ratelimits`) tanımlar; `/rt/*` dışındaki her istek doğrudan statik dosya katmanından yanıtlanır. Kendi uçlarımız `/rt/` altındadır, **asla** `/api/` altında değil — aşağıdaki gerçek 404 davranışı buna dayanır.
 - `wrangler.jsonc`, `assets.directory`'yi `./dist-static`'e, `assets.not_found_handling`'i `"404-page"`e ayarlar. Bu, eşleşmeyen her yolu (`/api/*` dahil) gerçek bir `404` durum koduyla (ama `dist-static/404.html` içeriğiyle) yanıtlamayı Workers'a native olarak yaptırır — Pages döneminde elle yapılan "index.html'i 404.html'e kopyala" hilesiyle aynı sonucu, platform desteğiyle sağlar.
 - Her oyun sayfası açılışta `/api/health` (ya da ilgili `/api/decks` ucu) ile backend'e ulaşmaya çalışır. Ulaşamazsa (statik barındırmada normal olan durum budur, çünkü `/api/*` gerçek 404 döner) yapay zekâ girdi alanlarını ve kayıtlı-deste seçiciyi gizler, yerine `#static-deck-wrap` içindeki basit bir `<select>` menüsünü gösterir.
 - Bu menüdeki seçenekler, ilgili oyunun `.js` dosyasında tanımlı `STATIC_DECKS` dizisinden gelir (örn. `who` için `game.js`, `hangman` için `hangman.js`). Her oyunda en az bir "Starter — General" destesi ve genelde oyunun kendi gömülü varsayılan içeriği (`DEFAULT_*`) bulunur.
@@ -209,6 +209,13 @@ Kahoot tarzı online quiz `/quiz` adresindedir ve oyun merkezinin **Online** sek
 1. Cloudflare panosu → **Turnstile** → `games.ortadunyaankara.org` için bir widget ekleyin (mod: Managed).
 2. **Site Key** herkese açıktır ve `frontend/src/config/quizConfig.js` içinde durur.
 3. **Secret Key**, `TURNSTILE_SECRET_KEY` adlı bir Worker secret'ıdır: Workers & Pages → `rohirrimgames` → Settings → Variables and Secrets ya da `npx wrangler secret put TURNSTILE_SECRET_KEY`. Repoya, herhangi bir dosyaya veya sohbete **asla** yazılmaz. Secret yoksa oda oluşturma reddedilir (`503 turnstile_not_configured`).
+
+### Dayanıklılık ve sınırlar (quiz ve tabu)
+
+- **IP başına istek sınırı**: oda oluşturma (`POST /rt/rooms`, `POST /rt/taboo/rooms`) IP başına dakikada 20, WebSocket bağlantısı dakikada 600 ile sınırlıdır (`wrangler.jsonc` → `ratelimits`). Sınır aşılırsa `429 rate_limited` döner. Sınırlar, tek NAT adresinin arkasındaki bir okulun (deploy sonrası yeniden bağlanan iki sınıf telefon) hiçbir zaman engellenmeyeceği kadar geniş seçildi.
+- **Kayıtlı durum şeması**: odalar deploy'dan sonra da yaşar. Kayıtlı durumun yapısı değişirse motorun şema numarası artırılır ve bir önceki şemadan geçiş (`migrateState`) eklenir; tanınmayan şemalı oda temizce silinir (`room_gone`).
+- **Tabu kartları odada saklanır**: oyun başlarken destedeki kartlar oda durumuna kopyalanır; deste dosyası değişse de süren oyun etkilenmez. Tabuda lobi kilidi yoktur (v1 kapsamı dışında); atılan oyuncu katılım açıkken yeni oyuncu olarak dönebilir.
+- **Bozuk oda**: motor sürekli hata veriyorsa oda silinir ve istemciler `room_gone` ile durur (sonsuz yeniden bağlanma döngüsü yok).
 
 ### Yerel geliştirme
 
