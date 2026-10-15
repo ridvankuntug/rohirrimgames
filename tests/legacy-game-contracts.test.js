@@ -92,3 +92,15 @@ test('Who Am I uses its built-in decks without fetching list.txt', async () => {
     assert.match(source, /const DEFAULT_CHARACTERS = \[/);
     assert.match(source, /let CHARACTERS = \[\.\.\.DEFAULT_CHARACTERS\]/);
 });
+
+test('shipped legacy pages use the Rohirrim palette, not the old purple/slate one', async () => {
+    const { rootFiles, sharedFiles } = await import('../scripts/static-site-manifest.mjs');
+    // Functional colours stay: hat colours (hats.css) and the distinct
+    // segment colours of the wheel and the bottle circle.
+    const functional = new Set(['hats.css', 'wheel.js', 'bottle.js']);
+    const OLD_PALETTE = /#(?:a855f7|7c3aed|c084fc|d8b4fe|6366f1|8b5cf6)\b|rgba\(\s*(?:88,\s*28,\s*135|30,\s*41,\s*59|15,\s*23,\s*42|124,\s*58,\s*237|79,\s*70,\s*229|30,\s*27,\s*75)\s*,/i;
+    for (const file of [...rootFiles, ...sharedFiles].filter(path => /\.(?:html|css|js)$/.test(path) && !functional.has(path))) {
+        const source = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');
+        assert.doesNotMatch(source, OLD_PALETTE, file);
+    }
+});

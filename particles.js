@@ -127,7 +127,7 @@
     function updateColors(newTheme) {
         theme = newTheme;
         const newColors = theme === 'light'
-            ? ['rgba(124,58,237,0.45)', 'rgba(79,70,229,0.4)', 'rgba(219,39,119,0.35)']
+            ? ['rgba(122, 67, 36,0.4)', 'rgba(200, 162, 74,0.45)', 'rgba(23, 59, 40,0.35)']
             : ['rgba(200, 162, 74,0.35)', 'rgba(230, 200, 119,0.3)', 'rgba(122, 67, 36,0.25)'];
         activeLoops.forEach(loop => {
             loop.particles.forEach(p => {

@@ -222,12 +222,12 @@
 }
 
 .card-front {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.92));
+    background: linear-gradient(135deg, rgba(36, 56, 38, 0.82), rgba(28, 42, 28, 0.94));
 }
 
 .card-back {
     transform: rotateY(180deg);
-    background: linear-gradient(135deg, rgba(88, 28, 135, 0.75), rgba(30, 27, 75, 0.92));
+    background: linear-gradient(135deg, rgba(122, 67, 36, 0.78), rgba(43, 30, 18, 0.94));
     border-color: rgba(200, 162, 74, 0.4);
 }
 
