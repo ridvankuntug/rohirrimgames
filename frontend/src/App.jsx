@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import GameHub from './components/Hub/GameHub';
+import RouteFallback from './components/Common/RouteFallback';
 
 // Loaded on demand so the hub bundle does not carry LingoParty or the online
 // game clients.
@@ -13,9 +14,9 @@ export default function App() {
     <div className="app-wrapper">
       <Routes>
         <Route path="/" element={<GameHub />} />
-        <Route path="/lingoparty" element={<Suspense fallback={null}><LingoPartyGame /></Suspense>} />
-        <Route path="/quiz" element={<Suspense fallback={null}><QuizPage /></Suspense>} />
-        <Route path="/taboo-online" element={<Suspense fallback={null}><TabooOnlinePage /></Suspense>} />
+        <Route path="/lingoparty" element={<Suspense fallback={<RouteFallback />}><LingoPartyGame /></Suspense>} />
+        <Route path="/quiz" element={<Suspense fallback={<RouteFallback />}><QuizPage /></Suspense>} />
+        <Route path="/taboo-online" element={<Suspense fallback={<RouteFallback />}><TabooOnlinePage /></Suspense>} />
         <Route path="*" element={<GameHub />} />
       </Routes>
     </div>
