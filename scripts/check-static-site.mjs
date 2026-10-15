@@ -5,7 +5,8 @@
 //     the React deep links need a concrete index.html each);
 //   - no server-only module (quiz answers, game rules, protocol validators)
 //     or retired legacy page was published;
-//   - every _redirects target exists.
+//   - every _redirects target exists and _headers sets the cache and
+//     security headers.
 // Usage: node scripts/check-static-site.mjs [dir]   (default: dist-static)
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -15,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const siteDir = resolve(rootDir, process.argv[2] ?? 'dist-static');
 
-const REQUIRED = ['index.html', '404.html', 'quiz/index.html', 'taboo-online/index.html', 'lingoparty/index.html', '_redirects'];
+const REQUIRED = ['index.html', '404.html', 'quiz/index.html', 'taboo-online/index.html', 'lingoparty/index.html', '_redirects', '_headers'];
 // Server-only data and retired legacy pages that must not be published.
 const RETIRED = ['prompts.json', 'lingoparty-decks.json', 'lingoparty.html', 'lingoparty.js', 'lingoparty.css', 'hub.css'];
 const SERVER_ONLY = /(?:-engine\.js|-protocol\.js|(?:^|\/)quiz-decks\.js|(?:^|\/)taboo-decks\.js)$/;
@@ -89,6 +90,17 @@ if (files.includes('_redirects')) {
         } else if (!targetExists(join(siteDir, to))) {
             problems.push(`_redirects: ${from} points at ${to}, which does not exist in the build`);
         }
+    }
+}
+
+// The security headers apply to every asset; only hashed Vite assets are immutable.
+if (files.includes('_headers')) {
+    const text = readFileSync(join(siteDir, '_headers'), 'utf8');
+    for (const name of ['X-Content-Type-Options', 'Referrer-Policy', 'X-Frame-Options', 'Permissions-Policy']) {
+        if (!new RegExp(`^/\\*\\n(?:  .+\\n)*  ${name}:`, 'm').test(text)) problems.push(`_headers: /* does not set ${name}`);
+    }
+    if (!/^\/assets\/\*\n(?:  .+\n)*  Cache-Control: public, max-age=31536000, immutable$/m.test(text)) {
+        problems.push('_headers: /assets/* is not cached as immutable');
     }
 }
 

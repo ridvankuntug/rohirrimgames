@@ -2,7 +2,7 @@ import { cpSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { rootFiles, sharedFiles, iconFiles, redirects } from './static-site-manifest.mjs';
+import { rootFiles, sharedFiles, iconFiles, redirects, headers } from './static-site-manifest.mjs';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const outDir = join(rootDir, 'dist-static');
@@ -64,6 +64,13 @@ cpSync(join(frontendDist, 'index.html'), join(outDir, '404.html'));
 writeFileSync(
     join(outDir, '_redirects'),
     redirects.map(([from, to, status]) => `${from} ${to} ${status}`).join('\n') + '\n'
+);
+
+// Workers Static Assets also reads (and does not publish) _headers: cache and
+// security headers for every asset response.
+writeFileSync(
+    join(outDir, '_headers'),
+    headers.map(([pattern, entries]) => [pattern, ...entries.map(([name, value]) => `  ${name}: ${value}`)].join('\n')).join('\n\n') + '\n'
 );
 
 console.log(`Static site assembled in ${outDir}`);

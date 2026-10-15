@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { rootFiles, sharedFiles, iconFiles, redirects } from '../scripts/static-site-manifest.mjs';
+import { rootFiles, sharedFiles, iconFiles, redirects, headers } from '../scripts/static-site-manifest.mjs';
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 const exists = path => existsSync(new URL(`../${path}`, import.meta.url));
@@ -64,4 +64,23 @@ test('old lingoparty.html bookmarks are redirected to the React route', async ()
     assert.deepEqual(redirects.find(([from]) => from === '/lingoparty.html'), ['/lingoparty.html', '/lingoparty', 301]);
     const script = await read('scripts/build-pages-site.mjs');
     assert.match(script, /'_redirects'/);
+});
+
+test('the build writes cache and security headers for the static assets', async () => {
+    const byPattern = new Map(headers.map(([pattern, entries]) => [pattern, new Map(entries)]));
+    const all = byPattern.get('/*');
+    assert.equal(all.get('X-Content-Type-Options'), 'nosniff');
+    assert.equal(all.get('Referrer-Policy'), 'strict-origin-when-cross-origin');
+    assert.equal(all.get('X-Frame-Options'), 'SAMEORIGIN');
+    assert.match(all.get('Permissions-Policy'), /camera=\(\)/);
+    assert.match(all.get('Permissions-Policy'), /microphone=\(\)/);
+    assert.match(all.get('Permissions-Policy'), /screen-wake-lock=\(self\)/);
+    assert.ok(!all.has('Cache-Control'), 'legacy root files have no cache busting: keep the default caching');
+    assert.ok(!all.has('Content-Security-Policy'), 'a CSP needs browser testing across every page first');
+    assert.equal(byPattern.get('/assets/*').get('Cache-Control'), 'public, max-age=31536000, immutable');
+    // Only one rule may set Cache-Control: later rules append to the header.
+    assert.equal(headers.filter(([, entries]) => entries.some(([name]) => name === 'Cache-Control')).length, 1);
+
+    const script = await read('scripts/build-pages-site.mjs');
+    assert.match(script, /'_headers'/);
 });

@@ -65,3 +65,22 @@ export const iconFiles = Object.freeze([
 export const redirects = Object.freeze([
     ['/lingoparty.html', '/lingoparty', 301]
 ]);
+
+// _headers: response headers for the static assets (not for the Worker's
+// /rt/* responses). Only Vite's content-hashed /assets/* files are cached as
+// immutable; legacy root .js/.css have no cache busting and keep the default
+// revalidation. No Content-Security-Policy yet: it needs browser testing
+// across every page (Turnstile, Google Fonts, inline scripts) first.
+// Permissions-Policy denies only features no page uses; screen-wake-lock and
+// clipboard-write (room-code copy buttons) stay allowed for this site.
+export const headers = Object.freeze([
+    ['/*', Object.freeze([
+        ['X-Content-Type-Options', 'nosniff'],
+        ['Referrer-Policy', 'strict-origin-when-cross-origin'],
+        ['X-Frame-Options', 'SAMEORIGIN'],
+        ['Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), midi=(), bluetooth=(), screen-wake-lock=(self), clipboard-write=(self), fullscreen=(self)']
+    ])],
+    ['/assets/*', Object.freeze([
+        ['Cache-Control', 'public, max-age=31536000, immutable']
+    ])]
+]);
