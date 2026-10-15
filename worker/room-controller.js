@@ -96,6 +96,7 @@ const OPEN = 1; // WebSocket.OPEN
 const REQUIRED_GAME_FUNCTIONS = Object.freeze([
     'parseInit',
     'createInitialState',
+    'migrateState',
     'reduce',
     'parseClientMessage',
     'buildPlayerSnapshot',
@@ -187,8 +188,52 @@ export class RoomController {
     }
 
     state() {
-        if (this.cached === undefined) this.cached = this.store.load();
+        if (this.cached === undefined) this.cached = this.loadState();
         return this.cached;
+    }
+
+    /**
+     * Reads the stored row and runs `game.migrateState` on it. An upgraded state
+     * is written back at once (one row write, once per old room), so later loads
+     * see the same upgrade. A row that cannot be used (unparseable JSON, unknown
+     * or newer schema, a migration that throws) gives an in-memory "unusable"
+     * marker in the deleted phase: every path then treats the room as gone, and
+     * `purgeIfUnusable()` (called by every entry point) deletes it. Storage errors
+     * other than a JSON SyntaxError propagate (they may be transient).
+     */
+    loadState() {
+        let stored;
+        try {
+            stored = this.store.load();
+        } catch (error) {
+            if (error?.name !== 'SyntaxError') throw error;
+            this.log(`${this.game.name}: stored state is unreadable: ${describeError(error)}`);
+            return this.unusableMarker();
+        }
+        if (stored === null) return null;
+        let migrated = null;
+        try {
+            migrated = this.game.migrateState(stored);
+        } catch (error) {
+            this.log(`${this.game.name}: state migration failed: ${describeError(error)}`);
+            return this.unusableMarker();
+        }
+        if (!migrated) {
+            const schema = Number.isInteger(stored?.schema) ? stored.schema : 'none';
+            this.log(`${this.game.name}: stored state has unsupported schema ${schema}`);
+            return this.unusableMarker();
+        }
+        if (migrated !== stored) this.store.save(migrated);
+        return migrated;
+    }
+
+    unusableMarker() {
+        return { phase: this.game.deletedPhase, unusable: true };
+    }
+
+    /** Deletes a room whose stored state could not be used (see loadState). */
+    async purgeIfUnusable() {
+        if (this.state()?.unusable === true) await this.purge();
     }
 
     /** The state, or null when the room does not exist or is being deleted. */
@@ -441,6 +486,7 @@ export class RoomController {
 
     async webSocketMessage(ws, message) {
         try {
+            await this.purgeIfUnusable();
             await this.handleMessage(ws, message);
         } catch (error) {
             await this.handlerFailed('message', error, ws);
@@ -449,6 +495,7 @@ export class RoomController {
 
     async webSocketClose(ws, code) {
         try {
+            await this.purgeIfUnusable();
             await this.handleClose(ws, code);
         } catch (error) {
             await this.handlerFailed('close', error);
@@ -457,6 +504,7 @@ export class RoomController {
 
     async webSocketError(ws) {
         try {
+            await this.purgeIfUnusable();
             await this.handleClose(ws, 1011);
         } catch (error) {
             await this.handlerFailed('error', error);

@@ -32,6 +32,8 @@ export class QuizRoom extends DurableObject {
                 headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
             });
         }
+        // A stored state this build cannot use is deleted first (then room_gone).
+        await this.room.purgeIfUnusable();
         const refused = this.room.admissionError();
         if (refused) {
             return new Response(JSON.stringify({ error: refused }), {

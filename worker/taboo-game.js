@@ -8,7 +8,7 @@
 // (`buildPlayerSnapshot`) is role-specific inside the engine (the narrator's
 // teammates never get the card).
 
-import { PHASES, buildPlayerSnapshot, createInitialState, reduce } from '../shared/taboo-engine.js';
+import { PHASES, buildPlayerSnapshot, createInitialState, migrateState, reduce } from '../shared/taboo-engine.js';
 import {
     TABOO_PROTOCOL_LIMITS,
     TEAM_MODES,
@@ -37,6 +37,7 @@ export const TABOO_GAME = Object.freeze({
     maxMessageBytes: TABOO_PROTOCOL_LIMITS.maxMessageBytes,
     parseInit,
     createInitialState,
+    migrateState,
     reduce,
     parseClientMessage: parseTabooClientMessage,
     buildPlayerSnapshot,

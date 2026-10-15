@@ -11,12 +11,14 @@
 //   maxMessageBytes          frame size limit (UTF-8 bytes)
 //   parseInit(init)          RPC input -> engine init object, or null (bad_request)
 //   createInitialState(init, ctx), reduce(state, event, ctx)
+//   migrateState(persisted)  stored state -> current schema, or null (unusable:
+//                            the room is deleted); run once per load
 //   parseClientMessage(raw, { role }) -> { ok: true, event } | { ok: false, code }
 //   buildPlayerSnapshot(state, playerId, now), buildHostSnapshot(state, now) (hasHost only)
 //   buildStateMessage(snapshot), buildJoinedMessage({...}), buildErrorMessage(code)
 //                            the `{ v, t }` envelopes sent on the socket
 
-import { PHASES, buildHostSnapshot, buildPlayerSnapshot, createInitialState, reduce } from '../shared/quiz-engine.js';
+import { PHASES, buildHostSnapshot, buildPlayerSnapshot, createInitialState, migrateState, reduce } from '../shared/quiz-engine.js';
 import {
     PROTOCOL_LIMITS,
     buildErrorMessage,
@@ -44,6 +46,7 @@ export const QUIZ_GAME = Object.freeze({
     maxMessageBytes: PROTOCOL_LIMITS.maxMessageBytes,
     parseInit,
     createInitialState,
+    migrateState,
     reduce,
     parseClientMessage,
     buildPlayerSnapshot,

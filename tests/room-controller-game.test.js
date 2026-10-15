@@ -51,6 +51,7 @@ const createFakeGame = () => {
             const { code, creatorTokenHash } = init ?? {};
             return code === CODE && typeof creatorTokenHash === 'string' ? { code, creatorTokenHash } : null;
         },
+        migrateState: state => state,
         createInitialState: (init, ctx) => {
             initCalls.push(init);
             return { code: init.code, creatorTokenHash: init.creatorTokenHash, phase: 'lobby', alarmAt: ctx.now + 1000, players: [], log: [] };
@@ -164,7 +165,7 @@ test('the constructor requires a complete game adapter', () => {
     const ctx = createFakeCtx();
     assert.throws(() => new RoomController({ ctx }), TypeError);
     const { game } = createFakeGame();
-    for (const key of ['reduce', 'parseInit', 'parseClientMessage', 'buildPlayerSnapshot', 'buildErrorMessage']) {
+    for (const key of ['reduce', 'parseInit', 'parseClientMessage', 'buildPlayerSnapshot', 'buildErrorMessage', 'migrateState']) {
         assert.throws(() => new RoomController({ ctx, game: { ...game, [key]: undefined } }), TypeError, key);
     }
     assert.throws(() => new RoomController({ ctx, game: { ...game, name: '' } }), TypeError);

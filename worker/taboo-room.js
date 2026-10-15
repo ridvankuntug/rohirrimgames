@@ -37,6 +37,8 @@ export class TabooRoom extends DurableObject {
         if ((request.headers.get('upgrade') ?? '').toLowerCase() !== 'websocket') {
             return jsonError('expected_websocket', 426);
         }
+        // A stored state this build cannot use is deleted first (then room_gone).
+        await this.room.purgeIfUnusable();
         const refused = this.room.admissionError();
         if (refused) return jsonError(refused, SOCKET_REJECTIONS[refused].status);
         const [client, server] = Object.values(new WebSocketPair());

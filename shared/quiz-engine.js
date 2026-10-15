@@ -13,6 +13,7 @@
 // buildHostSnapshot(state, now) -> object
 // buildPlayerSnapshot(state, playerId, now) -> object | null (unknown player)
 // nextAlarmAt(state) -> number | null
+// migrateState(persisted) -> state | null (null: unusable, the room is deleted)
 // rankPlayers(state) -> players sorted by rank, each with `rank`
 // computePoints(elapsedMs, limitMs) -> number
 //
@@ -154,6 +155,31 @@ const SETTING_VALIDATORS = {
     autoEarlyFinish: value => typeof value === 'boolean',
 };
 
+// ---------------------------------------------------------------------------
+// Persisted state schema
+// ---------------------------------------------------------------------------
+// Rooms outlive deploys (Durable Object storage), so a state written by an
+// older build is loaded by a newer one. Rule: when the persisted state shape
+// changes, bump QUIZ_STATE_SCHEMA and teach `migrateState` to upgrade the
+// previous schema (with a test that loads a state saved by the old build).
+
+export const QUIZ_STATE_SCHEMA = 1;
+
+/**
+ * Upgrades a persisted state to QUIZ_STATE_SCHEMA. Pure; returns the input
+ * object when it is already current, a new object when it was upgraded, and
+ * null when it cannot be used (not an object, unknown or newer schema) — the
+ * room is then deleted.
+ *
+ * @param {unknown} state
+ * @returns {object | null}
+ */
+export const migrateState = state => {
+    if (state === null || typeof state !== 'object' || Array.isArray(state)) return null;
+    if (state.schema === QUIZ_STATE_SCHEMA) return state;
+    return null;
+};
+
 const assertCtx = ctx => {
     if (!ctx || typeof ctx.now !== 'number' || !Number.isFinite(ctx.now)) {
         throw new TypeError('ctx.now must be a finite number (server time in ms)');
@@ -184,7 +210,7 @@ export const createInitialState = ({ code, hostTokenHash, deckId = QUIZ_DECKS[0]
     if (deckId !== null && !getDeck(deckId)) throw new TypeError(`unknown deck: ${deckId}`);
 
     const state = {
-        schema: 1,
+        schema: QUIZ_STATE_SCHEMA,
         code,
         hostTokenHash,
         createdAt: ctx.now,
