@@ -96,13 +96,12 @@ Proje kökünde aşağıdaki komutları çalıştırın:
 
 ```bash
 npm install
-npm run build
 npm start
 ```
 
 Ardından tarayıcıdan [http://localhost:8090](http://localhost:8090) adresini açın.
 
-`npm start`, Express sunucusunu çalıştırır. `npm run build`, React/Vite uygulamasını `frontend/dist` dizinine üretir; Express bu derlemeyi ve klasik oyun dosyalarını aynı porttan sunar.
+`npm install` (veya `npm ci`) ön yüz bağımlılıklarını da `frontend/package-lock.json`'dan kurar (`npm --prefix frontend ci`), ama derleme yapmaz. `npm start` önce `npm run build` ile React/Vite uygulamasını `frontend/dist` dizinine üretir, ardından Express sunucusunu çalıştırır; Express bu derlemeyi ve klasik oyun dosyalarını aynı porttan sunar.
 
 ### React arayüzünü geliştirme modunda çalıştırma
 
@@ -148,7 +147,7 @@ Bu tohumlama işlemi tekrar çalıştırılabilir; mevcut adlandırılmış dest
 
 Proje, Express/Supabase backend'i olmadan da statik bir site olarak yayınlanabilir. Yayın tek bir Cloudflare Worker'dır (`rohirrimgames`): her şey statik dosya olarak sunulur; Worker kodu yalnızca `/rt/*` yolları (online quiz uçları ve `QuizRoom` Durable Object'i) için çalışır. Bu modda yapay zekâ ile deste üretimi ve oturum kaydı çalışmaz; her deste tabanlı oyun bunun yerine kendi gömülü **statik desteleri** arasından seçim yapılan bir "Deck" açılır menüsü gösterir. Canlı örnek: [games.ortadunyaankara.org](https://games.ortadunyaankara.org).
 
-Barındırma **Cloudflare Workers Static Assets** üzerinden yapılır (eskiden Cloudflare Pages kullanılıyordu; proje `rohirrim-ankara-smiali` kardeş projesiyle aynı yapıya taşındı). Deploy, Cloudflare'in kendi Git entegrasyonu (Workers Builds) ile yönetilir: repo Cloudflare hesabına bağlıdır, `main`'e her push otomatik olarak yeni bir build+deploy tetikler. Ayrı bir GitHub Actions workflow'u **yoktur**.
+Barındırma **Cloudflare Workers Static Assets** üzerinden yapılır (eskiden Cloudflare Pages kullanılıyordu; proje `rohirrim-ankara-smiali` kardeş projesiyle aynı yapıya taşındı). Deploy, Cloudflare'in kendi Git entegrasyonu (Workers Builds) ile yönetilir: repo Cloudflare hesabına bağlıdır, `main`'e her push otomatik olarak yeni bir build+deploy tetikler. Deploy için bir GitHub Actions workflow'u **yoktur**; `.github/workflows/ci.yml` yalnızca kontrol yapar: `npm ci`, `npm test`, ön yüz lint'i, `npx wrangler deploy --dry-run` (statik build'i bir kez çalıştırır, Worker'ı paketler ve Durable Object bağlamalarını kontrol eder; kimlik bilgisi gerekmez) ve `npm run check:static` (`dist-static/` içindeki yerel bağlantılar, giriş sayfaları, sunucuya özel modüllerin yayınlanmaması). Workers Builds CI sonucuna bakmadan deploy ettiği için repo sahibinin GitHub'da `main` için CI `test` işini zorunlu kılan bir branch koruması açması önerilir.
 
 ### Nasıl çalışır?
 
@@ -169,11 +168,12 @@ node scripts/build-pages-site.mjs
 ### Manuel deploy (tek seferlik veya acil durum)
 
 ```bash
+npm ci
 npx wrangler login
 npx wrangler deploy
 ```
 
-`wrangler.jsonc`'daki `build.command` ve `assets.directory` ayarları sayesinde build otomatik yapılır. Normal akışta buna gerek yoktur — `main`'e push yeterlidir.
+`wrangler`, `package.json`'da sabit sürümlü bir devDependency'dir; `npx wrangler` bu sürümü kullanır. `wrangler.jsonc`'daki `build.command` ve `assets.directory` ayarları sayesinde build otomatik yapılır. Deploy etmeden kontrol için: `npx wrangler deploy --dry-run --outdir /tmp/worker-dry-run` ve ardından `npm run check:static`. Normal akışta manuel deploy'a gerek yoktur — `main`'e push yeterlidir.
 
 > **Canlı oyun sırasında deploy yok.** `main`'e her push bir deploy'dur; deploy tüm Durable Object'leri yeniden başlatır ve açık bütün WebSocket bağlantılarını koparır. Oda durumu korunur ve istemciler yeniden bağlanır, ama oyun herkes için kesintiye uğrar. Online quiz etkinliği sürerken push/merge yapmayın.
 
