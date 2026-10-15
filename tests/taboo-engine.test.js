@@ -10,6 +10,8 @@ import { TABOO_PROTOCOL_ERRORS, TEAM_MODES } from '../shared/taboo-protocol.js';
 import { ENGINE_ERRORS as QUIZ_ENGINE_ERRORS } from '../shared/quiz-engine.js';
 import {
     CREATOR_JOIN_GRACE_MS,
+    TABOO_STATE_SCHEMA,
+    migrateState,
     DEFAULT_TABOO_DECK_ID,
     ENDED_REASONS,
     MANAGER_LOST_STATUS,
@@ -844,7 +846,7 @@ test('privacy: the narrator\'s teammates never get the card in any phase; narrat
                     }
                 }
             }
-            for (const key of ['cardIndex', 'deck', 'order', 'tokenHash', 'nameKey', 'creatorTokenHash']) {
+            for (const key of ['cardIndex', 'deck', 'cards', 'order', 'tokenHash', 'nameKey', 'creatorTokenHash']) {
                 assert.ok(!JSON.stringify(snap).includes(`"${key}"`), `${key} leaked to ${player.name}`);
             }
         }
@@ -1629,4 +1631,76 @@ test('T3 gap: manager transfer skips an earlier-joined player who is only pendin
     room.join('Bob');
     assert.equal(room.manager, cid, 'a returning earlier player does not take it back');
     assert.notEqual(room.manager, dan);
+});
+
+// ---------------------------------------------------------------------------
+// Persisted state schema (2: cards copied into the state at start)
+// ---------------------------------------------------------------------------
+
+// A mid-turn state produced by the engine of the build before schema 2 (commit
+// 10a2367): classic-mix, `deck = { order, pos, drawn }` without cards.
+const schema1Playing = async () =>
+    JSON.parse(await readFile(new URL('./fixtures/taboo-state-schema1-playing.json', import.meta.url), 'utf8'));
+
+test('start copies the chosen deck\'s cards into the state (schema 2); the card comes from that copy', () => {
+    assert.equal(TABOO_STATE_SCHEMA, 2);
+    const { room } = startedGame(undefined, undefined, { deckId: 'starter-general' });
+    assert.equal(room.state.schema, 2);
+    const source = getTabooDeck('starter-general').cards;
+    assert.deepEqual(room.state.deck.cards, source.map(card => ({ word: card.word, forbidden: [...card.forbidden] })));
+    assert.equal(Object.isFrozen(room.state.deck.cards[0]), false, 'a plain copy, not the frozen module data');
+    assert.equal(room.startTurn(), 'ok');
+    // Prove the snapshot reads the stored copy, not the deck module.
+    const draft = structuredClone(room.state);
+    draft.deck.cards[draft.turn.cardIndex] = { word: 'Stored', forbidden: ['A1', 'B1', 'C1'] };
+    assert.deepEqual(buildPlayerSnapshot(draft, draft.turn.narratorId, room.now).card, { word: 'Stored', forbidden: ['A1', 'B1', 'C1'] });
+});
+
+test('migrateState: schema 2 as is; schema 1 lobby just bumps; unknown/newer schemas are unusable', () => {
+    const { room } = lobby();
+    assert.equal(migrateState(room.state), room.state);
+    const legacyLobby = { ...structuredClone(room.state), schema: 1 };
+    const migrated = migrateState(deepFreeze(legacyLobby));
+    assert.equal(migrated.schema, 2);
+    assert.equal(migrated.deck, null);
+    for (const bad of [null, 'x', [], {}, { schema: 0 }, { schema: 3 }, { schema: '2' }]) {
+        assert.equal(migrateState(bad), null, JSON.stringify(bad));
+    }
+});
+
+test('migrateState: a schema-1 game in progress gets the current deck\'s cards and keeps playing', async () => {
+    const { now, narratorId, state: legacy } = await schema1Playing();
+    assert.equal(legacy.schema, 1);
+    assert.equal(legacy.deck.cards, undefined);
+    const frozen = deepFreeze(structuredClone(legacy));
+    const state = migrateState(frozen);
+    assert.deepEqual(frozen, legacy, 'input untouched');
+    assert.equal(state.schema, 2);
+    const source = getTabooDeck('classic-mix').cards;
+    assert.equal(state.deck.cards.length, source.length);
+    assert.deepEqual(state.deck.order, legacy.deck.order);
+    const shown = source[legacy.turn.cardIndex];
+    assert.deepEqual(buildPlayerSnapshot(state, narratorId, now).card, { word: shown.word, forbidden: [...shown.forbidden] });
+
+    // Play on: correct, then the next card is the next one in the stored order.
+    const result = reduce(state, { type: 'correct', connectionId: 'c', role: 'player', playerId: narratorId, card: state.turn.cardSeq }, { now: now + 1000, random: seeded(2) });
+    assert.equal(errorOf(result.effects), undefined);
+    assert.equal(result.state.turn.correct, legacy.turn.correct + 1);
+    assert.equal(result.state.turn.cardIndex, legacy.deck.order[legacy.deck.pos]);
+    assert.equal(result.state.schema, 2);
+});
+
+test('migrateState: an unknown deck makes a started schema-1 game unusable; a changed card count is repaired', async () => {
+    const { state: legacy } = await schema1Playing();
+    assert.equal(migrateState({ ...legacy, settings: { ...legacy.settings, deckId: 'gone' } }), null);
+
+    // Pretend the room started on a 100-card deck that now has 6 cards.
+    const shrunk = structuredClone(legacy);
+    shrunk.settings.deckId = 'starter-general';
+    shrunk.turn.cardIndex = 50;
+    const state = migrateState(shrunk);
+    assert.equal(state.deck.cards.length, 6);
+    assert.deepEqual([...state.deck.order].sort((a, b) => a - b), [0, 1, 2, 3, 4, 5]);
+    assert.ok(state.deck.pos <= state.deck.order.length);
+    assert.equal(state.turn.cardIndex, null, 'an out-of-range card on screen is cleared');
 });

@@ -223,7 +223,44 @@ const JOIN_PHASES = [LOBBY, TURN_INTRO, TURN_SUMMARY];
 // changes, bump TABOO_STATE_SCHEMA and teach `migrateState` to upgrade the
 // previous schema (with a test that loads a state saved by the old build).
 
-export const TABOO_STATE_SCHEMA = 1;
+// Schema history:
+//   1  `deck = { order, pos, drawn }`; cards read from the deck module by index.
+//   2  `deck.cards` holds a copy of the chosen deck's cards, taken at `start`,
+//      so a deploy that edits shared/taboo-decks-data.js mid-game cannot change
+//      the card under the narrator.
+export const TABOO_STATE_SCHEMA = 2;
+
+const copyCards = cards => cards.map(card => ({ word: card.word, forbidden: [...card.forbidden] }));
+
+/**
+ * Schema 1 -> 2: copies the cards of the room's deck as the current build has
+ * them (best effort: the build that started the game had the same cards unless
+ * the deck data changed in that very deploy). If the card count changed, the
+ * draw order is repaired (out-of-range indexes dropped, new ones appended) and
+ * an out-of-range card on screen is cleared. An unknown deck makes the state
+ * unusable.
+ */
+const migrateFromSchema1 = state => {
+    const next = structuredClone(state);
+    next.schema = 2;
+    if (next.deck === null || next.deck === undefined) {
+        next.deck = null;
+        return next;
+    }
+    const deck = getTabooDeck(next.settings?.deckId);
+    if (!deck || !Array.isArray(next.deck.order)) return null;
+    const count = deck.cards.length;
+    next.deck.cards = copyCards(deck.cards);
+    if (next.deck.order.length !== count) {
+        const kept = next.deck.order.filter(index => Number.isInteger(index) && index >= 0 && index < count);
+        const present = new Set(kept);
+        const added = Array.from({ length: count }, (_, index) => index).filter(index => !present.has(index));
+        next.deck.order = [...kept, ...added];
+        next.deck.pos = Math.min(next.deck.pos, next.deck.order.length);
+        if (next.turn && Number.isInteger(next.turn.cardIndex) && next.turn.cardIndex >= count) next.turn.cardIndex = null;
+    }
+    return next;
+};
 
 /**
  * Upgrades a persisted state to TABOO_STATE_SCHEMA. Pure; returns the input
@@ -237,6 +274,7 @@ export const TABOO_STATE_SCHEMA = 1;
 export const migrateState = state => {
     if (state === null || typeof state !== 'object' || Array.isArray(state)) return null;
     if (state.schema === TABOO_STATE_SCHEMA) return state;
+    if (state.schema === 1) return migrateFromSchema1(state);
     return null;
 };
 
@@ -299,7 +337,8 @@ export const createInitialState = ({ code, creatorTokenHash, teamMode } = {}, ct
         nextPlayerSeq: 1,
         nextTeamSeq: 1,
         teams: TEAMS.map(() => ({ score: 0, lastNarratorSeq: null, lastObserverSeq: null })),
-        // { order: card indexes, pos: next index into order, drawn: cards drawn this game }
+        // Set by `start`: { cards: copy of the deck's cards [{ word, forbidden }],
+        // order: indexes into cards, pos: next index into order, drawn: cards drawn this game }
         deck: null,
         turnIndex: -1,
         turn: null,
@@ -979,7 +1018,9 @@ const handlers = {
 
         state.players = trial.players;
         state.nextTeamSeq = trial.nextTeamSeq;
-        state.deck = { order: shuffledIndexes(deck.cards.length, ctx.random), pos: 0, drawn: 0 };
+        // The cards are copied (schema 2): the game never depends on the deck
+        // module again, so a deploy that edits the deck data cannot change it.
+        state.deck = { cards: copyCards(deck.cards), order: shuffledIndexes(deck.cards.length, ctx.random), pos: 0, drawn: 0 };
         state.turnIndex = 0;
         touch(state, now);
         beginTurnIntro(state, now, out);
@@ -1194,8 +1235,9 @@ export const reduce = (state, event, ctx) => {
 // ---------------------------------------------------------------------------
 // One function; the viewer's relation to the turn decides the fields. The card
 // (word + forbidden words) goes ONLY to the narrator and the opposing team, and
-// only in `playing`. Never include `cardIndex`, `deck` or token data: the decks
-// are public, so an index would reveal the card to the narrator's teammates.
+// only in `playing`. Never include `cardIndex`, `deck` (it holds every card) or
+// token data: the decks are public, so an index would reveal the card to the
+// narrator's teammates.
 
 const memberView = player => ({ id: player.id, name: player.name, status: player.status });
 
@@ -1235,7 +1277,7 @@ const canSeeCard = (state, me) => {
 };
 
 const cardView = state => {
-    const card = currentDeck(state)?.cards[state.turn.cardIndex];
+    const card = state.deck?.cards?.[state.turn.cardIndex];
     return card ? { word: card.word, forbidden: [...card.forbidden] } : null;
 };
 

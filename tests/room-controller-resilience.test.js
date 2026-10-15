@@ -5,7 +5,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { QUIZ_ENGINE_LIMITS, QUIZ_STATE_SCHEMA, migrateState as migrateQuizState } from '../shared/quiz-engine.js';
+import { getTabooDeck } from '../shared/taboo-decks.js';
 import { QUIZ_GAME } from '../worker/quiz-game.js';
+import { TABOO_GAME } from '../worker/taboo-game.js';
 import {
     ALARM_RETRY_LIMIT,
     CLOSE_CODES,
@@ -258,4 +260,42 @@ test('a quiz room saved by the previous build (schema 1, mid-question) keeps pla
     await send(host, { t: 'next' });
     assert.equal(host.last('state').snapshot.questionIndex, 1);
     assert.equal(JSON.parse(h.ctx.storage.sql.row).schema, 1);
+});
+
+test('a taboo room saved by the previous build (schema 1, mid-turn) is migrated once and keeps playing', async () => {
+    const { now, narratorId, state } = fixture('taboo-state-schema1-playing.json');
+    const h = roomWithRow(state, { game: TABOO_GAME, now, alarm: state.alarmAt });
+    const written = h.ctx.storage.sql.rowsWritten;
+    assert.equal(h.room.admissionError(), null);
+    const stored = JSON.parse(h.ctx.storage.sql.row);
+    assert.equal(stored.schema, 2);
+    assert.equal(stored.deck.cards.length, getTabooDeck('classic-mix').cards.length);
+    assert.equal(h.ctx.storage.sql.rowsWritten, written + 1, 'the migrated state is written back once');
+
+    const connect = () => {
+        const ws = new FakeSocket();
+        h.room.openSocket(ws);
+        return ws;
+    };
+    const send = (ws, message) => h.room.webSocketMessage(ws, JSON.stringify({ v: 1, ...message }));
+    // p1 = tok(1) is the narrator (red), p2 = tok(2) the observer (blue), p3 = tok(3) red.
+    assert.equal(narratorId, 'p1');
+    const narrator = connect();
+    await send(narrator, { t: 'join', name: 'Ada', playerToken: tok(1) });
+    const observer = connect();
+    await send(observer, { t: 'join', name: 'Bob', playerToken: tok(2) });
+    const teammate = connect();
+    await send(teammate, { t: 'join', name: 'Cem', playerToken: tok(3) });
+    const card = getTabooDeck('classic-mix').cards[state.turn.cardIndex];
+    assert.deepEqual(narrator.last('state').snapshot.card, { word: card.word, forbidden: [...card.forbidden] });
+    assert.deepEqual(observer.last('state').snapshot.card, { word: card.word, forbidden: [...card.forbidden] });
+    assert.equal(teammate.last('state').snapshot.card, null, 'teammates still never get the card');
+
+    const seq = narrator.last('state').snapshot.turn.cardSeq;
+    await send(narrator, { t: 'correct', card: seq });
+    assert.deepEqual(narrator.of('error'), []);
+    const next = getTabooDeck('classic-mix').cards[state.deck.order[state.deck.pos]];
+    assert.equal(narrator.last('state').snapshot.card.word, next.word);
+    assert.equal(narrator.last('state').snapshot.turn.correct, state.turn.correct + 1);
+    assert.equal(JSON.parse(h.ctx.storage.sql.row).schema, 2);
 });
