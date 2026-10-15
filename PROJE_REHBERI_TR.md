@@ -1,12 +1,14 @@
-# OpenClassTools: Türkçe Proje ve Kullanım Rehberi
+# Rohirrim Game Hub (OpenClassTools): Türkçe Proje ve Kullanım Rehberi
 
 ## Proje ne yapar?
 
-OpenClassTools, özellikle İngilizce/EFL sınıfları, akıllı tahtalar ve grup etkinlikleri için hazırlanmış tarayıcı tabanlı bir oyun merkezidir. Öğretmen, ders amacına uygun bir oyunu açar; hazır içerik destesini kullanabilir veya konu ve seviyeye göre yapay zekâ ile yeni bir deste oluşturabilir. Oyunlar sınıf ekranında çalışır; oyuncu, takım, skor ve tur bilgileri tarayıcıda yerel olarak tutulur.
+OpenClassTools, özellikle İngilizce/EFL sınıfları, akıllı tahtalar ve grup etkinlikleri için hazırlanmış tarayıcı tabanlı bir oyun merkezidir. Öğretmen, ders amacına uygun bir oyunu açar ve oyunun hazır içerik destelerinden birini seçer. (Konu ve seviyeye göre yapay zekâ ile yeni deste üretmek yalnızca eski/yerel Express sunucusunda mümkündür; canlı sitede kapalıdır.) Oyunlar sınıf ekranında çalışır; oyuncu, takım, skor ve tur bilgileri tarayıcıda yerel olarak tutulur.
+
+Canlı site [games.ortadunyaankara.org](https://games.ortadunyaankara.org) tek bir Cloudflare Worker'dır (aşağıda "Statik site olarak yayınlama"); Express/Supabase arka ucu canlıda kullanılmaz.
 
 Projenin hedefi, öğretmenin kurulum ya da uzaktan kumanda altyapısı gerektirmeden hızlı biçimde sınıf etkinliği başlatabilmesidir. Veritabanı ve isteğe bağlı oturum kaydı kullanılamasa bile oyunların başlangıç içerikleriyle oynanabilmesi amaçlanır.
 
-Tek istisna **Online** kategorisidir: Kahoot tarzı online quiz'de her oyuncu kendi telefonundan katılır. Bu oyun yalnızca Cloudflare Worker yayınında çalışır (aşağıda "Online quiz" bölümü); diğer bütün oyunlar yerel ve bağımsız kalır.
+Tek istisna **Online** kategorisidir: Kahoot tarzı online quiz'de ve iki takımlı online Tabu'da her oyuncu kendi telefonundan katılır. Bu oyunlar yalnızca Cloudflare Worker yayınında çalışır (aşağıda "Online quiz" ve "Online Tabu" bölümleri); diğer bütün oyunlar yerel ve bağımsız kalır.
 
 ## İçerdiği oyunlar ve araçlar
 
@@ -23,20 +25,23 @@ Tek istisna **Online** kategorisidir: Kahoot tarzı online quiz'de her oyuncu ke
 | Wheel of Names | Öğrenci, konu veya takım seçmek için özelleştirilebilir çark. |
 | Spin the Bottle | Sıra belirleme ve rol yapma için şişe çevirme aracı. |
 | Online Quiz | Kahoot tarzı bilgi yarışması: yönetici (host) odayı yönetir, oyuncular kendi telefonlarından cevaplar. Yalnızca Cloudflare Worker yayınında çalışır. |
+| Online Tabu | İki takımlı, sıra tabanlı Tabu: odayı kuran oyuncu odayı yönetir; kartı yalnızca anlatıcı ve karşı takım kendi telefonunda görür. Yalnızca Cloudflare Worker yayınında çalışır. |
 
 İlk sekiz oyun **deste tabanlıdır**: seçilen soru/kelime seti oyunun içeriğini oluşturur. Çark ve şişe ise desteye gereksinim duymayan yardımcı araçlardır.
 
 ## Kullanıcı (öğretmen) olarak nasıl kullanılır?
 
 1. Uygulamayı açın ve oyun merkezinden etkinliği seçin.
-2. Deste tabanlı bir oyunda hazır başlangıç destesini veya kayıtlı bir desteyi seçin.
-3. Yeni içerik gerekiyorsa oyun ekranındaki deste kütüphanesinde anlamlı bir deste adı girin; konu, CEFR seviyesi ve oyuna özgü seçenekleri belirleyip yapay zekâ ile oluşturun.
+2. Deste tabanlı bir oyunda "Deck" menüsünden hazır bir deste seçin (Express sunucusunda kayıtlı desteler de listelenir).
+3. *(Yalnızca eski/yerel Express sunucusu)* Yeni içerik gerekiyorsa oyun ekranındaki deste kütüphanesinde anlamlı bir deste adı girin; konu, CEFR seviyesi ve oyuna özgü seçenekleri belirleyip yapay zekâ ile oluşturun.
 4. Takım/oyuncu bilgilerini gerektiğinde girin ve oyunu başlatın. Oyun aktif hâle hemen geçer; isteğe bağlı oturum kaydı arka planda yapılır.
 5. Etkinliği sınıf ekranından yönetin. Oyunun puanı, turu ve geçici durumu öğrencilerin cihazlarında değil, açık tarayıcıdaki yerel oyun durumunda yürür.
 
 Önerilen deste adlandırması: `B1 – Travel Vocabulary` veya `A2 – Daily Routines`. Bu, aynı konudaki destelerin yeniden bulunmasını kolaylaştırır.
 
-### Yapay zekâ ile içerik üretimi
+### Yapay zekâ ile içerik üretimi (eski/yalnızca yerel Express sunucusu)
+
+> Canlı sitede (Cloudflare Worker) yapay zekâ üretimi ve kayıtlı desteler yoktur; `shared/feature-flags.js` içindeki iki bayrak da `false`'tur. Bu bölüm yalnızca `npm start` ile çalışan Express sunucusu için geçerlidir.
 
 Yapay zekâ deste üretimi isteğe bağlıdır. Sunucu tarafında yapılandırılmış sağlayıcı anahtarları varsa platform sağlayıcı havuzu kullanılır. Öğretmen isterse kendi Gemini anahtarını ekleyebilir; bu anahtar yalnızca açık tarayıcı sekmesinin `sessionStorage` alanında tutulur, kalıcı olarak kaydedilmez ve uygulama tarafından loglanmaz.
 
@@ -49,6 +54,8 @@ Yapay zekâ deste üretimi isteğe bağlıdır. Sunucu tarafında yapılandırı
 LingoParty, çok takımlı bir dil tahtası oyunudur. Takım sırayla çarkı çevirir, tahtada ilerler ve geldiği alanın mücadelesini yapar. Mücadele türleri bilmece, harfleri karıştırılmış kelime, telaffuz, çağrışım, dil bilgisi düzeltme, hız turu, rol yapma ve doğru/yanlış olabilir. Şans alanları ödül/ceza verebilir; dükkândan güçlendirme alınabilir. Daha önce gösterilmiş bir soru tekrar kullanılırsa arayüz bunu `Memory Recall` rozetiyle belirtir.
 
 ## Geliştirici için mimari
+
+Canlı sitede tarayıcı yalnızca statik dosyaları ve online oyunlar için `/rt/*` uçlarını (Cloudflare Worker + Durable Object) kullanır. Aşağıdaki şema **eski/yerel Express + Supabase** kurulumunu gösterir:
 
 ```text
 Tarayıcı
@@ -82,7 +89,9 @@ Kalıcı depolama etkinse her deste bir oyun türüne bağlı, adlandırılmış
 
 Oturum kaydı isteğe bağlıdır. Başlatma ya da tamamlama kaydı başarısız olsa da oyun akışı kesilmez.
 
-## Yerelde çalıştırma
+## Yerelde çalıştırma (Express — eski/yerel arka uç)
+
+Bu bölüm canlı siteyi değil, `npm start` ile çalışan Express sunucusunu anlatır. Online oyunları da içeren Worker sürümünü yerelde denemek için "Online quiz" → "Yerel geliştirme" adımlarını kullanın.
 
 ### Gereksinimler
 
@@ -117,9 +126,9 @@ npm --prefix frontend run dev
 
 React geliştirme arayüzü varsayılan olarak `http://localhost:5173` adresindedir. Vite, `/api` isteklerini otomatik olarak `http://localhost:8090` adresindeki Express sunucusuna yönlendirir.
 
-## Ortam değişkenleri
+## Ortam değişkenleri (yalnızca Express/Supabase)
 
-Kökte `.env.example` dosyasını `.env` olarak kopyalayıp gerekli değerleri girin:
+Canlı Cloudflare Worker bu değişkenleri kullanmaz (oradaki tek secret `TURNSTILE_SECRET_KEY`'dir). Kökte `.env.example` dosyasını `.env` olarak kopyalayıp gerekli değerleri girin:
 
 ```env
 PORT=8090
@@ -145,7 +154,7 @@ Bu tohumlama işlemi tekrar çalıştırılabilir; mevcut adlandırılmış dest
 
 ## Statik site olarak yayınlama (Cloudflare Workers Static Assets)
 
-Proje, Express/Supabase backend'i olmadan da statik bir site olarak yayınlanabilir. Yayın tek bir Cloudflare Worker'dır (`rohirrimgames`): her şey statik dosya olarak sunulur; Worker kodu yalnızca `/rt/*` yolları (online quiz uçları ve `QuizRoom` Durable Object'i) için çalışır. Bu modda yapay zekâ ile deste üretimi ve oturum kaydı çalışmaz; her deste tabanlı oyun bunun yerine kendi gömülü **statik desteleri** arasından seçim yapılan bir "Deck" açılır menüsü gösterir. Canlı örnek: [games.ortadunyaankara.org](https://games.ortadunyaankara.org).
+**Canlı site bu şekilde yayınlanır.** Express/Supabase backend'i yoktur. Yayın tek bir Cloudflare Worker'dır (`rohirrimgames`): her şey statik dosya olarak sunulur; Worker kodu yalnızca `/rt/*` yolları (online quiz ve online Tabu uçları, `QuizRoom` ve `TabooRoom` Durable Object'leri) için çalışır. Bu modda yapay zekâ ile deste üretimi ve oturum kaydı çalışmaz; her deste tabanlı oyun bunun yerine kendi gömülü **statik desteleri** arasından seçim yapılan bir "Deck" açılır menüsü gösterir. Canlı örnek: [games.ortadunyaankara.org](https://games.ortadunyaankara.org).
 
 Barındırma **Cloudflare Workers Static Assets** üzerinden yapılır (eskiden Cloudflare Pages kullanılıyordu; proje `rohirrim-ankara-smiali` kardeş projesiyle aynı yapıya taşındı). Deploy, Cloudflare'in kendi Git entegrasyonu (Workers Builds) ile yönetilir: repo Cloudflare hesabına bağlıdır, `main`'e her push otomatik olarak yeni bir build+deploy tetikler. Deploy için bir GitHub Actions workflow'u **yoktur**; `.github/workflows/ci.yml` yalnızca kontrol yapar: `npm ci`, `npm test`, ön yüz lint'i, `npx wrangler deploy --dry-run` (statik build'i bir kez çalıştırır, Worker'ı paketler ve Durable Object bağlamalarını kontrol eder; kimlik bilgisi gerekmez) ve `npm run check:static` (`dist-static/` içindeki yerel bağlantılar, giriş sayfaları, sunucuya özel modüllerin yayınlanmaması). Workers Builds CI sonucuna bakmadan deploy ettiği için `main`'de CI `test` kontrolünü zorunlu kılan bir GitHub ruleset vardır (PR zorunlu değildir). CI her dala yapılan push'ta çalışır; akış şöyledir: commit'i önce bir çalışma dalına push et, orada `test` geçince aynı commit'i `main`'e push et. CI'dan hiç geçmemiş bir commit `main`'e kabul edilmez (`GH013: Required status check "test" is expected`).
 
@@ -155,7 +164,7 @@ Barındırma **Cloudflare Workers Static Assets** üzerinden yapılır (eskiden 
 - `wrangler.jsonc`, `assets.directory`'yi `./dist-static`'e, `assets.not_found_handling`'i `"404-page"`e ayarlar. Bu, eşleşmeyen her yolu (`/api/*` dahil) gerçek bir `404` durum koduyla (ama `dist-static/404.html` içeriğiyle) yanıtlamayı Workers'a native olarak yaptırır — Pages döneminde elle yapılan "index.html'i 404.html'e kopyala" hilesiyle aynı sonucu, platform desteğiyle sağlar.
 - Her oyun sayfası açılışta `/api/health` (ya da ilgili `/api/decks` ucu) ile backend'e ulaşmaya çalışır. Ulaşamazsa (statik barındırmada normal olan durum budur, çünkü `/api/*` gerçek 404 döner) yapay zekâ girdi alanlarını ve kayıtlı-deste seçiciyi gizler, yerine `#static-deck-wrap` içindeki basit bir `<select>` menüsünü gösterir.
 - Bu menüdeki seçenekler, ilgili oyunun `.js` dosyasında tanımlı `STATIC_DECKS` dizisinden gelir (örn. `who` için `game.js`, `hangman` için `hangman.js`). Her oyunda en az bir "Starter — General" destesi ve genelde oyunun kendi gömülü varsayılan içeriği (`DEFAULT_*`) bulunur.
-- `scripts/build-pages-site.mjs` (isim tarihsel, hâlâ kullanılıyor), yalnızca statik barındırma için gereken dosyaları (`index.html`, oyun `.html/.css/.js` dosyaları, tarayıcının yüklediği `shared/` dosyaları, ikonlar vb.; liste `scripts/static-site-manifest.mjs`'te — `shared/` klasörü toptan kopyalanmaz, cevapları içeren `quiz-decks.js`/`taboo-decks.js` ve `*-engine.js`/`*-protocol.js` dosyaları asla listeye eklenmez) `dist-static/` klasörüne toplar ve `index.html`'i `dist-static/404.html` olarak da kopyalar; `server.js`, `server/`, `supabase/`, `tests/`, `frontend/` gibi backend'e özgü klasörler dahil edilmez. `wrangler.jsonc`'daki `build.command` bu script'i her deploy'da otomatik çalıştırır.
+- `scripts/build-pages-site.mjs` (isim tarihsel, hâlâ kullanılıyor), yalnızca statik barındırma için gereken dosyaları (`index.html`, oyun `.html/.css/.js` dosyaları, tarayıcının yüklediği `shared/` dosyaları, ikonlar vb.; liste `scripts/static-site-manifest.mjs`'te — `shared/` klasörü toptan kopyalanmaz, cevapları içeren `quiz-decks.js`/`taboo-decks.js` ve `*-engine.js`/`*-protocol.js` dosyaları asla listeye eklenmez) `dist-static/` klasörüne toplar, Vite'ın `index.html`'ini `dist-static/404.html` olarak da kopyalar ve Workers Static Assets'in okuduğu (ama yayınlamadığı) iki dosyayı üretir: `_redirects` (eski `/lingoparty.html` yer imleri → `/lingoparty`) ve `_headers` (Vite'ın hash'li `/assets/*` dosyaları için uzun süreli önbellek; her dosya için `nosniff`, referrer politikası, `X-Frame-Options` ve `Permissions-Policy`). Yalnızca sunucunun okuduğu `prompts.json`/`lingoparty-decks.json`, eski kök `index.html`/`hub.css`, eski `lingoparty.html/.css/.js` ve `list.txt` yayınlanmaz (Express için repoda kalır); `server.js`, `server/`, `supabase/`, `tests/`, `frontend/` gibi backend'e özgü klasörler dahil edilmez. `wrangler.jsonc`'daki `build.command` bu script'i her deploy'da otomatik çalıştırır.
 
 ### Statik build'i üretme (yerel önizleme)
 
@@ -175,7 +184,7 @@ npx wrangler deploy
 
 `wrangler`, `package.json`'da sabit sürümlü bir devDependency'dir; `npx wrangler` bu sürümü kullanır. `wrangler.jsonc`'daki `build.command` ve `assets.directory` ayarları sayesinde build otomatik yapılır. Deploy etmeden kontrol için: `npx wrangler deploy --dry-run --outdir /tmp/worker-dry-run` ve ardından `npm run check:static`. Normal akışta manuel deploy'a gerek yoktur — `main`'e push yeterlidir.
 
-> **Canlı oyun sırasında deploy yok.** `main`'e her push bir deploy'dur; deploy tüm Durable Object'leri yeniden başlatır ve açık bütün WebSocket bağlantılarını koparır. Oda durumu korunur ve istemciler yeniden bağlanır, ama oyun herkes için kesintiye uğrar. Online quiz etkinliği sürerken push/merge yapmayın.
+> **Canlı oyun sırasında deploy yok.** `main`'e her push bir deploy'dur; deploy tüm Durable Object'leri yeniden başlatır ve açık bütün WebSocket bağlantılarını koparır. Oda durumu korunur ve istemciler yeniden bağlanır, ama oyun herkes için kesintiye uğrar. Online quiz veya online Tabu etkinliği sürerken push/merge yapmayın.
 
 ### Cloudflare Git entegrasyonu ve custom domain
 
@@ -208,7 +217,15 @@ Kahoot tarzı online quiz `/quiz` adresindedir ve oyun merkezinin **Online** sek
 
 1. Cloudflare panosu → **Turnstile** → `games.ortadunyaankara.org` için bir widget ekleyin (mod: Managed).
 2. **Site Key** herkese açıktır ve `frontend/src/config/quizConfig.js` içinde durur.
-3. **Secret Key**, `TURNSTILE_SECRET_KEY` adlı bir Worker secret'ıdır: Workers & Pages → `rohirrimgames` → Settings → Variables and Secrets ya da `npx wrangler secret put TURNSTILE_SECRET_KEY`. Repoya, herhangi bir dosyaya veya sohbete **asla** yazılmaz. Secret yoksa oda oluşturma reddedilir (`503 turnstile_not_configured`).
+3. **Secret Key**, `TURNSTILE_SECRET_KEY` adlı bir Worker secret'ıdır: Workers & Pages → `rohirrimgames` → Settings → Variables and Secrets ya da `npx wrangler secret put TURNSTILE_SECRET_KEY`. Repoya, herhangi bir dosyaya veya sohbete **asla** yazılmaz. Secret yoksa oda oluşturma (quiz ve Tabu) reddedilir (`503 turnstile_not_configured`).
+
+## Online Tabu
+
+İki takımlı, sıra tabanlı online Tabu `/taboo-online` adresindedir ve **Online** sekmesindeki ikinci karttır. Kurallar `shared/taboo-engine.js` içindeki saf motordadır; her oda bir `TabooRoom` Durable Object'idir. Ayrı bir yönetici ekranı yoktur: odayı kuran kişi oyuncudur ve odayı yönetir. Kart yalnızca anlatıcıya ve karşı takıma gönderilir. Turnstile kurulumu quiz ile aynıdır (aynı secret). Tasarım ve kararlar: [docs/superpowers/specs/2026-10-09-online-taboo-design.md](docs/superpowers/specs/2026-10-09-online-taboo-design.md).
+
+1. Odayı kuran kişi `/taboo-online`'da takım modunu seçer (otomatik dengeli ya da oyuncular takımını seçer), Turnstile doğrulamasından geçer ve odayı oluşturur.
+2. Diğerleri bağlantı, QR kod ya da oda koduyla katılır ve bir takma ad seçer.
+3. Takımlar sırayla oynar: anlatıcı yasaklı kelimeleri kullanmadan anlatır, karşı takım aynı kartı görüp hataları yakalar.
 
 ### Dayanıklılık ve sınırlar (quiz ve tabu)
 
@@ -225,7 +242,7 @@ node scripts/build-pages-site.mjs
 npx wrangler dev
 ```
 
-`wrangler dev`'in verdiği adreste `/quiz`'i açın; üretim dışı adreslerde ön yüz Cloudflare'in test site key'ini kullanır. Windows'ta `wrangler dev` açıkken `node scripts/build-pages-site.mjs` `EBUSY` hatası verir (`dist-static/` kilitli); önce `wrangler dev`'i durdurun. Dosya haritası ve kurallar: `AGENTS.md` → "Online games (quiz)".
+`wrangler dev`'in verdiği adreste `/quiz`'i (ya da `/taboo-online`'ı) açın; üretim dışı adreslerde ön yüz Cloudflare'in test site key'ini kullanır. Windows'ta `wrangler dev` açıkken `node scripts/build-pages-site.mjs` `EBUSY` hatası verir (`dist-static/` kilitli); önce `wrangler dev`'i durdurun. Dosya haritası ve kurallar: `AGENTS.md` → "Online games (quiz, taboo)".
 
 ## Kontrol ve test
 
@@ -235,7 +252,7 @@ npm --prefix frontend run lint
 npm --prefix frontend run build
 ```
 
-Sunucunun ayakta olduğunu denetlemek için:
+Yerel Express sunucusunun ayakta olduğunu denetlemek için:
 
 ```bash
 curl http://localhost:8090/api/health
