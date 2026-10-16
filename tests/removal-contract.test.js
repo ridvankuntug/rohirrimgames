@@ -54,7 +54,7 @@ test('Kelime hides setup UI when a round starts', async () => {
     assert.match(source, /setSetupVisible\(false\)/);
 });
 
-test('hub keeps optional teacher controls behind an online backend state', async () => {
+test('hub keeps optional host controls behind an online backend state', async () => {
     const source = await read('frontend/src/components/Hub/GameHub.jsx');
     const styles = await read('frontend/src/components/Hub/GameHub.module.css');
     const headerStart = source.indexOf('<header className={styles.hubHeader}>');
@@ -68,7 +68,7 @@ test('hub keeps optional teacher controls behind an online backend state', async
     assert.ok(
         header.indexOf('className={styles.teacherGuide}') <
         header.indexOf('className={styles.btnApiKey}'),
-        'Teacher Guide must appear to the left of the API status button'
+        'Host Guide must appear to the left of the API status button'
     );
     assert.doesNotMatch(header, /offlineReady|Offline-ready/, 'no "offline-ready" badge in the hub header');
     assert.match(

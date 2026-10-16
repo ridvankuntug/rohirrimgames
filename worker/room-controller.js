@@ -260,7 +260,7 @@ export class RoomController {
                 await this.ctx.storage.setAlarm(state.alarmAt);
             } catch (error) {
                 // Without its alarm the room would never expire: undo the create
-                // (the Worker then answers 500 and the teacher retries).
+                // (the Worker then answers 500 and the host retries).
                 this.cached = undefined;
                 await this.ctx.storage.deleteAll();
                 this.cached = null;

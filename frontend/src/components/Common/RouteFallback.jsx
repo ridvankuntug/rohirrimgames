@@ -1,7 +1,7 @@
 import { useTranslation } from '../../i18n';
 import styles from './RouteFallback.module.css';
 
-// Shown while a lazily loaded game chunk downloads (slow phones, school Wi-Fi).
+// Shown while a lazily loaded game chunk downloads (slow phones, crowded event Wi-Fi).
 export default function RouteFallback() {
   const { t } = useTranslation();
   return (

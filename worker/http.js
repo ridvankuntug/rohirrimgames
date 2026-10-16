@@ -67,8 +67,8 @@
 //   RT_SOCKET_LIMITER  both /ws upgrades                           600 per 60 s per IP
 //   Keyed on `cf-connecting-ip`, checked after the origin check and before any
 //   Turnstile call or Durable Object request; the counters are shared by both
-//   games. Generous on purpose: a whole school behind one NAT address (two
-//   classes of ~40 phones each) reconnecting after a deploy must never be
+//   games. Generous on purpose: a whole event venue behind one NAT address (everyone
+//   on one Wi-Fi network, ~80 phones) reconnecting after a deploy must never be
 //   blocked; the limits stop scripted floods that would burn the Durable Object
 //   free-tier requests. A limited request still runs this Worker once.
 //   Fail open: no binding (node --test, an older local setup), no client IP or

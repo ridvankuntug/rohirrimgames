@@ -60,7 +60,7 @@ export const socketUrl = ({ protocol, host }, code) =>
 // Saved sessions (localStorage) and the tab's role (sessionStorage)
 // ---------------------------------------------------------------------------
 // Host: { code, token }. Player: { code, name, token }. One of each per browser,
-// so a teacher can test a player tab next to the host tab; the per-tab role
+// so a host can test a player tab next to the host tab; the per-tab role
 // (sessionStorage survives a reload of that tab only) decides which one a tab
 // resumes. Old entries are ignored: rooms live at most a few hours.
 
@@ -303,7 +303,7 @@ export const BUSY_MIN_ATTEMPT = 3;
 
 /**
  * Exponential back-off with jitter: the window doubles per attempt up to the cap,
- * and the delay is uniform in [window / 2, window] so a classroom of phones that
+ * and the delay is uniform in [window / 2, window] so a room full of phones that
  * lost the network together does not reconnect in lockstep.
  */
 export const backoffDelay = (attempt, random = Math.random) => {

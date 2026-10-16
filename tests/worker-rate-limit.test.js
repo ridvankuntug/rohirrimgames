@@ -109,7 +109,7 @@ test('read-only routes are never rate limited', async () => {
     }
 });
 
-test('the origin check runs before the limiter (foreign pages do not use up a school\'s budget)', async () => {
+test('the origin check runs before the limiter (foreign pages do not use up an event venue\'s budget)', async () => {
     const limiter = fakeLimiter(0);
     const response = await handleRequest(
         new Request(`${SITE}/rt/rooms/ABCD23/ws`, { headers: { origin: 'https://evil.example', upgrade: 'websocket', 'cf-connecting-ip': IP } }),
@@ -146,7 +146,7 @@ test('wrangler.jsonc declares both limiters exactly as RATE_LIMITS documents the
         assert.ok([10, 60].includes(simple.period));
     }
     assert.notEqual(byName.RT_CREATE_LIMITER.namespace_id, byName.RT_SOCKET_LIMITER.namespace_id);
-    // A classroom behind one NAT address must never be blocked.
+    // An event venue behind one NAT address (everyone on one Wi-Fi) must never be blocked.
     assert.ok(RATE_LIMITS.RT_SOCKET_LIMITER.limit >= 300);
     assert.ok(RATE_LIMITS.RT_CREATE_LIMITER.limit >= 10);
 });
