@@ -2,7 +2,9 @@
 
 ## Project
 
-OpenClassTools (published as Rohirrim Game Hub) is a classroom game hub. React/Vite owns the main hub, LingoParty and the online games, while legacy HTML/CSS/JavaScript clients provide the other games. **Production is a single Cloudflare Worker with static assets** (see "Production Deployment"); there the games run on built-in static decks. The Express server (`npm start`) is the legacy/local backend: it serves the same files plus HTTP APIs for named decks, AI generation, and optional session recording.
+OpenClassTools (published as Rohirrim Game Hub) is the game hub of the Orta Dünya Ankara community (a Tolkien / Middle-earth fan community), played at its events and gatherings. React/Vite owns the main hub, LingoParty and the online games, while legacy HTML/CSS/JavaScript clients provide the other games. **Production is a single Cloudflare Worker with static assets** (see "Production Deployment"); there the games run on built-in static decks. The Express server (`npm start`) is the legacy/local backend: it serves the same files plus HTTP APIs for named decks, AI generation, and optional session recording.
+
+**Audience:** the Orta Dünya Ankara community at events and gatherings, not schools or classrooms. Do not frame UI text, deck names or docs as classroom/teacher/student/lesson material (nor sınıf/öğretmen/öğrenci/ders in Turkish); say host / game master / organizer (oyun yöneticisi, organizatör, or sunucu where it cannot be read as "server"), players / participants (oyuncu, katılımcı) and event / gathering / table / team (etkinlik, buluşma, masa, takım). Legacy identifiers such as `teacherDisplayName`, `TeacherKeyPrompt` or the `x-teacher-name` header stay as they are; only their visible labels follow this rule.
 
 Legacy and standalone games keep all game state local to the browser. The single exception is the **Online** category: the Kahoot-style quiz at `/quiz` ([docs/superpowers/specs/2026-10-04-online-quiz-design.md](docs/superpowers/specs/2026-10-04-online-quiz-design.md)) and the two-team turn-based Taboo at `/taboo-online` ([docs/superpowers/specs/2026-10-09-online-taboo-design.md](docs/superpowers/specs/2026-10-09-online-taboo-design.md)), both built to approved designs. They run on Cloudflare's free tier — the same Worker that serves the static assets, plus one Durable Object per room over WebSockets. Do not add room codes, remote-control screens, or a real-time transport to any other game without an explicit new design.
 
@@ -108,7 +110,7 @@ Rules:
 - **Persisted state schema.** Rooms outlive deploys, so a state saved by the previous build is loaded by the new one. Each engine exports its schema constant (`QUIZ_STATE_SCHEMA` = 1, `TABOO_STATE_SCHEMA` = 2) and a pure `migrateState(state)`; the controller runs it (through the game adapter) once per load and writes an upgraded state back once. **When the persisted state shape changes, bump the schema and add a migration from the previous one**, with a test that loads a state produced by the old engine (fixtures in `tests/fixtures/`) and plays on. An unknown/newer schema or an unreadable row is purged with `room_gone`.
 - **Taboo cards live in the room state**: `start` copies the deck's cards into `state.deck.cards` (schema 2), so editing `shared/taboo-decks-data.js` never changes a game in progress. Taboo has **no lobby lock** (spec: out of scope for v1, Interpretation 13): a kicked player may rejoin as a new player while joins are open.
 - **Broken rooms are deleted, not retried forever**: `RoomController.alarm(alarmInfo)` rethrows for the runtime retry until `retryCount` reaches `ALARM_RETRY_LIMIT`, then purges; `MAX_CONSECUTIVE_FAILURES` handler failures with no successful engine step in between also purge. Purge closes sockets with 4004 `room_gone` (final for the client). Logs carry the error name and a short message only (`describeError`). The Durable Object classes only delegate to the controller's entry points (`webSocketMessage`/`Close`/`Error`, `alarm`); one socket's messages are handled in arrival order (per-socket promise chain).
-- **Per-IP rate limits** (`worker/http.js` header): `RT_CREATE_LIMITER` 20/60 s for `POST /rt/rooms` and `POST /rt/taboo/rooms`, `RT_SOCKET_LIMITER` 600/60 s for both `/ws` upgrades, keyed on `cf-connecting-ip`, checked after the origin check and before Turnstile or any Durable Object request; over the limit → `429 rate_limited`. Keep them generous (a school behind one NAT address, phones reconnecting after a deploy). They fail open without the binding (tests, local setups). Change limits in `wrangler.jsonc` and `RATE_LIMITS` together (a test keeps them equal).
+- **Per-IP rate limits** (`worker/http.js` header): `RT_CREATE_LIMITER` 20/60 s for `POST /rt/rooms` and `POST /rt/taboo/rooms`, `RT_SOCKET_LIMITER` 600/60 s for both `/ws` upgrades, keyed on `cf-connecting-ip`, checked after the origin check and before Turnstile or any Durable Object request; over the limit → `429 rate_limited`. Keep them generous (a whole event venue behind one NAT address on a shared Wi-Fi network, phones reconnecting after a deploy). They fail open without the binding (tests, local setups). Change limits in `wrangler.jsonc` and `RATE_LIMITS` together (a test keeps them equal).
 - **No deploy while an online game is live** (see "Production Deployment").
 
 Local development:
@@ -133,16 +135,16 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
 ```
 
-Teacher-provided Gemini keys are temporary browser-tab values and optional. Never persist or log them.
+Host-provided Gemini keys (the legacy code calls them teacher keys) are temporary browser-tab values and optional. Never persist or log them.
 
 ## Core Conventions & Architecture
 
 - **Multi-Provider AI Backup Chain**:
   - Primary: Google Gemini (`gemini-2.5-flash`).
   - Fallback Chain: Groq (`llama-3.3-70b-versatile`) ➔ Kimi (`moonshot-v1-8k`) ➔ OpenRouter Free Suite.
-  - Teacher API keys are optional. When omitted or failing, generation automatically falls back to the server provider pool (`keySource: 'platform'`).
+  - Host (custom) API keys are optional. When omitted or failing, generation automatically falls back to the server provider pool (`keySource: 'platform'`).
   - Always enforce `response_format: { type: 'json_object' }` for non-Gemini providers and clean JSON with `cleanModelJsonText` and `extractBalancedJson`.
-  - Logging: Every generation logs the exact AI Provider (`GEMINI`, `GROQ`, `KIMI`, `OPENROUTER`), Model Name, and Key Source (`Platform Provider Pool` or `Teacher Custom Key`) to the AI console.
+  - Logging: Every generation logs the exact AI Provider (`GEMINI`, `GROQ`, `KIMI`, `OPENROUTER`), Model Name, and Key Source (`Platform Provider Pool` or `Host Custom Key`) to the AI console.
 
 - **LingoParty Generation & Rules**:
   - Target Card Formula: `5 * teamCount * orbitCount` (capped at max 120 to guarantee sub-15s response times and prevent Cloudflare HTTP 524 timeouts).

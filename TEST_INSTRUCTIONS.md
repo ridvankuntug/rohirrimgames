@@ -8,7 +8,7 @@ npm --prefix frontend run lint
 npm --prefix frontend run build
 ```
 
-The suite covers database security, deck validation and versioning, named generation, temporary teacher-key handling, HTTP session lifecycle, standalone game adoption, and removal contracts.
+The suite covers database security, deck validation and versioning, named generation, temporary host-key handling, HTTP session lifecycle, standalone game adoption, and removal contracts.
 
 ## Browser flow
 
@@ -22,10 +22,10 @@ For each deck-backed game:
 
 For Bottle and Wheel, play once and confirm the local interaction still works.
 
-## Teacher API-key flow
+## Host API-key flow
 
 1. Expand “Why use your own API key?” on the hub.
-2. Open the key dialog and enter a teacher label and Gemini key.
+2. Open the key dialog and enter a host / event label and Gemini key.
 3. Generate a named deck.
 4. Confirm the key does not appear in logs, database rows, or built assets.
 5. Close the tab and confirm the key is gone.
@@ -34,5 +34,5 @@ For Bottle and Wheel, play once and confirm the local interaction still works.
 ## Security checks
 
 - Browser assets never contain `SUPABASE_SERVICE_ROLE_KEY`.
-- Teacher Gemini keys exist only in the current tab's `sessionStorage`.
+- Host-provided Gemini keys exist only in the current tab's `sessionStorage`.
 - No room code, remote-control screen, or real-time transport is exposed.

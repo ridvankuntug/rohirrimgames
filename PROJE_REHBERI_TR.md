@@ -2,11 +2,11 @@
 
 ## Proje ne yapar?
 
-OpenClassTools, özellikle İngilizce/EFL sınıfları, akıllı tahtalar ve grup etkinlikleri için hazırlanmış tarayıcı tabanlı bir oyun merkezidir. Öğretmen, ders amacına uygun bir oyunu açar ve oyunun hazır içerik destelerinden birini seçer. (Konu ve seviyeye göre yapay zekâ ile yeni deste üretmek yalnızca eski/yerel Express sunucusunda mümkündür; canlı sitede kapalıdır.) Oyunlar sınıf ekranında çalışır; oyuncu, takım, skor ve tur bilgileri tarayıcıda yerel olarak tutulur.
+Rohirrim Game Hub (kod tabanı: OpenClassTools), Ankara'daki Tolkien / Orta Dünya hayran topluluğu Orta Dünya Ankara'nın etkinliklerinde ve buluşmalarında kullanılan, tarayıcı tabanlı bir oyun merkezidir. Oyun yöneticisi, grubuna ve etkinliğe uygun bir oyunu açar ve oyunun hazır içerik destelerinden birini seçer. (Konu ve seviyeye göre yapay zekâ ile yeni deste üretmek yalnızca eski/yerel Express sunucusunda mümkündür; canlı sitede kapalıdır.) Oyunlar ortak bir ekranda (projeksiyon, TV) çalışır; oyuncu, takım, skor ve tur bilgileri tarayıcıda yerel olarak tutulur.
 
 Canlı site [games.ortadunyaankara.org](https://games.ortadunyaankara.org) tek bir Cloudflare Worker'dır (aşağıda "Statik site olarak yayınlama"); Express/Supabase arka ucu canlıda kullanılmaz.
 
-Projenin hedefi, öğretmenin kurulum ya da uzaktan kumanda altyapısı gerektirmeden hızlı biçimde sınıf etkinliği başlatabilmesidir. Veritabanı ve isteğe bağlı oturum kaydı kullanılamasa bile oyunların başlangıç içerikleriyle oynanabilmesi amaçlanır.
+Projenin hedefi, oyun yöneticisinin kurulum ya da uzaktan kumanda altyapısı gerektirmeden bir buluşmada hızlıca oyun başlatabilmesidir. Veritabanı ve isteğe bağlı oturum kaydı kullanılamasa bile oyunların başlangıç içerikleriyle oynanabilmesi amaçlanır.
 
 Tek istisna **Online** kategorisidir: Kahoot tarzı online quiz'de ve iki takımlı online Tabu'da her oyuncu kendi telefonundan katılır. Bu oyunlar yalnızca Cloudflare Worker yayınında çalışır (aşağıda "Online quiz" ve "Online Tabu" bölümleri); diğer bütün oyunlar yerel ve bağımsız kalır.
 
@@ -21,21 +21,21 @@ Tek istisna **Online** kategorisidir: Kahoot tarzı online quiz'de ve iki takım
 | Millionaire | Kolaydan zora 15 soruluk bilgi yarışması; jokerler içerir. |
 | Kelime / Word Game | İpuçlarından İngilizce veya Türkçe kelime tahmini. |
 | Flashcards | Kelime, anlam ve tekrar çalışması için kartlar. |
-| Six Thinking Hats | Altı farklı bakış açısıyla yapılandırılmış sınıf tartışması. |
-| Wheel of Names | Öğrenci, konu veya takım seçmek için özelleştirilebilir çark. |
+| Six Thinking Hats | Altı farklı bakış açısıyla yapılandırılmış grup tartışması. |
+| Wheel of Names | Oyuncu, konu veya takım seçmek için özelleştirilebilir çark. |
 | Spin the Bottle | Sıra belirleme ve rol yapma için şişe çevirme aracı. |
 | Online Quiz | Kahoot tarzı bilgi yarışması: yönetici (host) odayı yönetir, oyuncular kendi telefonlarından cevaplar. Yalnızca Cloudflare Worker yayınında çalışır. |
 | Online Tabu | İki takımlı, sıra tabanlı Tabu: odayı kuran oyuncu odayı yönetir; kartı yalnızca anlatıcı ve karşı takım kendi telefonunda görür. Yalnızca Cloudflare Worker yayınında çalışır. |
 
 İlk sekiz oyun **deste tabanlıdır**: seçilen soru/kelime seti oyunun içeriğini oluşturur. Çark ve şişe ise desteye gereksinim duymayan yardımcı araçlardır.
 
-## Kullanıcı (öğretmen) olarak nasıl kullanılır?
+## Oyun yöneticisi olarak nasıl kullanılır?
 
-1. Uygulamayı açın ve oyun merkezinden etkinliği seçin.
+1. Uygulamayı açın ve oyun merkezinden oyunu seçin.
 2. Deste tabanlı bir oyunda "Deck" menüsünden hazır bir deste seçin (Express sunucusunda kayıtlı desteler de listelenir).
 3. *(Yalnızca eski/yerel Express sunucusu)* Yeni içerik gerekiyorsa oyun ekranındaki deste kütüphanesinde anlamlı bir deste adı girin; konu, CEFR seviyesi ve oyuna özgü seçenekleri belirleyip yapay zekâ ile oluşturun.
 4. Takım/oyuncu bilgilerini gerektiğinde girin ve oyunu başlatın. Oyun aktif hâle hemen geçer; isteğe bağlı oturum kaydı arka planda yapılır.
-5. Etkinliği sınıf ekranından yönetin. Oyunun puanı, turu ve geçici durumu öğrencilerin cihazlarında değil, açık tarayıcıdaki yerel oyun durumunda yürür.
+5. Oyunu ortak ekrandan yönetin. Oyunun puanı, turu ve geçici durumu oyuncuların cihazlarında değil, açık tarayıcıdaki yerel oyun durumunda yürür.
 
 Önerilen deste adlandırması: `B1 – Travel Vocabulary` veya `A2 – Daily Routines`. Bu, aynı konudaki destelerin yeniden bulunmasını kolaylaştırır.
 
@@ -229,7 +229,7 @@ Kahoot tarzı online quiz `/quiz` adresindedir ve oyun merkezinin **Online** sek
 
 ### Dayanıklılık ve sınırlar (quiz ve tabu)
 
-- **IP başına istek sınırı**: oda oluşturma (`POST /rt/rooms`, `POST /rt/taboo/rooms`) IP başına dakikada 20, WebSocket bağlantısı dakikada 600 ile sınırlıdır (`wrangler.jsonc` → `ratelimits`). Sınır aşılırsa `429 rate_limited` döner. Sınırlar, tek NAT adresinin arkasındaki bir okulun (deploy sonrası yeniden bağlanan iki sınıf telefon) hiçbir zaman engellenmeyeceği kadar geniş seçildi.
+- **IP başına istek sınırı**: oda oluşturma (`POST /rt/rooms`, `POST /rt/taboo/rooms`) IP başına dakikada 20, WebSocket bağlantısı dakikada 600 ile sınırlıdır (`wrangler.jsonc` → `ratelimits`). Sınır aşılırsa `429 rate_limited` döner. Sınırlar, aynı Wi-Fi ağını paylaşan ve tek NAT adresinin arkasında kalan bir etkinlik mekânının (deploy sonrası yeniden bağlanan onlarca telefon) hiçbir zaman engellenmeyeceği kadar geniş seçildi.
 - **Kayıtlı durum şeması**: odalar deploy'dan sonra da yaşar. Kayıtlı durumun yapısı değişirse motorun şema numarası artırılır ve bir önceki şemadan geçiş (`migrateState`) eklenir; tanınmayan şemalı oda temizce silinir (`room_gone`).
 - **Tabu kartları odada saklanır**: oyun başlarken destedeki kartlar oda durumuna kopyalanır; deste dosyası değişse de süren oyun etkilenmez. Tabuda lobi kilidi yoktur (v1 kapsamı dışında); atılan oyuncu katılım açıkken yeni oyuncu olarak dönebilir.
 - **Bozuk oda**: motor sürekli hata veriyorsa oda silinir ve istemciler `room_gone` ile durur (sonsuz yeniden bağlanma döngüsü yok).

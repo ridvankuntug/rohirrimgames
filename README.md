@@ -1,4 +1,4 @@
-# 🚀 Rohirrim Game Hub (OpenClassTools) — Interactive Classroom Game Hub
+# 🚀 Rohirrim Game Hub (OpenClassTools) — Orta Dünya Ankara Community Game Hub
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-games.ortadunyaankara.org-c8a24a?style=for-the-badge&logo=rocket)](https://games.ortadunyaankara.org)
 [![Cloudflare Workers](https://img.shields.io/badge/Hosting-Cloudflare%20Workers-F38020?style=for-the-badge&logo=cloudflare)](https://developers.cloudflare.com/workers/static-assets/)
@@ -6,13 +6,13 @@
 [![React](https://img.shields.io/badge/Frontend-React%20%7C%20Vite-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#license)
 
-**Rohirrim Game Hub** (codebase: OpenClassTools) is a classroom game suite designed for teachers, ELT/EFL educators, and smartboard activities. It combines interactive board games, quiz shows, discussion tools and two online multiplayer games. The live site is a single **Cloudflare Worker** with static assets: every game runs in the browser on built-in decks, with no account or setup. The optional Express + Supabase backend (reusable **named decks**, **AI-powered deck generation**, session recording) is described under [Legacy / local backend](#-legacy--local-backend-express--supabase).
+**Rohirrim Game Hub** (codebase: OpenClassTools) is the game hub of the Orta Dünya Ankara community, a Tolkien / Middle-earth fan community in Ankara, used at its events and gatherings — on a shared big screen or on everyone's phone. It combines interactive board games, quiz shows, discussion tools and two online multiplayer games. The live site is a single **Cloudflare Worker** with static assets: every game runs in the browser on built-in decks, with no account or setup. The optional Express + Supabase backend (reusable **named decks**, **AI-powered deck generation**, session recording) is described under [Legacy / local backend](#-legacy--local-backend-express--supabase).
 
 🌐 **Try it Live**: [https://games.ortadunyaankara.org](https://games.ortadunyaankara.org)
 
 ---
 
-## 🎮 Included Games & Classroom Tools
+## 🎮 Included Games & Tools
 
 | Game / Tool | Description | Mode |
 | :--- | :--- | :--- |
@@ -23,9 +23,9 @@
 | 💰 **Millionaire** | 15-question progressive quiz show with easy, medium, and hard difficulty stages. | Deck-Backed |
 | 🔤 **Kelime (Word Game)** | Clue-based English/Turkish word guessing game with instant reveal controls. | Deck-Backed |
 | 🎴 **Flashcards** | Vocabulary study cards with definitions, pronunciation notes, and translations. | Deck-Backed |
-| 🎩 **Six Thinking Hats** | Edward de Bono's 6 Hats critical discussion framework for classroom debates. | Deck-Backed |
-| 🍾 **Spin the Bottle** | Interactive classroom decision utility for student selection. | Utility |
-| 🎡 **Wheel of Names** | Customizable spinning wheel for choosing students, topics, or teams. | Utility |
+| 🎩 **Six Thinking Hats** | Edward de Bono's 6 Hats critical discussion framework for structured group debates. | Deck-Backed |
+| 🍾 **Spin the Bottle** | Interactive spinner for picking the next player or settling turns. | Utility |
+| 🎡 **Wheel of Names** | Customizable spinning wheel for choosing players, topics, or teams. | Utility |
 | 📡 **Online Quiz** | Kahoot-style quiz: a host runs the room, every player answers on their own phone. Cloudflare Worker deployment only. | Online |
 | 🗣️ **Online Taboo** | Two-team, turn-based Taboo: the room creator manages the room, the narrator and the opposing team see the card on their own phones. Cloudflare Worker deployment only. | Online |
 
@@ -83,12 +83,12 @@ Not used by the live site. `npm start` runs an Express server that serves the sa
 
 ### 🧠 Smart AI Deck Generation & Backup Chain
 
-Teachers can generate custom, theme-specific decks in seconds (e.g., *"Space Exploration"*, *"Job Interview Vocabulary"*, *"B1 CEFR Grammar"*). 
+Hosts can generate custom, theme-specific decks in seconds (e.g., *"Space Exploration"*, *"Job Interview Vocabulary"*, *"B1 CEFR Grammar"*). 
 
 #### Features:
 - ⚡ **Multi-Provider Failover Chain**: Google Gemini (`gemini-2.5-flash`) ➔ Groq (`llama-3.3-70b-versatile`) ➔ Kimi (`moonshot-v1-8k`) ➔ OpenRouter Free Suite.
-- 🔓 **Zero Setup Required**: Games generate instantly using built-in server provider pools. Custom teacher API keys are completely optional.
-- 🔒 **Privacy First**: Teacher keys are kept strictly in browser `sessionStorage` for the active tab only—never saved to disk or logged.
+- 🔓 **Zero Setup Required**: Games generate instantly using built-in server provider pools. Custom host API keys are completely optional.
+- 🔒 **Privacy First**: Host-provided keys are kept strictly in browser `sessionStorage` for the active tab only—never saved to disk or logged.
 - 🧠 **Memory Recall**: Intelligent deduplication prioritizes unshown questions. If a deck is cycled through, repeated questions are flagged with an animated `🧠 MEMORY RECALL` badge.
 - 🔢 **Logical Conversation Ordering**: Sentence-ordering challenges enforce strict conversational coherence (`A: Question` ➔ `B: Answer` ➔ `C: Reaction`) with fixed slot numbers (`1`, `2`, `3`...).
 - 📊 **Real-Time AI Console**: Live logging shows the exact AI provider, model name, response latency, and category breakdown.
