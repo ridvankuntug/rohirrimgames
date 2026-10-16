@@ -173,7 +173,7 @@
             const count = body?.deck?.currentVersion?.content?.length || body?.count || 0;
             const provider = (body?.deck?.aiProvider || 'gemini').toUpperCase();
             const model = body?.deck?.aiModel ? ` (${body.deck.aiModel})` : '';
-            const keyUsed = body?.deck?.teacherKeyUsed ? 'Teacher Custom Key' : 'Platform Provider Pool';
+            const keyUsed = body?.deck?.teacherKeyUsed ? 'Host Custom Key' : 'Platform Provider Pool';
             log(`🤖 AI Provider Used: ${provider}${model} via ${keyUsed}`);
             log(`Received ${count} items`);
             log('Saving deck...');

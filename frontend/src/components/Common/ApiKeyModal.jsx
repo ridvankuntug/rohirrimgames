@@ -99,23 +99,23 @@ export default function ApiKeyModal({ isOpen, onClose }) {
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h2>🔑 Teacher Settings (Optional Custom Key)</h2>
+          <h2>🔑 Host Settings (Optional Custom Key)</h2>
           <button className={styles.btnClose} onClick={onClose}>✕</button>
         </div>
 
         <p className={styles.description}>
-          OpenClassTools runs using the server-side AI provider pool out-of-the-box. Providing a teacher name or custom Gemini key is completely optional.
+          Rohirrim Game Hub runs using the server-side AI provider pool out-of-the-box. Providing a host name or custom Gemini key is completely optional.
         </p>
 
         <form onSubmit={handleSave} className={styles.form}>
           <div className={styles.fieldGroup}>
-            <label>Teacher / Classroom Name (Optional)</label>
+            <label>Host / Event Name (Optional)</label>
             <input
               type="text"
               className={styles.inputField}
               value={teacherName}
               onChange={e => setTeacherName(e.target.value)}
-              placeholder="e.g. Mr. Smith - Room 302"
+              placeholder="e.g. Ada - Hobbit Table"
             />
           </div>
 

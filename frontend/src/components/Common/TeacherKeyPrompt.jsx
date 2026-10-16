@@ -55,20 +55,20 @@ export default function TeacherKeyPrompt({ isOpen, onClose }) {
         </div>
 
         <p className={styles.description}>
-          OpenClassTools uses your own Google Gemini API key to generate game content.
+          Rohirrim Game Hub uses your own Google Gemini API key to generate game content.
           Your key stays in this browser tab and is never stored by the server.
           You can skip this and use only pre-made decks.
         </p>
 
         <form onSubmit={handleSave} className={styles.form}>
           <div className={styles.fieldGroup}>
-            <label>Teacher / Classroom Name</label>
+            <label>Host / Event Name</label>
             <input
               type="text"
               className={styles.inputField}
               value={teacherName}
               onChange={e => setTeacherName(e.target.value)}
-              placeholder="e.g. Mr. Smith - Room 302"
+              placeholder="e.g. Ada - Hobbit Table"
               required
             />
           </div>

@@ -5,7 +5,7 @@
 
     i18n.registerTranslations('legacy', {
         en: {
-            hubTagline: 'Hand-crafted interactive games for classrooms & groups',
+            hubTagline: 'Hand-crafted interactive games for community gatherings & groups',
             allGames: 'All Games', soloGames: 'Solo Games', multiplayer: 'Multiplayer',
             mainMenu: '🏠 Main Menu', deck: 'Deck', or: 'or', orPlay: 'or play',
             play: 'Play', startGame: 'Start Game', playAgain: 'Play Again', newGame: 'New Game',
@@ -24,12 +24,12 @@
             playerName: 'Player name…', zebraMode: 'Zebra Mode', shuffle: '🔀 Shuffle',
             timeUp: "Time's Up!", theWordWas: 'The word was:',
             continue: 'Continue', confirm: 'Confirm',
-            boardLength: 'Board Length (Total Tiles):', targetCefr: 'Target CEFR Level:', vocabularyTopic: 'Classroom Vocabulary Topic:',
+            boardLength: 'Board Length (Total Tiles):', targetCefr: 'Target CEFR Level:', vocabularyTopic: 'Vocabulary Topic:',
             generateDeck: '✨ AI Generate Deck', playDefaultDeck: '▶️ Play Default Deck', actionGuide: '🎯 Action Tile Guide',
             exit: '🏠 Exit', scoreboard: '🏆 Scoreboard', correctCoins: '✅ Correct (+Coins)', wrongCoins: '❌ Wrong (0 Coins)', skipPass: '⏭️ Skip / Pass',
         },
         tr: {
-            hubTagline: 'Sınıflar ve gruplar için özenle hazırlanmış etkileşimli oyunlar',
+            hubTagline: 'Topluluk buluşmaları ve gruplar için özenle hazırlanmış etkileşimli oyunlar',
             allGames: 'Tüm Oyunlar', soloGames: 'Tek Kişilik', multiplayer: 'Çok Oyunculu',
             mainMenu: '🏠 Ana Menü', deck: 'Deste', or: 'veya', orPlay: 'veya oyna',
             play: 'Oyna', startGame: 'Oyunu Başlat', playAgain: 'Tekrar Oyna', newGame: 'Yeni Oyun',
@@ -48,7 +48,7 @@
             playerName: 'Oyuncu adı…', zebraMode: 'Zebra Modu', shuffle: '🔀 Karıştır',
             timeUp: 'Süre doldu!', theWordWas: 'Kelime şuydu:',
             continue: 'Devam et', confirm: 'Onayla',
-            boardLength: 'Tahta Uzunluğu (Toplam Kare):', targetCefr: 'Hedef CEFR Seviyesi:', vocabularyTopic: 'Sınıf Kelime Konusu:',
+            boardLength: 'Tahta Uzunluğu (Toplam Kare):', targetCefr: 'Hedef CEFR Seviyesi:', vocabularyTopic: 'Kelime Konusu:',
             generateDeck: '✨ Yapay zekâ ile deste oluştur', playDefaultDeck: '▶️ Varsayılan desteyi oyna', actionGuide: '🎯 Etkinlik Kareleri Rehberi',
             exit: '🏠 Çıkış', scoreboard: '🏆 Skor Tablosu', correctCoins: '✅ Doğru (+Para)', wrongCoins: '❌ Yanlış (0 Para)', skipPass: '⏭️ Atla / Pas',
         },

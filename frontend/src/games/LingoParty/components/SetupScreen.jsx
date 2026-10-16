@@ -88,9 +88,9 @@ const EMOJI_PALETTE = ['🐉', '🚀', '🤖', '🦊', '⚡', '🦉', '🦁', '�
 const DEFAULT_NAMES = ['Crew A', 'Crew B', 'Crew C', 'Crew D', 'Crew E', 'Crew F', 'Crew G', 'Crew H'];
 const TEAM_COLORS = ['#a855f7', '#06b6d4', '#f43f5e', '#eab308', '#10b981', '#ec4899', '#6366f1', '#f97316'];
 const GAME_MODES = [
-  { id: 'solo', label: 'Solo', desc: '1 student per pawn' },
-  { id: 'duo', label: 'Duo', desc: '2 students per pawn' },
-  { id: 'crew', label: 'Crew', desc: '3+ students per pawn' }
+  { id: 'solo', label: 'Solo', desc: '1 player per pawn' },
+  { id: 'duo', label: 'Duo', desc: '2 players per pawn' },
+  { id: 'crew', label: 'Crew', desc: '3+ players per pawn' }
 ];
 
 export default function SetupScreen({ onStartGame, playSound }) {
@@ -101,7 +101,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
   const [boardLength, setBoardLength] = useState(30);
   const [orbitCount, setOrbitCount] = useState(3);
   const [cefr, setCefr] = useState('B1');
-  const [topic, setTopic] = useState('General Classroom Vocabulary & Idioms');
+  const [topic, setTopic] = useState('General Vocabulary & Idioms');
   const [baseColor, setBaseColor] = useState('#173b28');
   const [customNames, setCustomNames] = useState(['Crew A', 'Crew B', 'Crew C', 'Crew D', 'Crew E', 'Crew F', 'Crew G', 'Crew H']);
   const [customPawns, setCustomPawns] = useState(['🐉', '🚀', '🤖', '🦊', '⚡', '🦉', '🦁', '🐬']);
@@ -198,7 +198,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
 
   const handleTeacherNameChange = (value) => {
     setTeacherName(value);
-    const cleaned = value.trim() || 'Anonymous Teacher';
+    const cleaned = value.trim() || 'Anonymous Host';
     localStorage.setItem('berkai_teacher_name', cleaned);
     localStorage.setItem('oct_teacher_name', cleaned);
     window.sessionStorage.setItem('oct_teacher_name', cleaned);
@@ -290,7 +290,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
       const providerInfo = (deck?.aiProvider || 'gemini').toUpperCase();
       const modelInfo = deck?.aiModel ? ` (${deck.aiModel})` : '';
-      const keySourceInfo = deck?.teacherKeyUsed ? 'Teacher Custom Key' : 'Platform Provider Pool';
+      const keySourceInfo = deck?.teacherKeyUsed ? 'Host Custom Key' : 'Platform Provider Pool';
 
       addLog(`🤖 AI Provider Used: ${providerInfo}${modelInfo} via ${keySourceInfo}`, 'info');
       addLog(`✅ AI Success! ${cards.length} unique cards generated in ${elapsed}s`, 'success');
@@ -307,11 +307,11 @@ export default function SetupScreen({ onStartGame, playSound }) {
     } catch (err) {
       addLog(`❌ AI Generation Error: ${err.message}`, 'error');
       if (err.code === 'TEACHER_AI_KEY_REQUIRED' || err.code === 'TEACHER_NAME_REQUIRED') {
-        addLog('💡 Set your teacher name (and Gemini key) via 🔑 Teacher Settings, then retry!', 'warn');
+        addLog('💡 Set your host name (and Gemini key) via 🔑 Host Settings, then retry!', 'warn');
       } else if (err.code === 'GEMINI_QUOTA_EXCEEDED' || err.status === 429) {
         addLog('💡 Gemini API rate limit / quota reached (HTTP 429). Check your usage in Google AI Studio.', 'warn');
       } else if (err.code === 'INVALID_GEMINI_KEY' || err.status === 400) {
-        addLog('💡 Invalid Gemini API key. Verify your key in 🔑 Teacher Settings.', 'warn');
+        addLog('💡 Invalid Gemini API key. Verify your key in 🔑 Host Settings.', 'warn');
       } else {
         addLog(`💡 Server status ${err.status || 0}: ${err.message || 'Check server logs or retry.'}`, 'warn');
       }
@@ -572,7 +572,7 @@ export default function SetupScreen({ onStartGame, playSound }) {
                         <div className={styles.savedDeckMeta}>
                           <div className={styles.savedDeckTitle}>{deck.title}</div>
                           <div className={styles.savedDeckSub}>
-                            👩‍🏫 {deck.teacherName} · 🎯 {deck.theme} · {deck.cefr} · {(deck.mode || 'crew').toUpperCase()} · 🃏 {deck.cards?.length || 0} cards
+                            👤 {deck.teacherName} · 🎯 {deck.theme} · {deck.cefr} · {(deck.mode || 'crew').toUpperCase()} · 🃏 {deck.cards?.length || 0} cards
                             {deck.createdAt && ` · ${new Date(deck.createdAt).toLocaleDateString()}`}
                           </div>
                         </div>

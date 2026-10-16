@@ -23,11 +23,11 @@ const FILTER_LABEL_KEYS = {
 
 registerTranslations('hub', {
   en: {
-    tagline: 'Offline-ready classroom games for language, discussion, and play.', teacherGuide: 'Teacher Guide', buildActivities: 'Plan a classroom activity', buildActivitiesText: 'Choose a game, match it to your lesson objective, and begin with a built-in deck.', addKey: 'Optional teacher tools', chooseGame: 'Choose a game', chooseGameText: 'Select the activity that best supports your lesson objective and class level.', nameDecks: 'Start with a deck', nameDecksText: 'Every game remains playable with its included starter content.', keyText: 'When a classroom server is available, optional teacher tools can be configured for this browser tab.', changeKey: 'Change teacher settings', addKeyButton: 'Open teacher settings', activeKey: 'Teacher tools ready', disabledKey: 'Teacher tools unavailable', server: 'Mode: {status}',     filterGroup: 'Game categories', filterAll: 'All Games', filterSolo: 'Solo Games', filterMulti: 'Multiplayer', filterOnline: 'Online',
+    tagline: 'Offline-ready community games for words, discussion, and play at Orta Dünya Ankara gatherings.', teacherGuide: 'Host Guide', buildActivities: 'Plan a game for your gathering', buildActivitiesText: 'Choose a game, match it to your group and event, and begin with a built-in deck.', addKey: 'Optional host tools', chooseGame: 'Choose a game', chooseGameText: 'Select the game that best suits your players, your table and the time you have.', nameDecks: 'Start with a deck', nameDecksText: 'Every game remains playable with its included starter content.', keyText: 'When the optional game server is available, host tools can be configured for this browser tab.', changeKey: 'Change host settings', addKeyButton: 'Open host settings', activeKey: 'Host tools ready', disabledKey: 'Host tools unavailable', server: 'Mode: {status}',     filterGroup: 'Game categories', filterAll: 'All Games', filterSolo: 'Solo Games', filterMulti: 'Multiplayer', filterOnline: 'Online',
     onlineQuiz: 'Online Quiz', onlineTaboo: 'Online Taboo', onlineChecking: 'Checking…', onlineOffline: 'Offline', onlineOfflineHint: 'The online server is unreachable right now. Tap to try again.', onlineRetry: 'Tap to retry',
   },
   tr: {
-    tagline: 'Dil, tartışma ve oyun için çevrimdışı kullanıma hazır sınıf oyunları.', teacherGuide: 'Öğretmen Rehberi', buildActivities: 'Bir sınıf etkinliği planlayın', buildActivitiesText: 'Bir oyun seçin, ders hedefinizle eşleştirin ve yerleşik bir deste ile başlayın.', addKey: 'İsteğe bağlı öğretmen araçları', chooseGame: 'Bir oyun seçin', chooseGameText: 'Ders hedefinize ve sınıf seviyenize en uygun etkinliği seçin.', nameDecks: 'Bir deste ile başlayın', nameDecksText: 'Her oyun, içindeki başlangıç içeriğiyle oynanabilir.', keyText: 'Bir sınıf sunucusu kullanılabilir olduğunda, isteğe bağlı öğretmen araçları bu tarayıcı sekmesinde yapılandırılabilir.', changeKey: 'Öğretmen ayarlarını değiştir', addKeyButton: 'Öğretmen ayarlarını aç', activeKey: 'Öğretmen araçları hazır', disabledKey: 'Öğretmen araçları kullanılamıyor', server: 'Mod: {status}',     filterGroup: 'Oyun kategorileri', filterAll: 'Tüm Oyunlar', filterSolo: 'Tek Kişilik', filterMulti: 'Çok Oyunculu', filterOnline: 'Çevrimiçi',
+    tagline: 'Orta Dünya Ankara buluşmaları için kelime, tartışma ve eğlence odaklı, çevrimdışı da çalışan topluluk oyunları.', teacherGuide: 'Oyun Yöneticisi Rehberi', buildActivities: 'Buluşmanız için bir oyun planlayın', buildActivitiesText: 'Bir oyun seçin, grubunuza ve etkinliğinize uyarlayın ve yerleşik bir deste ile başlayın.', addKey: 'İsteğe bağlı oyun yöneticisi araçları', chooseGame: 'Bir oyun seçin', chooseGameText: 'Oyuncularınıza, masanıza ve ayırdığınız süreye en uygun oyunu seçin.', nameDecks: 'Bir deste ile başlayın', nameDecksText: 'Her oyun, içindeki başlangıç içeriğiyle oynanabilir.', keyText: 'İsteğe bağlı oyun sunucusu kullanılabilir olduğunda, oyun yöneticisi araçları bu tarayıcı sekmesinde yapılandırılabilir.', changeKey: 'Yönetici ayarlarını değiştir', addKeyButton: 'Yönetici ayarlarını aç', activeKey: 'Yönetici araçları hazır', disabledKey: 'Yönetici araçları kullanılamıyor', server: 'Mod: {status}',     filterGroup: 'Oyun kategorileri', filterAll: 'Tüm Oyunlar', filterSolo: 'Tek Kişilik', filterMulti: 'Çok Oyunculu', filterOnline: 'Çevrimiçi',
     onlineQuiz: 'Çevrimiçi Quiz', onlineTaboo: 'Çevrimiçi Tabu', onlineChecking: 'Kontrol ediliyor…', onlineOffline: 'Çevrimdışı', onlineOfflineHint: 'Çevrimiçi sunucuya şu anda ulaşılamıyor. Tekrar denemek için dokunun.', onlineRetry: 'Tekrar dene',
   },
 });
@@ -76,7 +76,7 @@ export default function GameHub() {
       title: 'Who Am I?',
       subtitle: 'Character Guessing',
       icon: '🎭',
-      desc: 'Classic character guessing with classroom lists, a countdown timer, and illustrated cards.',
+      desc: 'Classic character guessing with ready-made lists, a countdown timer, and illustrated cards.',
       tags: ['Party'],
       categories: ['multi'],
       path: '/who.html',
@@ -142,7 +142,7 @@ export default function GameHub() {
       title: 'Six Thinking Hats',
       subtitle: 'Structured Discussion',
       icon: '🎩',
-      desc: 'Guide classroom discussion through six perspectives with reusable question decks.',
+      desc: 'Guide group discussion through six perspectives with reusable question decks.',
       tags: ['Discussion', 'Critical Thinking'],
       categories: ['solo', 'multi'],
       path: '/hats.html',
@@ -153,7 +153,7 @@ export default function GameHub() {
       title: 'Wheel of Names',
       subtitle: 'Custom Selector',
       icon: '🎡',
-      desc: 'Customizable spinning wheel with realistic sound effects and physics for picking students or topics.',
+      desc: 'Customizable spinning wheel with realistic sound effects and physics for picking players, teams or topics.',
       tags: ['Physics', 'Tool'],
       categories: ['multi'],
       path: '/wheel.html',
@@ -164,7 +164,7 @@ export default function GameHub() {
       title: 'Spin the Bottle',
       subtitle: 'Interactive Spinner',
       icon: '🍾',
-      desc: 'Smooth physics-based bottle spinner for classroom roleplay and turn-taking.',
+      desc: 'Smooth physics-based bottle spinner for party roleplay and turn-taking.',
       tags: ['3D Physics', 'Party'],
       categories: ['multi'],
       path: '/bottle.html',
@@ -210,8 +210,8 @@ export default function GameHub() {
           {serverHealth.status === 'online' && isAiGenerationEnabled() && <>
           <details className={styles.teacherGuide}>
             <summary>
-              <span aria-hidden="true">🎓</span>
-              {t('hub.teacherGuide', undefined, 'Teacher Guide')}
+              <span aria-hidden="true">📜</span>
+              {t('hub.teacherGuide', undefined, 'Host Guide')}
             </summary>
             <div className={styles.teacherGuideBody}>
               <div className={styles.guideIntro}>
