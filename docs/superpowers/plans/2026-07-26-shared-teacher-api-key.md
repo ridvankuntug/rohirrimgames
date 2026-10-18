@@ -514,12 +514,12 @@ git commit -am "fix: integration fixes after key-only UX changes" || true
 ```bash
 # Frontend
 tar czf /tmp/oct-dist.tar.gz -C frontend dist
-scp /tmp/oct-dist.tar.gz ubuntu@89.168.76.182:/tmp/
-ssh ubuntu@89.168.76.182 'cd /var/www/play.metrix.dpdns.org && tar -xzf /tmp/oct-dist.tar.gz -C frontend && rm /tmp/oct-dist.tar.gz'
+scp /tmp/oct-dist.tar.gz <vps-host>:/tmp/
+ssh <vps-host> 'cd /var/www/play.metrix.dpdns.org && tar -xzf /tmp/oct-dist.tar.gz -C frontend && rm /tmp/oct-dist.tar.gz'
 
 # Server + shared files
-scp platform-client.js shared/*.js shared/*.css ubuntu@89.168.76.182:/tmp/
-ssh ubuntu@89.168.76.182 'cd /var/www/play.metrix.dpdns.org && cp /tmp/platform-client.js . && cp /tmp/shared/* shared/ && npm test && pm2 restart openclasstools'
+scp platform-client.js shared/*.js shared/*.css <vps-host>:/tmp/
+ssh <vps-host> 'cd /var/www/play.metrix.dpdns.org && cp /tmp/platform-client.js . && cp /tmp/shared/* shared/ && npm test && pm2 restart openclasstools'
 ```
 
 - [ ] **Step 6: Verify production**

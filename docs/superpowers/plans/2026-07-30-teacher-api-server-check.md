@@ -35,8 +35,8 @@ graph TD
 ### Task 1: Backend Verification Endpoint (`POST /api/ai/verify`)
 
 **Files:**
-- Modify: [server.js](file:///home/berkay/Desktop/who/server.js)
-- Test: [tests/server.test.js](file:///home/berkay/Desktop/who/tests/server.test.js)
+- Modify: [server.js](../../../server.js)
+- Test: [tests/server.test.js](../../../tests/server.test.js)
 
 **Interfaces:**
 - Consumes: Headers `x-teacher-name`, `x-gemini-api-key`.
@@ -134,9 +134,9 @@ git commit -m "feat: add /api/ai/verify endpoint for server connectivity and Gem
 ### Task 2: Frontend Verification Client Function
 
 **Files:**
-- Modify: [frontend/src/services/platformApi.js](file:///home/berkay/Desktop/who/frontend/src/services/platformApi.js)
-- Modify: [platform-client.js](file:///home/berkay/Desktop/who/platform-client.js)
-- Test: [tests/platform-client.test.js](file:///home/berkay/Desktop/who/tests/platform-client.test.js)
+- Modify: [frontend/src/services/platformApi.js](../../../frontend/src/services/platformApi.js)
+- Modify: [platform-client.js](../../../platform-client.js)
+- Test: [tests/platform-client.test.js](../../../tests/platform-client.test.js)
 
 **Interfaces:**
 - Consumes: `{ teacherDisplayName, geminiApiKey }`.
@@ -194,8 +194,8 @@ git commit -m "feat: add verifyTeacherKey method to platform clients"
 ### Task 3: Teacher Settings UI Auto-Trigger & Diagnostic Feedback
 
 **Files:**
-- Modify: [frontend/src/components/Common/ApiKeyModal.jsx](file:///home/berkay/Desktop/who/frontend/src/components/Common/ApiKeyModal.jsx)
-- Modify: [frontend/src/components/Common/ApiKeyModal.module.css](file:///home/berkay/Desktop/who/frontend/src/components/Common/ApiKeyModal.module.css)
+- Modify: [frontend/src/components/Common/ApiKeyModal.jsx](../../../frontend/src/components/Common/ApiKeyModal.jsx)
+- Modify: [frontend/src/components/Common/ApiKeyModal.module.css](../../../frontend/src/components/Common/ApiKeyModal.module.css)
 
 - [ ] **Step 1: Add debounced auto-verification logic and status state in `ApiKeyModal.jsx`**
 
