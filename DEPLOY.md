@@ -31,13 +31,13 @@ curl -s -o /dev/null -w '%{http_code}\n' https://games.ortadunyaankara.org/api/h
 
 Then create a room on `/quiz` (or `/taboo-online`) once to confirm the Turnstile secret is set.
 
-## Legacy: Express + Supabase on a VPS
+## Legacy: Express + Supabase backend (optional)
 
 **Not the live site.** This optional stack (Express server, built React frontend, Supabase schema) adds named decks, AI generation and session recording, which the browser clients use only when `shared/feature-flags.js` enables them. Never expose the Supabase service-role key to browser code or commit it to Git.
 
 ### Required environment
 
-Create `/var/www/play.metrix.dpdns.org/.env`:
+Create `.env` in the project root:
 
 ```env
 NODE_ENV=production
@@ -54,32 +54,13 @@ SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
 3. Keep the service-role key server-only.
 4. Run `npm run seed:decks` once; the seed is idempotent.
 
-### VPS rollout
-
-From the project root:
+### Running it
 
 ```bash
-chmod +x deploy.sh
-./deploy.sh
-```
-
-For a manual update:
-
-```bash
-cd /var/www/play.metrix.dpdns.org
-git pull
 npm install
 npm run build
 npm run seed:decks
-pm2 restart openclasstools
+npm start
 ```
 
-### Post-deployment checks
-
-```bash
-pm2 status
-pm2 logs openclasstools
-curl -fsS https://play.metrix.dpdns.org/api/health
-```
-
-Verify that the hub loads, a registered deck can be selected, named AI generation succeeds, and a game can finish even when optional session recording is unavailable.
+Then check `curl -fsS http://localhost:8090/api/health`. Verify that the hub loads, a registered deck can be selected, named AI generation succeeds, and a game can finish even when optional session recording is unavailable.

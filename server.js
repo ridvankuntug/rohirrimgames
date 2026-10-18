@@ -614,7 +614,7 @@ async function callOpenRouter(prompt, options = {}) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': 'https://play.metrix.dpdns.org',
+                    'HTTP-Referer': 'https://games.ortadunyaankara.org',
                     'X-Title': 'LingoParty Deck Generator'
                 },
                 body: JSON.stringify({

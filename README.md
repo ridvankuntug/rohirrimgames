@@ -130,10 +130,6 @@ npm start
 
 Open `http://localhost:8090` in your web browser. (For the Worker build with the online games, use `npx wrangler dev` as described above.)
 
-### 🖥️ Legacy VPS deployment
-
-The Express stack can still run on a Linux VPS behind Nginx & PM2 (`deploy.sh`, `nginx-play.conf`, PM2 app `openclasstools`, historically `https://play.metrix.dpdns.org`). This is **not** the live site; see [DEPLOY.md](DEPLOY.md) → "Legacy: Express + Supabase on a VPS".
-
 ---
 
 ## 🧪 Testing & Code Quality

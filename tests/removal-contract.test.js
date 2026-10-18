@@ -93,7 +93,6 @@ test('active styles and configuration contain no room-code or administrator remn
         'bottle.css',
         'theme.css',
         'server/config.js',
-        'deploy.sh',
         '.env.example'
     ];
 

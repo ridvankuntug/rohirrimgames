@@ -285,4 +285,4 @@ Admins can:
 1. Approve this plan
 2. I'll create the files one by one
 3. Test locally
-4. Deploy to VPS
+4. Deploy

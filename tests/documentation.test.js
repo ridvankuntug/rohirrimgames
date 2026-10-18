@@ -53,13 +53,3 @@ test('online quiz documentation keeps the /rt/ rule, the event-day rule and no r
         }
     }
 });
-
-test('deployment script stops when database credentials are missing', async () => {
-    const script = await readFile(new URL('../deploy.sh', import.meta.url), 'utf8');
-    for (const name of ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']) {
-        assert.match(script, new RegExp(name));
-    }
-    assert.doesNotMatch(script, /ADMIN_PASSCODE|ADMIN_SESSION_SECRET/);
-    assert.match(script, /exit 1/);
-    assert.match(script, /npm run build/);
-});
