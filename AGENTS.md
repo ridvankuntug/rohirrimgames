@@ -26,7 +26,7 @@ The default server URL is `http://localhost:8090`. `wrangler` is a pinned root d
 
 ## Production Deployment (Cloudflare Workers Static Assets)
 
-**The live site is this Cloudflare Worker.** It is a static build with no Express/Supabase backend — no AI generation, no registered-deck API, no session recording (both flags in `shared/feature-flags.js` are `false`). It is **one Worker** (`rohirrimgames`): static assets for everything, plus Worker code that runs only for `/rt/*` (the online quiz and taboo routes and the `QuizRoom` / `TabooRoom` Durable Objects). Live at `https://games.ortadunyaankara.org`.
+**The live site is this Cloudflare Worker.** In this fork, live deployment happens only via a push to `main` through Cloudflare; the VPS/rsync flow is not used. It is a static build with no Express/Supabase backend — no AI generation, no registered-deck API, no session recording (both flags in `shared/feature-flags.js` are `false`). It is **one Worker** (`rohirrimgames`): static assets for everything, plus Worker code that runs only for `/rt/*` (the online quiz and taboo routes and the `QuizRoom` / `TabooRoom` Durable Objects). Live at `https://games.ortadunyaankara.org`.
 
 Hosting is **Cloudflare Workers Static Assets** (migrated from Cloudflare Pages, to match the sibling `rohirrim-ankara-smiali` project's setup). Deploy runs through Cloudflare's own Git integration ("Workers Builds") connected to `ridvankuntug/rohirrimgames` — every push to `main` triggers an automatic build+deploy on Cloudflare's infrastructure. There is **no GitHub Actions deploy workflow** (the old `.github/workflows/deploy-cloudflare-pages.yml` was removed). `.github/workflows/ci.yml` runs on pull requests and pushes to `main`: `npm ci` (which also runs `npm --prefix frontend ci`), `npm test`, the frontend lint, `npx wrangler deploy --dry-run` (runs the static build once, then bundles the Worker and checks the Durable Object bindings/exports, no credentials) and `npm run check:static` (`scripts/check-static-site.mjs`). It deploys nothing; Cloudflare still does every deploy.
 - **Branch protection (owner setting, recommended)**: Workers Builds deploys every push to `main` whether CI passed or not. `main` has a GitHub ruleset requiring the CI `test` check (pull requests are not required). CI runs on pushes to every branch, so the flow is: push the commit to a work branch, wait for `test` to pass on it, then push that same commit to `main`. A commit that never ran CI is rejected on `main` (`GH013: Required status check "test" is expected`).
@@ -51,25 +51,6 @@ Hosting is **Cloudflare Workers Static Assets** (migrated from Cloudflare Pages,
   - When adding a new deck-backed game, or a new game entirely, wire it into this exact pattern from the start rather than only supporting the registered-deck path — standalone/offline play with a visible deck picker is a hard requirement, not an edge case.
 - **Theme**: static-site visuals use the Rohirrim (Rohan) palette — forest green / gold / parchment / rust — defined as CSS custom properties (`--bg-dark`, `--accent-1/2/3`, `--glass-bg`, `--glass-border`, `--text-primary/secondary`) repeated in `theme.css`, `hub.css`, `style.css`, and every game's own `.css`. Keep changes to these variables consistent across all of them, including their raw `rgba()`/hex duplicates outside `:root` blocks. Do NOT touch functional/semantic colors (correct/wrong feedback, Six Thinking Hats hat colors, LingoParty per-category badge colors) when reskinning.
 - Full walkthrough (manual deploy commands, custom domain setup): see [PROJE_REHBERI_TR.md](PROJE_REHBERI_TR.md#statik-site-olarak-yayınlama-cloudflare-workers-static-assets) (Turkish).
-
-## Legacy deployment (Express/VPS, not the live site)
-
-The live site is the Cloudflare Worker described above; nothing below serves it. The owner may still run the full Express + Supabase stack (AI generation, registered decks, session recording) on this VPS, so the commands are kept for that.
-
-- **Domain**: `https://play.metrix.dpdns.org`
-- **VPS IP**: `89.168.76.182` (User: `ubuntu`)
-- **SSH Key**: `<path-to-ssh-key>`
-- **Path on VPS**: `/var/www/play.metrix.dpdns.org`
-- **PM2 App Name**: `openclasstools`
-
-Deployment steps:
-```bash
-rsync -avz -e "ssh -i <path-to-ssh-key> -o StrictHostKeyChecking=no" \
-    --exclude='node_modules' --exclude='.git' --exclude='.worktrees' \
-    ./ ubuntu@89.168.76.182:/var/www/play.metrix.dpdns.org/
-ssh -i <path-to-ssh-key> ubuntu@89.168.76.182 \
-    "cd /var/www/play.metrix.dpdns.org && npm --prefix frontend run build && pm2 restart openclasstools --update-env"
-```
 
 ## Online games (quiz, taboo)
 
