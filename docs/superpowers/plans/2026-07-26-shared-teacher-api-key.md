@@ -509,24 +509,24 @@ Expected: all tests pass.
 git commit -am "fix: integration fixes after key-only UX changes" || true
 ```
 
-- [ ] **Step 5: Deploy to VPS**
+- [ ] **Step 5: Deploy to the legacy server**
 
 ```bash
 # Frontend
 tar czf /tmp/oct-dist.tar.gz -C frontend dist
 scp /tmp/oct-dist.tar.gz <vps-host>:/tmp/
-ssh <vps-host> 'cd /var/www/play.metrix.dpdns.org && tar -xzf /tmp/oct-dist.tar.gz -C frontend && rm /tmp/oct-dist.tar.gz'
+ssh <vps-host> 'cd <app-dir> && tar -xzf /tmp/oct-dist.tar.gz -C frontend && rm /tmp/oct-dist.tar.gz'
 
 # Server + shared files
 scp platform-client.js shared/*.js shared/*.css <vps-host>:/tmp/
-ssh <vps-host> 'cd /var/www/play.metrix.dpdns.org && cp /tmp/platform-client.js . && cp /tmp/shared/* shared/ && npm test && pm2 restart openclasstools'
+ssh <vps-host> 'cd <app-dir> && cp /tmp/platform-client.js . && cp /tmp/shared/* shared/ && npm test && pm2 restart openclasstools'
 ```
 
 - [ ] **Step 6: Verify production**
 
 ```bash
-curl -s https://play.metrix.dpdns.org/api/health
-curl -s https://play.metrix.dpdns.org/lingoparty | grep -o 'assets/index-[^"]*'
+curl -s https://<legacy-host>/api/health
+curl -s https://<legacy-host>/lingoparty | grep -o 'assets/index-[^"]*'
 ```
 
 Expected: health ok, bundle hash matches new build.
